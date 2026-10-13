@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s5-ciclo-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF; --ui:#141416; --ui2:#1E1E22;
+      --lime:#D4FF3A; --limeInk:#141A00; --plum:#6B2A6B; --red:#FF4A3D; }
+    #s5-ciclo-root .defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+    /* ---------- comparison cards (430x600, centres x 300 / 780, y 1330) ---------- */
+    #s5-ciclo-root .pos { position: absolute; top: 1030px; width: 430px; height: 600px; transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s5-ciclo-root #s5-ciclo-L { left: 85px; }
+    #s5-ciclo-root #s5-ciclo-R { left: 565px; }
+    #s5-ciclo-root .scl, #s5-ciclo-root .flt { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s5-ciclo-root .cardbox { position: absolute; inset: 0; border-radius: 34px; background: var(--card); overflow: hidden;
+      box-shadow: 0 34px 80px rgba(24,24,12,.16), 0 6px 18px rgba(24,24,12,.08); }
+    #s5-ciclo-root #s5-ciclo-Lcard { filter: grayscale(0); }
+    #s5-ciclo-root .rborder { position: absolute; inset: 0; border-radius: 34px; box-shadow: inset 0 0 0 4px var(--lime); }
+    #s5-ciclo-root .media { position: absolute; left: 0; top: 0; width: 430px; height: 320px; overflow: hidden; background: #F4F4F0; }
+
+    /* influencer: avatar inside an IG story ring + a stack of coins */
+    #s5-ciclo-root .avw { position: absolute; left: 105px; top: 44px; width: 220px; height: 220px; border-radius: 50%;
+      background: linear-gradient(45deg, #F9CE34 0%, #EE2A7B 52%, #6228D7 100%); }
+    #s5-ciclo-root .av { position: absolute; left: 10px; top: 10px; width: 200px; height: 200px; border-radius: 50%; overflow: hidden;
+      background: linear-gradient(160deg, #E9E9E3, #D9D9D2); box-shadow: 0 0 0 4px #F4F4F0; }
+    #s5-ciclo-root .av svg { position: absolute; inset: 0; width: 200px; height: 200px; }
+    #s5-ciclo-root .coin { position: absolute; left: 268px; top: 164px; width: 88px; height: 88px; border-radius: 50%; background: var(--ink); color: #FFFFFF;
+      display: flex; align-items: center; justify-content: center; font-size: 46px; font-weight: 700; line-height: 1; transform-origin: 50% 50%;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.14), 0 0 0 5px #F4F4F0, 0 10px 0 0 #2E2E33, 0 10px 0 5px #F4F4F0, 0 20px 0 0 #4A4A50,
+        0 28px 26px rgba(17,17,19,.22); }
+
+    /* personagem: photo + Higgsfield badge (pops on "serviço") */
+    #s5-ciclo-root .media img.photo { position: absolute; left: 0; top: 0; width: 430px; height: 320px; object-fit: cover; object-position: 50% 25%;
+      display: block; transform-origin: 50% 30%; }
+    #s5-ciclo-root .badge { position: absolute; left: 342px; top: 232px; width: 70px; height: 70px; border-radius: 18px; overflow: hidden;
+      box-shadow: 0 0 0 3px #FFFFFF, 0 8px 20px rgba(17,17,19,.28); transform-origin: 50% 50%; }
+    #s5-ciclo-root .badge svg { display: block; width: 70px; height: 70px; }
+    #s5-ciclo-root .bpulse { position: absolute; left: 336px; top: 226px; width: 82px; height: 82px; border-radius: 24px; border: 4px solid var(--lime);
+      transform-origin: 50% 50%; }
+
+    /* card body: group (label + title [+ chip]) sits centred until the sub arrives, then glides to the top */
+    #s5-ciclo-root .body { position: absolute; left: 0; top: 320px; width: 430px; height: 280px; }
+    #s5-ciclo-root .grp { position: absolute; left: 30px; top: 24px; width: 370px; display: flex; flex-direction: column; align-items: flex-start; }
+    #s5-ciclo-root .lab { height: 40px; font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500; letter-spacing: 0.06em;
+      line-height: 40px; text-transform: uppercase; color: var(--ink2); white-space: nowrap; }
+    #s5-ciclo-root .lab.pill { background: var(--lime); color: var(--limeInk); padding: 0 16px; border-radius: 999px; }
+    #s5-ciclo-root .ttlc { margin-top: 10px; height: 44px; font-size: 38px; font-weight: 600; letter-spacing: -0.025em; line-height: 44px; color: var(--ink); white-space: nowrap; }
+    #s5-ciclo-root .chip { margin-top: 14px; height: 42px; padding: 0 16px; border-radius: 999px; background: #EFEFEA; box-shadow: inset 0 0 0 2px var(--line);
+      font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500; letter-spacing: 0.05em; line-height: 42px; text-transform: uppercase;
+      color: var(--ink); white-space: nowrap; }
+    #s5-ciclo-root .chip b { font-weight: 700; letter-spacing: 0.02em; }
+    #s5-ciclo-root .subc { position: absolute; left: 30px; right: 30px; bottom: 26px; height: 56px; padding-top: 18px; border-top: 2px solid var(--line);
+      font-size: 30px; font-weight: 500; letter-spacing: -0.01em; line-height: 36px; color: var(--ink2); white-space: nowrap; }
+    #s5-ciclo-root .strike { position: absolute; left: 0; top: 0; width: 430px; height: 600px; overflow: visible; }
+    #s5-ciclo-root .xdisc { position: absolute; left: 356px; top: 18px; width: 56px; height: 56px; border-radius: 50%; background: var(--red);
+      box-shadow: 0 8px 20px rgba(255,74,61,.35); transform-origin: 50% 50%; }
+    #s5-ciclo-root .xdisc svg { display: block; width: 56px; height: 56px; }
+    /* one clean lime ring hugging the winner (card radius 34 + 10) */
+    #s5-ciclo-root .ring { position: absolute; left: -10px; top: -10px; right: -10px; bottom: -10px; border-radius: 44px; border: 6px solid var(--lime);
+      box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); transform-origin: 50% 50%; }
+    #s5-ciclo-root .pulse { position: absolute; left: -10px; top: -10px; right: -10px; bottom: -10px; border-radius: 44px; border: 4px solid var(--lime);
+      transform-origin: 50% 50%; }
+
+    /* ---------- payoff ---------- */
+    #s5-ciclo-root .tile { position: absolute; left: 465px; top: 1075px; width: 150px; height: 150px; border-radius: 35px;
+      box-shadow: 0 26px 56px rgba(70,100,0,.30), 0 8px 18px rgba(17,17,19,.14); transform-origin: 50% 50%; }
+    #s5-ciclo-root .tile svg { display: block; width: 150px; height: 150px; border-radius: 35px; }
+    #s5-ciclo-root .arcw { position: absolute; left: 380px; top: 990px; width: 320px; height: 320px; transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s5-ciclo-root .arcw svg { display: block; width: 320px; height: 320px; overflow: visible; filter: drop-shadow(0 6px 14px rgba(90,120,0,.35)); }
+    #s5-ciclo-root .ptxt { position: absolute; left: 90px; top: 1330px; width: 900px; text-align: center; font-size: 76px; font-weight: 700;
+      letter-spacing: -0.035em; line-height: 86px; transform-origin: 50% 50%; }
+    #s5-ciclo-root .ptxt .ln { display: block; height: 86px; white-space: nowrap; }
+    #s5-ciclo-root .ptxt .w { display: inline-block; position: relative; will-change: transform, opacity, filter; }
+    #s5-ciclo-root .ptxt .blk { position: relative; display: inline-block; color: var(--limeInk); }
+    #s5-ciclo-root .ptxt .blk .bg { position: absolute; left: -16px; right: -16px; top: 6px; bottom: 2px; border-radius: 16px; background: var(--lime);
+      transform-origin: 0 50%; transform: scaleX(0); }
+    #s5-ciclo-root .ptxt .blk .t { position: relative; }
+  </style>
+
+  <div data-hf-id="hf-r6xe" id="s5-ciclo-root" data-composition-id="s5-ciclo" data-width="1080" data-height="1920">
+    <svg data-hf-id="hf-pxda" class="defs" aria-hidden="true"><defs data-hf-id="hf-mh0t">
+      <path data-hf-id="hf-mj8w" id="s5-ciclo-sq" d="M79 32.8C81.4 32.6 82.7 32.7 84.5 32.9C86.3 33.1 88.5 33.6 90 34C91.4 34.5 91.9 34.8 93.1 35.7C94.4 36.5 96.4 37.9 97.5 39.1C98.7 40.2 99.2 41.2 100 42.6C100.6 43.9 101.3 45.5 101.7 47.2C102.1 49 102.2 51.1 102.2 52.9C102.2 54.8 102.3 56.1 101.7 58.2C101.1 60.4 100 63.7 98.8 66.1C97.5 68.5 96.2 70.2 94 72.7C91.7 75.1 90 77.1 85.3 80.9C80.6 84.8 69.9 92.3 65.8 95.6C61.8 98.9 62 99.4 61 100.9C59.9 102.4 59.7 103.1 59.4 104.4C59.1 105.8 59 107.6 59.1 108.9C59.3 110.3 59.7 111.6 60.3 112.6C60.9 113.6 61.7 114.3 62.6 115C63.6 115.6 64.8 116.2 66 116.4C67.1 116.7 68.4 116.6 69.6 116.4C70.8 116.2 71.9 115.7 73.1 115.1C74.4 114.4 75.5 113.8 77 112.6C78.5 111.3 78.2 112.2 82.1 107.4C86.1 102.7 96.2 89.5 100.7 84.1C105.3 78.6 107 77.2 109.5 74.7C112 72.3 113.7 70.9 115.6 69.5C117.5 68.1 118.9 67.1 120.8 66.1C122.7 65.1 125.2 64.1 127.1 63.5C129.1 62.9 130.4 62.7 132.3 62.5C134.2 62.4 136.7 62.5 138.6 62.7C140.5 62.9 141.9 63.4 143.6 63.9C145.3 64.5 147.2 65.2 148.8 66.1C150.4 67 151.8 68 153.5 69.6C155.1 71.2 157.2 73.3 158.7 75.4C160.2 77.5 161.4 79.5 162.6 82.1C163.8 84.8 165.2 88.7 165.9 91.2C166.7 93.8 166.9 96 167.3 97.4C167.7 98.8 167.8 99 168.3 99.6C168.8 100.2 168.9 100.5 170.3 100.8C171.7 101.1 175.6 101 177 101.3C178.4 101.5 178.2 101.8 178.6 102.2C179.1 102.6 179.4 103 179.7 103.6C180 104.2 180.2 104.2 180.3 105.9C180.4 107.6 180.6 111.7 180.4 113.6C180.3 115.4 180 116.2 179.6 117C179.3 117.9 178.7 118.2 178.3 118.6C177.9 118.9 178.2 119.1 177 119.2C175.7 119.4 172.2 119.3 170.7 119.6C169.3 119.9 168.8 120.4 168.3 121.1C167.7 121.7 167.7 121.6 167.3 123.4C167 125.2 167 128.4 166.3 131.8C165.6 135.1 164.5 139.6 163.2 143.2C161.9 146.9 159.9 151.3 158.5 153.9C157.2 156.6 156.4 157.3 155 159.1C153.5 160.9 151.3 163.2 149.6 164.8C148 166.3 146.3 167.5 145 168.3C143.7 169.2 143.4 169.4 141.8 170.1C140.2 170.8 137.7 172.1 135.4 172.6C133.1 173.1 130.3 173.3 128 173.3C125.6 173.2 123.4 172.9 121.3 172.4C119.2 171.8 116.7 170.5 115.3 169.8C113.9 169.1 113.8 168.9 112.8 168.1C111.8 167.2 110.2 165.8 109.2 164.6C108.1 163.4 107.3 162.4 106.5 160.9C105.6 159.4 104.6 157.4 104 155.4C103.4 153.4 103 151.3 103 148.9C103 146.5 103.4 143.8 104.1 141.1C104.8 138.4 106.1 135.4 107.4 132.9C108.7 130.4 110 128.3 111.8 125.9C113.6 123.5 115.8 120.8 118.2 118.4C120.7 116 123.6 113.5 126.3 111.4C129 109.4 131.6 107.6 134.3 106.2C137 104.7 140.1 103.6 142.3 102.8C144.6 102 146.6 101.9 147.8 101.4C149.1 101 149.3 100.8 149.8 100C150.3 99.2 150.7 97.9 150.6 96.8C150.6 95.6 150.4 94.7 149.6 93.2C148.8 91.8 147 89.2 145.6 87.8C144.3 86.5 143 85.8 141.5 85.1C140 84.4 138.4 83.8 136.8 83.6C135.2 83.4 133.8 83.2 131.8 83.6C129.8 84 126.8 85 125 85.8C123.1 86.6 122.1 87.4 120.6 88.5C119.2 89.6 118 90.5 116.1 92.4C114.2 94.2 112.3 95.8 109.2 99.6C106 103.4 101.3 110.2 97.5 115.1C93.6 119.9 89 125.4 86 128.6C83 131.8 81.6 132.9 79.5 134.4C77.3 136 75.1 137.2 73.1 138C71.2 138.8 69.4 139.1 67.6 139.3C65.9 139.6 64.3 139.7 62.6 139.6C61 139.6 59.4 139.3 57.8 139C56.2 138.7 54.6 138.3 53.1 137.7C51.6 137.1 50.2 136.3 48.8 135.3C47.4 134.4 46.3 133.8 44.8 131.9C43.3 130.1 41.1 127 40 124.4C38.8 121.8 38.3 118.5 37.9 116.2C37.5 114 37.4 113.2 37.5 111.1C37.7 109 38.3 105.7 38.9 103.6C39.5 101.5 40.1 100.4 41.1 98.6C42.2 96.8 43.3 95 45 92.9C46.6 90.9 49.2 88.1 51.1 86.3C53 84.4 53.3 84.2 56.5 81.9C59.7 79.6 67.2 74.5 70.3 72.2C73.5 70 73.9 69.5 75.4 68.2C76.9 67 78.3 65.5 79.3 64.4C80.4 63.3 81 62.4 81.6 61.4C82.2 60.5 82.7 59.7 83 58.8C83.4 57.8 83.6 56.6 83.7 55.8C83.8 54.9 83.8 54.2 83.5 53.4C83.3 52.6 82.8 51.6 82.2 50.9C81.5 50.3 80.7 49.8 79.8 49.5C78.9 49.2 78 49.1 77 49.2C75.9 49.3 75 49.2 73.5 50.1C71.9 51 69.6 52.9 67.6 54.7C65.7 56.5 63.7 59 61.8 60.8C59.9 62.5 58.4 63.9 56.3 65.3C54.2 66.8 51.8 68.4 49.5 69.6C47.2 70.8 44.3 71.9 42.5 72.5C40.6 73.1 40.2 73.2 38.3 73.3C36.4 73.3 32.9 72.9 31.3 72.6C29.7 72.3 29.4 72 28.6 71.4C27.9 70.9 27.2 70.5 26.7 69.6C26.2 68.6 25.7 67.6 25.6 65.8C25.4 63.9 25.6 60 25.6 58.4C25.8 56.8 25.9 56.9 26.1 56.3C26.4 55.7 26.7 55.4 27.1 55.1C27.5 54.8 27.1 54.5 28.6 54.3C30.2 54.2 34.4 54.5 36.6 54.3C38.9 54.1 40.6 53.6 42.1 53.1C43.6 52.5 43.1 52.8 45.6 50.9C48.2 49 54.4 43.6 57.3 41.4C60.2 39.1 60.8 38.6 63 37.4C65.2 36.1 67.8 34.7 70.5 33.9C73.2 33.1 76.7 32.9 79 32.8Z M146.7 120.8C147.9 120.4 147.9 120.6 148.3 120.8C148.7 120.9 149.1 121.2 149.4 121.6C149.6 122 149.9 122.6 149.9 123.2C150 123.9 150.5 123.4 149.8 125.8C149.2 128.1 147.4 134.3 146.1 137.5C144.9 140.8 143.6 143 142.2 145.1C140.9 147.2 139.4 148.9 138 150.2C136.6 151.5 135.2 152.4 133.8 153.1C132.4 153.7 130.8 154.2 129.5 154.2C128.2 154.2 127 153.7 126 153.1C124.9 152.4 123.8 151.2 123.2 150.1C122.6 149 122.4 147.8 122.5 146.4C122.5 145 123 143.4 123.7 141.8C124.3 140.1 125.3 138.2 126.4 136.6C127.5 134.9 128.6 133.4 130.2 131.8C131.8 130.1 134.1 127.9 136 126.4C137.8 124.9 139.7 123.8 141.5 122.9C143.3 122 145.6 121.1 146.7 120.8Z" />
+    </defs></svg>
+
+    <!-- LEFT: influencer -->
+    <div data-hf-id="hf-j8e4" class="pos" id="s5-ciclo-L"><div data-hf-id="hf-jskq" class="scl" id="s5-ciclo-Lscl"><div data-hf-id="hf-uzoa" class="flt" id="s5-ciclo-Lflt">
+      <div data-hf-id="hf-xdth" class="cardbox" id="s5-ciclo-Lcard">
+        <div data-hf-id="hf-v3x0" class="media">
+          <div data-hf-id="hf-4x00" class="avw">
+            <div data-hf-id="hf-pvrx" class="av">
+              <svg data-hf-id="hf-yl1w" viewBox="0 0 200 200" aria-hidden="true">
+                <circle data-hf-id="hf-7k4s" cx="100" cy="82" r="38" fill="#BDBDB5" />
+                <path data-hf-id="hf-1hfx" d="M28 200 C30 150 60 128 100 128 C140 128 170 150 172 200 Z" fill="#BDBDB5" />
+              </svg>
+            </div>
+          </div>
+          <div data-hf-id="hf-tjtg" class="coin" id="s5-ciclo-coin">$</div>
+        </div>
+        <div data-hf-id="hf-2t3w" class="body">
+          <div data-hf-id="hf-r9yo" class="grp" id="s5-ciclo-Lgrp">
+            <div data-hf-id="hf-r7ty" class="lab">Influencer</div>
+            <div data-hf-id="hf-p5yt" class="ttlc">pagar influencer</div>
+            <div data-hf-id="hf-3gzd" class="chip" id="s5-ciclo-chip">Cachê <b data-hf-id="hf-phsz">$$$</b></div>
+          </div>
+          <div data-hf-id="hf-87e8" class="subc" id="s5-ciclo-Lsub">pra falar dela</div>
+        </div>
+      </div>
+      <svg data-hf-id="hf-iikm" class="strike" viewBox="0 0 430 600" aria-hidden="true">
+        <line data-hf-id="hf-dkua" id="s5-ciclo-strike" x1="36" y1="566" x2="394" y2="34" stroke="#FF4A3D" stroke-width="10" stroke-linecap="round" stroke-dasharray="641.24" stroke-dashoffset="641.24" />
+      </svg>
+      <div data-hf-id="hf-mrqx" class="xdisc" id="s5-ciclo-x">
+        <svg data-hf-id="hf-f6na" viewBox="0 0 56 56" aria-hidden="true"><path data-hf-id="hf-btlk" d="M19 19 L37 37 M37 19 L19 37" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" /></svg>
+      </div>
+    </div></div></div>
+
+    <!-- RIGHT: personagem -->
+    <div data-hf-id="hf-q9d6" class="pos" id="s5-ciclo-R"><div data-hf-id="hf-euok" class="scl" id="s5-ciclo-Rscl"><div data-hf-id="hf-cips" class="flt" id="s5-ciclo-Rflt">
+      <div data-hf-id="hf-o87u" class="pulse" id="s5-ciclo-pulse"></div>
+      <div data-hf-id="hf-2a6e" class="ring" id="s5-ciclo-ring"></div>
+      <div data-hf-id="hf-t6t5" class="cardbox">
+        <div data-hf-id="hf-ddpo" class="media">
+          <img data-hf-id="hf-8rm9" class="photo" id="s5-ciclo-photo" src="assets/img/personagem-retrato.jpg" alt="">
+          <div data-hf-id="hf-usf4" class="bpulse" id="s5-ciclo-bpulse"></div>
+          <div data-hf-id="hf-7g72" class="badge" id="s5-ciclo-badge"><svg data-hf-id="hf-i7hw" viewBox="0 0 206 206" aria-hidden="true"><rect data-hf-id="hf-t1zm" width="206" height="206" fill="#D4FF3A" /><use data-hf-id="hf-inpw" href="#s5-ciclo-sq" fill="#111113" fill-rule="evenodd" transform="translate(103 103) scale(0.92) translate(-103 -103)" /></svg></div>
+        </div>
+        <div data-hf-id="hf-6g9g" class="body">
+          <div data-hf-id="hf-vdxi" class="grp" id="s5-ciclo-Rgrp">
+            <div data-hf-id="hf-3vgq" class="lab pill">Personagem de IA</div>
+            <div data-hf-id="hf-z3bc" class="ttlc">paga o personagem</div>
+          </div>
+          <div data-hf-id="hf-k2dk" class="subc" id="s5-ciclo-Rsub">feito dentro dela</div>
+        </div>
+        <div data-hf-id="hf-gt3i" class="rborder" id="s5-ciclo-Rborder"></div>
+      </div>
+    </div></div></div>
+
+    <!-- PAYOFF -->
+    <div data-hf-id="hf-9xjh" class="arcw" id="s5-ciclo-arc">
+      <svg data-hf-id="hf-nxpc" viewBox="0 0 320 320" aria-hidden="true">
+        <path data-hf-id="hf-tuuk" id="s5-ciclo-arcL" d="M224 49.15 A128 128 0 1 1 96 49.15" fill="none" stroke="#C6F02A" stroke-width="16" stroke-linecap="round" stroke-dasharray="670.21" stroke-dashoffset="670.21" />
+        <polygon data-hf-id="hf-nnc4" id="s5-ciclo-head" points="116.8,37.15 103.8,66.6 84.8,33.7" fill="#C6F02A" stroke="#C6F02A" stroke-width="2" stroke-linejoin="round" />
+      </svg>
+    </div>
+    <div data-hf-id="hf-fx1q" class="tile" id="s5-ciclo-tile">
+      <svg data-hf-id="hf-sv4c" viewBox="0 0 206 206" aria-hidden="true"><rect data-hf-id="hf-ra8m" width="206" height="206" fill="#D4FF3A" /><use data-hf-id="hf-lkt2" href="#s5-ciclo-sq" fill="#111113" fill-rule="evenodd" transform="translate(103 103) scale(0.9) translate(-103 -103)" /></svg>
+    </div>
+    <div data-hf-id="hf-xzna" class="ptxt" id="s5-ciclo-ptxt">
+      <div data-hf-id="hf-gmyq" class="ln"><span data-hf-id="hf-6fvj" class="w g1">a</span> <span data-hf-id="hf-lqqv" class="w g1">ferramenta</span> <span data-hf-id="hf-ojcj" class="w g1">paga</span> <span data-hf-id="hf-gc2k" class="w g1">pela</span></div>
+      <div data-hf-id="hf-ru7a" class="ln"><span data-hf-id="hf-8fn6" class="w blk" id="s5-ciclo-g2"><span data-hf-id="hf-gpdz" class="bg" id="s5-ciclo-blk"></span><span data-hf-id="hf-p27j" class="t">própria propaganda</span></span></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s5-ciclo-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6 },
+        { opacity: 1, scale: 1, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2)" }, t);
+      const P = 1200; // shared perspective for the book-open tilt
+      // body groups: centred in the card body while the sub line is absent, then glide to the top
+      const LGRP_Y = 41, RGRP_Y = 69;
+
+      const L = q("#s5-ciclo-L"), Lscl = q("#s5-ciclo-Lscl"), Lflt = q("#s5-ciclo-Lflt"), Lcard = q("#s5-ciclo-Lcard");
+      const Rr = q("#s5-ciclo-R"), Rscl = q("#s5-ciclo-Rscl"), Rflt = q("#s5-ciclo-Rflt"), Rborder = q("#s5-ciclo-Rborder");
+      const coin = q("#s5-ciclo-coin"), chip = q("#s5-ciclo-chip"), Lgrp = q("#s5-ciclo-Lgrp"), Rgrp = q("#s5-ciclo-Rgrp");
+      const Lsub = q("#s5-ciclo-Lsub"), Rsub = q("#s5-ciclo-Rsub"), photo = q("#s5-ciclo-photo");
+      const badge = q("#s5-ciclo-badge"), bpulse = q("#s5-ciclo-bpulse");
+      const strike = q("#s5-ciclo-strike"), xd = q("#s5-ciclo-x"), ring = q("#s5-ciclo-ring"), pulse = q("#s5-ciclo-pulse");
+      const arc = q("#s5-ciclo-arc"), arcL = q("#s5-ciclo-arcL"), head = q("#s5-ciclo-head");
+      const tile = q("#s5-ciclo-tile"), g1 = qa("#s5-ciclo-ptxt .g1"), g2 = q("#s5-ciclo-g2"), blk = q("#s5-ciclo-blk"), ptxt = q("#s5-ciclo-ptxt");
+
+      /* ---- 1. "pagar influencer": the influencer card arrives alone, centred (x +240 from its slot) ---- */
+      tl.fromTo(L, { opacity: 0, x: 160, y: 60, scale: 0.94, rotationY: 10, transformPerspective: P, filter: "blur(16px)" },
+        { opacity: 1, x: 240, y: 0, scale: 1, rotationY: 0, transformPerspective: P, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.10);
+      tl.fromTo(Lscl, { scale: 1.12 }, { scale: 1.145, duration: 1.83, ease: "none" }, 0.65);   // staged bigger while alone
+      tl.fromTo(Lflt, { y: -6 }, { y: 6, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 3 }, 0.6);
+      // "pagar": a coin stack drops onto the avatar + the cachê chip slides into the body
+      tl.fromTo(coin, { opacity: 0, y: -46, scale: 0.6, rotation: -24 }, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.45, ease: "back.out(1.6)" }, 0.50);
+      tl.fromTo(chip, { opacity: 0, x: -26, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, 0.55);
+      // "pra falar dela": group glides up, sub line arrives
+      tl.fromTo(Lgrp, { y: LGRP_Y }, { y: 0, duration: 0.45, ease: "power3.inOut" }, 1.66);
+      tl.fromTo(Lsub, { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.36, ease: "power3.out" }, 1.74);
+
+      /* ---- 2. "ela paga": split — influencer slides to its slot, personagem flies in mirrored, THEN the strike ---- */
+      tl.to(L, { x: 0, rotationY: 4, duration: 0.5, ease: "power3.out" }, 2.48);
+      tl.to(Lscl, { scale: 1, duration: 0.4, ease: "power3.out" }, 2.48);
+      tl.fromTo(Rr, { opacity: 0, x: 80, y: 60, scale: 0.94, rotationY: -10, transformPerspective: P, filter: "blur(16px)" },
+        { opacity: 1, x: 0, y: 0, scale: 1, rotationY: -4, transformPerspective: P, filter: "blur(0px)", duration: 0.53, ease: "power3.out" }, 2.62);
+      tl.fromTo(Rgrp, { y: RGRP_Y }, { y: 0, duration: 0.45, ease: "power3.inOut" }, 4.74);
+      tl.fromTo(Rflt, { y: 6 }, { y: -6, duration: 1.2, ease: "sine.inOut", yoyo: true, repeat: 1 }, 2.95);
+      tl.fromTo(photo, { scale: 1 }, { scale: 1.07, duration: 3.0, ease: "none" }, 2.62);
+
+      // the influencer option gets struck out on "paga" (3.09)
+      // (hidden until the draw starts: a round cap at full dash offset would leave a dot at the path start)
+      tl.fromTo(strike, { opacity: 0 }, { opacity: 1, duration: 0.02, ease: "none" }, 3.00);
+      tl.fromTo(strike, { strokeDashoffset: 641.24 }, { strokeDashoffset: 0, duration: 0.28, ease: "power2.out" }, 3.00);
+      tl.to(Lcard, { filter: "grayscale(1)", opacity: 0.55, duration: 0.4, ease: "power2.out" }, 3.02);
+      tl.to(Lscl, { scale: 0.94, duration: 0.45, ease: "power2.inOut" }, 3.02);
+      tl.fromTo(xd, { opacity: 0, scale: 0.3, rotation: -45 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.4, ease: "back.out(2)" }, 3.12);
+
+      // "serviço" (4.01): the Higgsfield badge — the service itself — pops onto the photo
+      tl.fromTo(badge, { opacity: 0, scale: 0.4, rotation: -12 }, { opacity: 1, scale: 1, rotation: 0, duration: 0.42, ease: "back.out(2.2)" }, 3.90);
+      // (two-step so the pulse is invisible before its beat under any seek order)
+      tl.fromTo(bpulse, { opacity: 0, scale: 0.9 }, { opacity: 0.9, scale: 0.9, duration: 0.01, ease: "none" }, 3.98);
+      tl.to(bpulse, { opacity: 0, scale: 1.6, duration: 0.6, ease: "power2.out" }, 3.99);
+
+      /* ---- 3. "feito dentro dela": personagem wins ---- */
+      tl.to(Rr, { x: -40, rotationY: 0, duration: 0.5, ease: "power3.out" }, 4.74);
+      tl.to(Rscl, { scale: 1.06, duration: 0.5, ease: "power3.out" }, 4.74);
+      tl.to(L, { x: -24, rotationY: 7, duration: 0.5, ease: "power3.out" }, 4.74);
+      tl.fromTo(Rborder, { opacity: 1 }, { opacity: 0, duration: 0.2, ease: "power1.out" }, 4.74);   // the ring replaces the inner border
+      POP(ring, 4.76, { from: 0.92, d: 0.38 });
+      tl.fromTo(Rsub, { opacity: 0, y: 20, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.36, ease: "power3.out" }, 4.80);
+      tl.fromTo(pulse, { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1, duration: 0.01, ease: "none" }, 4.86);
+      tl.to(pulse, { opacity: 0, scale: 1.12, duration: 0.7, ease: "power2.out" }, 4.87);
+      tl.fromTo(Rscl, { scale: 1.06 }, { scale: 1.075, duration: 0.36, ease: "none", immediateRender: false }, 5.24);
+
+      /* ---- 4. payoff: cards part to the sides, tool tile + cycle arrow + "a ferramenta paga pela própria propaganda" ---- */
+      tl.to(L, { opacity: 0, x: -240, filter: "blur(14px)", duration: 0.24, ease: "power2.in" }, 5.60);
+      tl.to(Rr, { opacity: 0, x: 180, filter: "blur(14px)", duration: 0.24, ease: "power2.in" }, 5.60);
+      tl.fromTo(tile, { opacity: 0, scale: 0.5, filter: "blur(8px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.5, ease: "back.out(1.6)" }, 5.74);
+      tl.fromTo(tile, { scale: 1 }, { scale: 1.05, duration: 0.84, ease: "none", immediateRender: false }, 6.24);
+      tl.fromTo(arc, { rotation: -50 }, { rotation: 20, duration: 1.32, ease: "none" }, 5.76);
+      tl.fromTo(arc, { opacity: 0 }, { opacity: 1, duration: 0.05, ease: "none" }, 5.79);   // after the draw has started (no lone cap dot)
+      tl.fromTo(arcL, { strokeDashoffset: 670.21 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 5.76);
+      tl.fromTo(head, { opacity: 0, scale: 0, svgOrigin: "96 49.15" }, { opacity: 1, scale: 1, svgOrigin: "96 49.15", duration: 0.24, ease: "back.out(2.4)" }, 6.26);
+      g1.forEach((w, i) => tl.fromTo(w, { opacity: 0, y: 50, filter: "blur(12px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.38, ease: "power3.out" }, 5.80 + i * 0.04));
+      tl.fromTo(g2, { opacity: 0, scale: 1.3, filter: "blur(12px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.32, ease: "expo.out" }, 6.08);
+      tl.fromTo(blk, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power3.out" }, 6.30);
+      tl.fromTo(ptxt, { scale: 1 }, { scale: 1.025, duration: 0.98, ease: "none", immediateRender: false }, 6.10);
+
+      /* ---- exit (ends 7.32 < 7.37 - 1 frame) ---- */
+      OUT(tile, 7.08, { d: 0.24 });
+      OUT(arc, 7.08, { d: 0.24 });
+      OUT(ptxt, 7.08, { d: 0.24 });
+
+      window.__timelines["s5-ciclo"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

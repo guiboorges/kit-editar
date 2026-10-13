@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s7-claude-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --lime:#D4FF3A; --limeInk:#141A00; --ok:#4B7A00; --claude:#D97757; }
+
+    /* ---------- app window (global 70,1000 · 940x700) ---------- */
+    #s7-claude-root #s7-claude-drift { position: absolute; left: 70px; top: 1000px; width: 940px; height: 700px; transform-origin: 50% 50%; }
+    #s7-claude-root #s7-claude-winbox { position: absolute; left: 0; top: 0; width: 940px; height: 700px; transform-origin: 50% 40%; }
+    /* camera push-in wrapper: origin = the composer while it is typed into */
+    #s7-claude-root #s7-claude-push { position: absolute; left: 0; top: 0; width: 940px; height: 700px; transform-origin: 470px 494px; }
+    #s7-claude-root #s7-claude-win { position: absolute; left: 0; top: 0; width: 940px; height: 700px; border-radius: 34px; background: var(--card);
+      box-shadow: 0 34px 80px rgba(24, 24, 12, 0.16), 0 6px 18px rgba(24, 24, 12, 0.08), 0 0 0 1px rgba(17, 17, 19, 0.05); }
+    #s7-claude-root .hdr { position: absolute; left: 0; top: 0; width: 940px; height: 96px; display: flex; align-items: center; padding: 0 32px; gap: 14px; }
+    #s7-claude-root .dots { display: flex; gap: 9px; margin-right: 14px; }
+    #s7-claude-root .dots i { display: block; width: 15px; height: 15px; border-radius: 50%; }
+    #s7-claude-root .dots i:nth-child(1) { background: #F2655A; }
+    #s7-claude-root .dots i:nth-child(2) { background: #F5BF4F; }
+    #s7-claude-root .dots i:nth-child(3) { background: #61C554; }
+    #s7-claude-root .lwrap { position: relative; width: 48px; height: 48px; flex: none; }
+    #s7-claude-root #s7-claude-clogo { position: absolute; left: 0; top: 0; width: 48px; height: 48px; display: block; }
+    #s7-claude-root #s7-claude-cpulse { position: absolute; left: -6px; top: -6px; width: 60px; height: 60px; border-radius: 50%;
+      border: 3px solid var(--claude); opacity: 0; }
+    #s7-claude-root .ttl { font-size: 36px; font-weight: 600; letter-spacing: -0.02em; }
+    #s7-claude-root #s7-claude-mcp { font-family: "Geist Mono", monospace; font-size: 28px; font-weight: 500; letter-spacing: 0.04em;
+      color: var(--ink); background: #EFEFEA; border-radius: 999px; padding: 6px 18px; margin-left: 4px; opacity: 0; }
+    #s7-claude-root .hair { position: absolute; left: 0; top: 95px; width: 940px; height: 2px; background: #EEEEE8; }
+    #s7-claude-root .st { position: absolute; left: 0; top: 0; width: 940px; height: 700px; }
+
+    /* ---------- state A: conectores ---------- */
+    #s7-claude-root .lbl { position: absolute; left: 36px; top: 124px; font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500;
+      letter-spacing: 0.12em; color: var(--mute); opacity: 0; }
+    /* loading skeletons (visible while the window arrives; each one dissolves under its real row) */
+    #s7-claude-root .skel { position: absolute; left: 28px; width: 884px; height: 96px; border-radius: 24px; background: #F5F5F1; overflow: hidden; }
+    #s7-claude-root .skel b { position: absolute; left: 20px; top: 20px; width: 56px; height: 56px; border-radius: 15px; background: #ECECE6; }
+    #s7-claude-root .skel i { position: absolute; left: 96px; height: 14px; border-radius: 7px; background: #ECECE6; }
+    #s7-claude-root .skel u { position: absolute; right: 24px; top: 24px; width: 84px; height: 48px; border-radius: 24px; background: #ECECE6; }
+    #s7-claude-root .ssheen { position: absolute; left: 0; top: 0; width: 240px; height: 96px;
+      background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.95) 50%, rgba(255,255,255,0) 100%); transform: translateX(-300px); }
+    #s7-claude-root .crow { position: absolute; left: 28px; width: 884px; height: 96px; border-radius: 24px; background: #FAFAF7;
+      box-shadow: inset 0 0 0 2px #EEEEE8; display: flex; align-items: center; padding: 0 24px 0 20px; gap: 20px; opacity: 0; }
+    #s7-claude-root .ico { position: relative; z-index: 1; width: 56px; height: 56px; border-radius: 15px; overflow: hidden; display: flex; align-items: center;
+      justify-content: center; flex: none; }
+    #s7-claude-root .ico.g { background: #EFEFEA; }
+    #s7-claude-root .ico.n { background: #FFFFFF; box-shadow: inset 0 0 0 2.5px #4A4A52; font-size: 34px; font-weight: 700; color: #3A3A40; }
+    #s7-claude-root .ico img { width: 56px; height: 56px; display: block; }
+    #s7-claude-root #s7-claude-hglow { position: absolute; left: -16px; top: -16px; width: 128px; height: 128px; border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(196, 246, 20, 0.95), rgba(212, 255, 58, 0.62) 50%, rgba(212, 255, 58, 0) 100%); opacity: 0; }
+    #s7-claude-root .ctx { flex: 1; }
+    #s7-claude-root .nm { font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    #s7-claude-root .sub { position: relative; height: 30px; margin-top: 4px; }
+    #s7-claude-root .sub span { position: absolute; left: 0; top: 0; font-size: 24px; font-weight: 500; color: var(--mute); white-space: nowrap; }
+    #s7-claude-root #s7-claude-hon { color: var(--ok); font-size: 26px; font-weight: 600; display: flex; align-items: center; gap: 10px; opacity: 0; }
+    #s7-claude-root #s7-claude-hon i { display: block; width: 12px; height: 12px; border-radius: 50%; background: #7DBB00;
+      box-shadow: 0 0 0 4px rgba(125, 187, 0, 0.22); }
+    #s7-claude-root .tg { position: relative; width: 84px; height: 48px; border-radius: 24px; background: #E2E2DC; flex: none; }
+    #s7-claude-root .knob { position: absolute; left: 4px; top: 4px; width: 40px; height: 40px; border-radius: 50%; background: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.06); }
+    #s7-claude-root .add { position: absolute; left: 28px; top: 530px; width: 884px; height: 80px; border-radius: 24px; border: 2px dashed #D6D6CF;
+      display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 26px; font-weight: 500; color: var(--ink2); opacity: 0; }
+    #s7-claude-root .add b { font-size: 34px; font-weight: 400; line-height: 1; }
+    /* ring hugs the Higgsfield row (row 28,294 884x96 r24 -> ring 8px outside) */
+    #s7-claude-root #s7-claude-ring { position: absolute; left: 20px; top: 286px; width: 900px; height: 112px; border-radius: 32px;
+      border: 6px solid var(--lime); box-shadow: 0 0 0 10px rgba(212, 255, 58, 0.28), 0 10px 30px rgba(120, 160, 0, 0.25); opacity: 0; }
+    /* MCP "plug" cable: header logo -> left gutter -> Higgsfield icon */
+    #s7-claude-root #s7-claude-plug { position: absolute; left: 0; top: 0; width: 940px; height: 700px; overflow: visible; pointer-events: none; }
+    #s7-claude-root .pdot { opacity: 0; }
+
+    /* ---------- state B: chat ---------- */
+    #s7-claude-root #s7-claude-stB { opacity: 0; }
+    #s7-claude-root #s7-claude-greet { position: absolute; left: 0; top: 214px; width: 940px; display: flex; flex-direction: column; align-items: center; }
+    #s7-claude-root #s7-claude-greet svg { width: 56px; height: 56px; display: block; }
+    #s7-claude-root #s7-claude-greet div { margin-top: 16px; font-size: 36px; font-weight: 500; letter-spacing: -0.02em; color: var(--mute); }
+    #s7-claude-root #s7-claude-bub { position: absolute; left: 348px; top: 124px; width: 564px; height: 160px; border-radius: 26px 26px 8px 26px;
+      background: #EFEFEA; transform-origin: 100% 100%; opacity: 0; }
+    #s7-claude-root #s7-claude-resp { position: absolute; left: 60px; top: 368px; height: 40px; display: flex; align-items: center; gap: 12px; opacity: 0; }
+    #s7-claude-root #s7-claude-resp svg { width: 34px; height: 34px; display: block; }
+    #s7-claude-root #s7-claude-resp span { font-family: "Geist Mono", monospace; font-size: 25px; font-weight: 500; letter-spacing: 0.01em; color: var(--ink2); }
+    /* skeleton response tile — hand-off anchor for s8 (window-local 60,430 · 400x190 · r20 = global 130,1430) */
+    #s7-claude-root #s7-claude-tile { position: absolute; left: 60px; top: 430px; width: 400px; height: 190px; border-radius: 20px; background: #F1F1EC;
+      overflow: hidden; opacity: 0; }
+    #s7-claude-root #s7-claude-tile svg { position: absolute; left: 173px; top: 68px; width: 54px; height: 54px; display: block; }
+    #s7-claude-root #s7-claude-tsheen { position: absolute; left: 0; top: 0; width: 200px; height: 190px;
+      background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 50%, rgba(255,255,255,0) 100%); transform: translateX(-260px); }
+
+    /* composer (drawn at its final 3-line size; growth = cap translate + body clip, never height) */
+    #s7-claude-root #s7-claude-cmp { position: absolute; left: 28px; top: 380px; width: 884px; height: 228px; }
+    #s7-claude-root #s7-claude-cvis { position: absolute; left: 0; top: 0; width: 884px; height: 228px; }
+    #s7-claude-root #s7-claude-cbody { position: absolute; left: 0; top: 0; width: 884px; height: 228px; border-radius: 26px; background: #F6F6F2;
+      border: 2px solid var(--line); clip-path: inset(106px 0px 0px 0px); }
+    #s7-claude-root #s7-claude-ccap { position: absolute; left: 0; top: 0; width: 884px; height: 56px; border-radius: 26px 26px 0 0; background: #F6F6F2;
+      border: 2px solid var(--line); border-bottom: none; transform: translateY(80px); }
+    /* placeholder starts just right of the idle caret (caret at x 28–31) so the caret never cuts the first letter */
+    #s7-claude-root #s7-claude-ph { position: absolute; left: 35px; top: 104px; font-size: 30px; font-weight: 500; letter-spacing: -0.01em;
+      line-height: 40px; color: var(--mute); white-space: nowrap; opacity: 0; }
+    #s7-claude-root .tools { position: absolute; left: 18px; top: 158px; width: 848px; height: 52px; display: flex; align-items: center; gap: 12px; }
+    #s7-claude-root .plus { width: 48px; height: 48px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--line); background: #FFFFFF;
+      display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 400; color: var(--ink2); line-height: 1; }
+    #s7-claude-root .chip { height: 48px; border-radius: 999px; background: #FFFFFF; box-shadow: inset 0 0 0 2px var(--line);
+      display: flex; align-items: center; gap: 10px; padding: 0 18px 0 8px; font-size: 24px; font-weight: 500; color: var(--ink2); }
+    #s7-claude-root .chip .hlogo { width: 32px; height: 32px; border-radius: 9px; display: block; background: url("assets/img/logo-higgsfield.png") center / cover no-repeat; }
+    #s7-claude-root .chip i { display: block; width: 10px; height: 10px; border-radius: 50%; background: #7DBB00; }
+    #s7-claude-root .sendw { margin-left: auto; position: relative; width: 52px; height: 52px; }
+    #s7-claude-root #s7-claude-burst { position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%;
+      box-shadow: 0 0 0 4px var(--lime); opacity: 0; }
+    #s7-claude-root #s7-claude-send { position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%; background: var(--ink);
+      display: flex; align-items: center; justify-content: center; opacity: 0.3; }
+    #s7-claude-root #s7-claude-send svg { width: 26px; height: 26px; display: block; }
+    #s7-claude-root #s7-claude-ptwrap { position: absolute; left: 26px; top: 24px; width: 740px; transform: translateY(80px); }
+    /* authored line breaks: white-space pre (never wraps by layout) — s8 replicates this text block 1:1 */
+    #s7-claude-root #s7-claude-ptmove { width: 740px; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -0.01em;
+      white-space: pre; color: var(--ink); }
+    #s7-claude-root #s7-claude-caret { display: inline-block; width: 3px; height: 34px; margin-left: 2px; vertical-align: -7px; background: var(--ink);
+      border-radius: 2px; opacity: 0; }
+
+    /* sticker on the window corner */
+    #s7-claude-root #s7-claude-sticker { position: absolute; left: 714px; top: -27px; height: 54px; padding: 0 22px 0 18px; border-radius: 999px;
+      background: var(--lime); color: var(--limeInk); display: flex; align-items: center; gap: 10px; font-family: "Geist Mono", monospace;
+      font-size: 26px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; transform: rotate(4deg);
+      box-shadow: 0 10px 24px rgba(120, 160, 0, 0.28), 0 2px 6px rgba(60, 80, 0, 0.14); opacity: 0; }
+    #s7-claude-root #s7-claude-sticker i { display: block; width: 11px; height: 11px; border-radius: 50%; background: var(--limeInk); }
+  </style>
+
+  <div data-hf-id="hf-g0vk" id="s7-claude-root" data-composition-id="s7-claude" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-yvbk" id="s7-claude-drift">
+      <div data-hf-id="hf-y5gm" id="s7-claude-winbox">
+        <div data-hf-id="hf-tajv" id="s7-claude-push">
+          <div data-hf-id="hf-sn1z" id="s7-claude-win">
+            <div data-hf-id="hf-tyyu" class="hdr">
+              <div data-hf-id="hf-zx1w" class="dots"><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i></div>
+              <div data-hf-id="hf-jdvc" class="lwrap"><div data-hf-id="hf-2385" id="s7-claude-cpulse"></div><img data-hf-id="hf-nb68" id="s7-claude-clogo" src="assets/img/logo-claude.svg" alt=""></div>
+              <div data-hf-id="hf-a0fa" class="ttl">Claude</div>
+              <div data-hf-id="hf-b93n" id="s7-claude-mcp">MCP</div>
+            </div>
+            <div data-hf-id="hf-hx7w" class="hair"></div>
+
+            <!-- state A: conectores -->
+            <div data-hf-id="hf-ffzp" class="st" id="s7-claude-stA">
+              <div data-hf-id="hf-byq1" class="lbl" id="s7-claude-lbl">CONECTORES</div>
+              <div data-hf-id="hf-yfy0" class="skel" id="s7-claude-k1" style="top:176px"><b data-hf-id="hf-xujp"></b><i data-hf-id="hf-tyo2" style="top:28px;width:230px"></i><i data-hf-id="hf-k2wm" style="top:54px;width:330px"></i><u data-hf-id="hf-w5wo"></u><div data-hf-id="hf-b3uu" class="ssheen"></div></div>
+              <div data-hf-id="hf-52kw" class="skel" id="s7-claude-k2" style="top:294px"><b data-hf-id="hf-ey49"></b><i data-hf-id="hf-hn67" style="top:28px;width:190px"></i><i data-hf-id="hf-lllf" style="top:54px;width:300px"></i><u data-hf-id="hf-0jxc"></u><div data-hf-id="hf-zscq" class="ssheen"></div></div>
+              <div data-hf-id="hf-kwkp" class="skel" id="s7-claude-k3" style="top:412px"><b data-hf-id="hf-g51c"></b><i data-hf-id="hf-qt1n" style="top:28px;width:150px"></i><i data-hf-id="hf-w01o" style="top:54px;width:350px"></i><u data-hf-id="hf-zd09"></u><div data-hf-id="hf-06nr" class="ssheen"></div></div>
+
+              <div data-hf-id="hf-ggmf" class="crow" id="s7-claude-r1" style="top:176px">
+                <div data-hf-id="hf-ons0" class="ico g"><svg data-hf-id="hf-51i4" viewBox="0 0 48 48" width="36" height="36"><path data-hf-id="hf-p5nj" d="M17.5 7h13l14 24h-13z" fill="#B4B4BA" /><path data-hf-id="hf-3p9y" d="M17.5 7 3.5 31l6.5 11 14-24z" fill="#8A8A92" /><path data-hf-id="hf-r4pk" d="M10 42h28l6.5-11h-28z" fill="#A0A0A7" /></svg></div>
+                <div data-hf-id="hf-8aq7" class="ctx"><div data-hf-id="hf-96zk" class="nm">Google Drive</div><div data-hf-id="hf-iqrq" class="sub"><span data-hf-id="hf-ccn1">arquivos e documentos</span></div></div>
+                <div data-hf-id="hf-tk6r" class="tg"><div data-hf-id="hf-0pvg" class="knob"></div></div>
+              </div>
+              <div data-hf-id="hf-ote3" class="crow" id="s7-claude-r2" style="top:294px">
+                <div data-hf-id="hf-4z1e" id="s7-claude-hglow"></div>
+                <div data-hf-id="hf-5hk7" class="ico"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div>
+                <div data-hf-id="hf-9jlb" class="ctx"><div data-hf-id="hf-va2l" class="nm">Higgsfield</div><div data-hf-id="hf-n762" class="sub"><span data-hf-id="hf-dt5c" id="s7-claude-hoff">imagem e vídeo com IA</span><span data-hf-id="hf-lssf" id="s7-claude-hon"><i data-hf-id="hf-ylp6"></i>conectado</span></div></div>
+                <div data-hf-id="hf-hijk" class="tg" id="s7-claude-tg"><div data-hf-id="hf-6s78" class="knob" id="s7-claude-knob"></div></div>
+              </div>
+              <div data-hf-id="hf-cale" class="crow" id="s7-claude-r3" style="top:412px">
+                <div data-hf-id="hf-2ocd" class="ico n">N</div>
+                <div data-hf-id="hf-95aa" class="ctx"><div data-hf-id="hf-1vum" class="nm">Notion</div><div data-hf-id="hf-nlh3" class="sub"><span data-hf-id="hf-m3hn">páginas e bases de dados</span></div></div>
+                <div data-hf-id="hf-2vo3" class="tg"><div data-hf-id="hf-860k" class="knob"></div></div>
+              </div>
+              <div data-hf-id="hf-uotx" class="add" id="s7-claude-add"><b data-hf-id="hf-vih6">+</b>adicionar conector</div>
+              <div data-hf-id="hf-ed19" id="s7-claude-ring"></div>
+              <svg data-hf-id="hf-pfp6" id="s7-claude-plug" viewBox="0 0 940 700" aria-hidden="true">
+                <path data-hf-id="hf-7ech" id="s7-claude-plugU" d="M147 78 V96 Q147 106 137 106 H24 Q14 106 14 116 V332 Q14 342 24 342 H44" fill="none" stroke="rgba(110,150,0,0.45)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" />
+                <path data-hf-id="hf-7hqp" id="s7-claude-plugL" d="M147 78 V96 Q147 106 137 106 H24 Q14 106 14 116 V332 Q14 342 24 342 H44" fill="none" stroke="#D4FF3A" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" />
+                <circle data-hf-id="hf-2x64" class="pdot" id="s7-claude-pd0" cx="147" cy="78" r="6.5" fill="#D4FF3A" stroke="#5E7A00" stroke-width="2.5" />
+                <circle data-hf-id="hf-a53x" class="pdot" id="s7-claude-pd1" cx="44" cy="342" r="6.5" fill="#D4FF3A" stroke="#5E7A00" stroke-width="2.5" />
+              </svg>
+            </div>
+
+            <!-- state B: chat -->
+            <div data-hf-id="hf-je3q" class="st" id="s7-claude-stB">
+              <div data-hf-id="hf-tiai" id="s7-claude-greet"><svg data-hf-id="hf-ithg" viewBox="0 0 100 100" aria-hidden="true"><circle data-hf-id="hf-o1w7" cx="50" cy="50" r="12" fill="#D97757" /><path data-hf-id="hf-679e" fill="#D97757" stroke="#D97757" stroke-width="2.2" stroke-linejoin="round" d="M60.23 52.89 L95.98 48.09 L95.80 45.49 L59.72 45.71Z M56.86 58.12 L82.02 69.99 L83.32 67.73 L60.46 51.88Z M51.15 60.57 L67.99 89.85 L70.33 88.71 L57.62 57.41Z M47.11 60.23 L51.21 85.88 L53.80 85.70 L54.29 59.72Z M41.88 56.86 L25.87 89.19 L28.13 90.49 L48.12 60.46Z M39.43 51.15 L13.87 66.17 L15.01 68.51 L42.59 57.62Z M39.77 47.11 L7.69 51.66 L7.87 54.25 L40.28 54.29Z M43.14 41.88 L18.78 30.47 L17.48 32.73 L39.54 48.12Z M48.85 39.43 L31.41 8.91 L29.07 10.05 L42.38 42.59Z M52.89 39.77 L48.60 11.36 L46.01 11.54 L45.71 40.28Z M58.12 43.14 L71.83 14.80 L69.57 13.50 L51.88 39.54Z M60.57 48.85 L83.23 35.24 L82.09 32.90 L57.41 42.38Z" /></svg><div data-hf-id="hf-qdrg">o que vamos criar hoje?</div></div>
+              <div data-hf-id="hf-rgie" id="s7-claude-bub"></div>
+              <div data-hf-id="hf-ofdp" id="s7-claude-resp"><svg data-hf-id="hf-koho" viewBox="0 0 100 100" aria-hidden="true"><circle data-hf-id="hf-l9qv" cx="50" cy="50" r="12" fill="#D97757" /><path data-hf-id="hf-6gme" fill="#D97757" stroke="#D97757" stroke-width="2.2" stroke-linejoin="round" d="M60.23 52.89 L95.98 48.09 L95.80 45.49 L59.72 45.71Z M56.86 58.12 L82.02 69.99 L83.32 67.73 L60.46 51.88Z M51.15 60.57 L67.99 89.85 L70.33 88.71 L57.62 57.41Z M47.11 60.23 L51.21 85.88 L53.80 85.70 L54.29 59.72Z M41.88 56.86 L25.87 89.19 L28.13 90.49 L48.12 60.46Z M39.43 51.15 L13.87 66.17 L15.01 68.51 L42.59 57.62Z M39.77 47.11 L7.69 51.66 L7.87 54.25 L40.28 54.29Z M43.14 41.88 L18.78 30.47 L17.48 32.73 L39.54 48.12Z M48.85 39.43 L31.41 8.91 L29.07 10.05 L42.38 42.59Z M52.89 39.77 L48.60 11.36 L46.01 11.54 L45.71 40.28Z M58.12 43.14 L71.83 14.80 L69.57 13.50 L51.88 39.54Z M60.57 48.85 L83.23 35.24 L82.09 32.90 L57.41 42.38Z" /></svg><span data-hf-id="hf-im6h">gerando seu avatar…</span></div>
+              <div data-hf-id="hf-xu8n" id="s7-claude-tile"><svg data-hf-id="hf-e7ft" viewBox="0 0 48 48"><rect data-hf-id="hf-ode2" x="6" y="9" width="36" height="30" rx="6" fill="none" stroke="#D3D3CC" stroke-width="3.5" /><circle data-hf-id="hf-y7o5" cx="17" cy="19" r="4" fill="#D3D3CC" /><path data-hf-id="hf-nmgb" d="M9 36l11-11 7 7 5-5 8 8" fill="none" stroke="#D3D3CC" stroke-width="3.5" stroke-linejoin="round" /></svg><div data-hf-id="hf-sjd0" id="s7-claude-tsheen"></div></div>
+              <div data-hf-id="hf-tpjd" id="s7-claude-cmp">
+                <div data-hf-id="hf-7w00" id="s7-claude-cvis">
+                  <div data-hf-id="hf-oq2e" id="s7-claude-cbody"></div>
+                  <div data-hf-id="hf-lk4i" id="s7-claude-ccap"></div>
+                  <div data-hf-id="hf-8410" id="s7-claude-ph">descreva o que você quer criar…</div>
+                  <div data-hf-id="hf-kwbd" class="tools">
+                    <div data-hf-id="hf-94up" class="plus">+</div>
+                    <div data-hf-id="hf-tujs" class="chip"><b data-hf-id="hf-5fje" class="hlogo"></b>higgsfield<i data-hf-id="hf-0l8b"></i></div>
+                    <div data-hf-id="hf-vrjt" class="sendw"><div data-hf-id="hf-lecf" id="s7-claude-burst"></div><div data-hf-id="hf-34gx" id="s7-claude-send"><svg data-hf-id="hf-neyx" viewBox="0 0 26 26"><path data-hf-id="hf-m4ue" d="M13 21V6M6.5 12 13 5.5 19.5 12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></div></div>
+                  </div>
+                </div>
+                <div data-hf-id="hf-va1j" id="s7-claude-ptwrap"><div data-hf-id="hf-8bh8" id="s7-claude-ptmove"><span data-hf-id="hf-rrzd" id="s7-claude-ptext"></span><span data-hf-id="hf-sgnl" id="s7-claude-caret"></span></div></div>
+              </div>
+            </div>
+          </div>
+          <div data-hf-id="hf-2c1i" id="s7-claude-sticker"><i data-hf-id="hf-0zjc"></i>meu teste</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      /* =====================================================================================
+         FINAL FRAME (local 6.967 — s8-avatar frame 0 replicates this exactly):
+         - #drift / #winbox / #push: identity transforms -> window at global (70,1000), 940x700, r34, white, card shadow.
+         - header: traffic dots; Claude spark 48px at window-local (123,24) ROTATED 180deg; "Claude" 36/600;
+           "MCP" pill visible (opacity 1, scale 1, bg #EFEFEA). Hairline at y 95.
+         - sticker "meu teste": window-local left 714 top -27, opacity 1, rotate(4deg) scale 1.
+         - state A hidden. state B visible (opacity 1, y 0, no blur):
+             greeting + composer hidden (opacity 0);
+             bubble #EFEFEA r26/26/8/26 at (348,124) 564x160 (hugs the text, right-aligned);
+             prompt text (3 authored lines, Geist 500 30/40, -0.01em, ink, white-space pre) top-left at window-local (374,144);
+             response row at (60,368) h40: spark 34 + "gerando seu avatar…" Geist Mono 25/500 ink2;
+             skeleton tile #F1F1EC r20 at (60,430) 400x190 (= global 130,1430) with a 54px image glyph centred,
+             white sheen band 200px wide moving LINEARLY: x = -260 + 1200*(t - 6.84)  (=> x = -68 at s7 7.000 = s8 0.000).
+         ===================================================================================== */
+      const R = document.getElementById("s7-claude-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6, rotation: o.r0 ?? 0 },
+        { opacity: 1, scale: 1, rotation: o.r1 ?? 0, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2)", immediateRender: false }, t);
+
+      // cue grid (scene-local word starts)
+      const SIMPLES = 0.31, NO = 0.87, LIGUEI = 1.49, CLAUDE = 2.18, HIGGS = 2.84, MCP = 3.76, DALI = 4.40, ESPEC = 4.90, IA = 6.80;
+
+      // ================= window enters on "simples" =================
+      IN("#s7-claude-winbox", SIMPLES - 0.21, { y: 140, d: 0.5 });
+      // loading skeletons breathe once while the page "loads"
+      qa(".ssheen").forEach((el, i) => {
+        tl.fromTo(el, { x: -300 }, { x: 1000, duration: 0.7, ease: "none", immediateRender: false }, 0.5 + i * 0.07);
+      });
+
+      // ---- drift (alive while holding): connectors hold breathes in 3%, reset to 1 under the A->B crossfade ----
+      tl.fromTo("#s7-claude-drift", { scale: 1 }, { scale: 1.03, duration: 3.7, ease: "sine.inOut", force3D: false }, 0.6);
+      tl.fromTo("#s7-claude-drift", { scale: 1.03 }, { scale: 1, duration: 0.4, ease: "power2.inOut", immediateRender: false, force3D: false }, 4.3);
+
+      // ================= "no meu caso" — corner sticker =================
+      POP("#s7-claude-sticker", NO - 0.02, { from: 0.4, r0: -10, r1: 4, d: 0.45 });
+
+      // ================= "liguei" — conectores cascade in over their skeletons =================
+      IN("#s7-claude-lbl", LIGUEI - 0.15, { y: 16, s: 1, b: 6, d: 0.4 });
+      [["#s7-claude-r1", "#s7-claude-k1"], ["#s7-claude-r2", "#s7-claude-k2"], ["#s7-claude-r3", "#s7-claude-k3"]].forEach(([row, sk], i) => {
+        const t = LIGUEI - 0.09 + i * 0.08;
+        IN(row, t, { y: 26, s: 0.98, b: 8, d: 0.45 });
+        tl.to(sk, { opacity: 0, duration: 0.3, ease: "power1.out" }, t + 0.08);
+      });
+      IN("#s7-claude-add", LIGUEI - 0.09 + 0.24, { y: 26, s: 0.98, b: 8, d: 0.45 });
+
+      // ================= "claude" — the spark turns once + terracotta pulse; lime pre-glow leads the eye to Higgsfield =================
+      tl.fromTo("#s7-claude-clogo", { rotation: 0 }, { rotation: 180, duration: 0.5, ease: "power2.inOut" }, CLAUDE - 0.12);
+      tl.fromTo("#s7-claude-clogo", { scale: 1 }, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, CLAUDE - 0.1);
+      tl.fromTo("#s7-claude-cpulse", { opacity: 0.85, scale: 0.8 }, { opacity: 0, scale: 2.3, duration: 0.55, ease: "power2.out", immediateRender: false }, CLAUDE - 0.04);
+      tl.fromTo("#s7-claude-hglow", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, CLAUDE + 0.04);
+
+      // ================= "higgsfield" — control-target-sync: toggle ON + ring + status on ONE label =================
+      tl.addLabel("hf", HIGGS - 0.08);
+      tl.fromTo("#s7-claude-knob", { x: 0 }, { x: 36, duration: 0.28, ease: "power2.inOut" }, "hf");
+      tl.fromTo("#s7-claude-tg", { backgroundColor: "#E2E2DC" }, { backgroundColor: "#D4FF3A", duration: 0.28, ease: "power2.inOut" }, "hf");
+      tl.fromTo("#s7-claude-ring", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1.02, duration: 0.36, ease: "back.out(2)" }, "hf");
+      tl.to("#s7-claude-hoff", { opacity: 0, y: -10, duration: 0.12, ease: "power2.in" }, "hf");
+      tl.fromTo("#s7-claude-hon", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, "hf+=0.14");
+      tl.fromTo("#s7-claude-r2", { scale: 1 }, { scale: 1.02, duration: 0.36, ease: "back.out(2)", immediateRender: false }, "hf");
+      tl.to("#s7-claude-hglow", { opacity: 0.55, duration: 0.5, ease: "power2.inOut" }, "hf+=0.3");
+      tl.to(["#s7-claude-r1", "#s7-claude-r3", "#s7-claude-add"], { opacity: 0.42, filter: "blur(1.5px)", duration: 0.4, ease: "power2.out" }, "hf");
+
+      // ================= "MCP" — header pill punch-then-cool + the plug cable draws logo -> Higgsfield =================
+      tl.fromTo("#s7-claude-mcp", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out", immediateRender: false }, MCP - 0.1);
+      tl.fromTo("#s7-claude-mcp", { scale: 0.5 }, { scale: 1.18, duration: 0.16, ease: "power2.out", immediateRender: false }, MCP - 0.1);
+      tl.to("#s7-claude-mcp", { scale: 1, duration: 0.32, ease: "back.out(2.2)" }, MCP + 0.06);
+      tl.fromTo("#s7-claude-mcp", { backgroundColor: "#D4FF3A" }, { backgroundColor: "#EFEFEA", duration: 0.3, ease: "power1.inOut", immediateRender: false }, MCP + 0.22);
+      const DOT = (el, t, d) => tl.fromTo(el, { opacity: 0, scale: 0.2, transformOrigin: "50% 50%" },
+        { opacity: 1, scale: 1, transformOrigin: "50% 50%", duration: d, ease: "back.out(2.4)", immediateRender: false }, t);
+      DOT("#s7-claude-pd0", MCP - 0.08, 0.3);
+      tl.fromTo(["#s7-claude-plugU", "#s7-claude-plugL"], { strokeDashoffset: 100 }, { strokeDashoffset: 0, duration: 0.35, ease: "power2.inOut", immediateRender: false }, MCP - 0.06);
+      DOT("#s7-claude-pd1", MCP + 0.26, 0.32);
+      // the Higgsfield icon answers the plug (tiny punch)
+      tl.fromTo("#s7-claude-r2 .ico", { scale: 1 }, { scale: 1.12, duration: 0.14, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, MCP + 0.28);
+
+      // ================= "e dali" — state A -> state B (chat), crossfade with blur =================
+      // A is gone (4.28 -> 4.50) right as B starts (4.49): no double exposure of the two states
+      const XB = DALI + 0.09;
+      tl.to("#s7-claude-stA", { opacity: 0, y: -24, filter: "blur(10px)", duration: 0.22, ease: "power2.in" }, DALI - 0.12);
+      tl.fromTo("#s7-claude-stB", { opacity: 0, y: 30, filter: "blur(12px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out", immediateRender: false }, XB);
+      tl.fromTo("#s7-claude-ph", { opacity: 0 }, { opacity: 1, duration: 0.2, ease: "power1.out", immediateRender: false }, XB);
+      tl.fromTo("#s7-claude-caret", { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none", immediateRender: false }, XB + 0.06);
+      tl.fromTo("#s7-claude-send", { opacity: 0.3 }, { opacity: 1, duration: 0.2, ease: "power1.out", immediateRender: false }, ESPEC + 0.06);
+
+      // ================= "especifiquei como eu queria o meu avatar" — the prompt types =================
+      const LINES = ["cria meu avatar de IA: cabelo lilás na", "altura do ombro, bigode preto, óculos", "redondos de metal e polo vinho"];
+      const FULL = LINES.join("\n");
+      const T0 = ESPEC - 0.04, TD = 1.56;                    // 4.86 -> 6.42
+      tl.set("#s7-claude-ph", { opacity: 0 }, T0);
+      const ptext = q("#s7-claude-ptext");
+      const ty = { n: 0 };
+      let lastK = -1;
+      tl.fromTo(ty, { n: 0 }, { n: FULL.length, duration: TD, ease: "none", immediateRender: false,
+        onUpdate: () => { const k = Math.round(ty.n); if (k !== lastK) { lastK = k; ptext.textContent = FULL.slice(0, k); } } }, T0);
+      // composer grows upward one line at a time (cap + text translate, body clip — never height)
+      const wrapAt = (m) => T0 + ((m - 0.5) / FULL.length) * TD;
+      const G1 = wrapAt(LINES[0].length + 1), G2 = wrapAt(LINES[0].length + LINES[1].length + 2);
+      const step = (t, h0, h1) => {
+        tl.fromTo(["#s7-claude-ccap", "#s7-claude-ptwrap"], { y: h0 }, { y: h1, duration: 0.18, ease: "power3.out", immediateRender: false }, t);
+        tl.fromTo("#s7-claude-cbody", { clipPath: `inset(${h0 + 26}px 0px 0px 0px)` },
+          { clipPath: `inset(${h1 + 26}px 0px 0px 0px)`, duration: 0.18, ease: "power3.out", immediateRender: false }, t);
+      };
+      step(G1, 80, 40);
+      step(G2, 40, 0);
+      // depth of field: the greeting steps back so the composer is the focus
+      tl.fromTo("#s7-claude-greet", { opacity: 1, filter: "blur(0px)" }, { opacity: 0.45, filter: "blur(2px)", duration: 0.5, ease: "sine.inOut", immediateRender: false }, T0 + 0.1);
+      // camera push-in on the composer for the whole typing beat (key text stays inside x 70–1010)
+      tl.fromTo("#s7-claude-push", { scale: 1, y: 0 }, { scale: 1.06, y: -16, duration: 1.76, ease: "sine.inOut", force3D: false }, T0);
+      // caret: one deterministic blink in the pause before the send
+      tl.to("#s7-claude-caret", { opacity: 0, duration: 0.01, ease: "none" }, 6.46);
+      tl.to("#s7-claude-caret", { opacity: 1, duration: 0.01, ease: "none" }, 6.52);
+      tl.to("#s7-claude-caret", { opacity: 0, duration: 0.01, ease: "none" }, 6.56);
+
+      // ================= "IA" — send (press-release spring) + text flies into the bubble =================
+      tl.to("#s7-claude-send", { scale: 0.86, duration: 0.08, ease: "power1.in" }, IA - 0.26);
+      tl.to("#s7-claude-send", { scale: 1, duration: 0.4, ease: "back.out(2.2)" }, IA - 0.18);
+      tl.fromTo("#s7-claude-burst", { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 2.4, duration: 0.4, ease: "power2.out", immediateRender: false }, IA - 0.18);
+      tl.to("#s7-claude-push", { scale: 1, y: 0, duration: 0.3, ease: "power3.inOut", force3D: false }, IA - 0.18);
+      tl.to("#s7-claude-greet", { opacity: 0, y: -30, filter: "blur(10px)", duration: 0.2, ease: "power2.in" }, IA - 0.14);
+      // composer visuals leave (the text itself flies on)
+      // (starts a touch after the text lifts, so the release spring + lime burst still read)
+      tl.to("#s7-claude-cvis", { opacity: 0, y: 60, filter: "blur(6px)", duration: 0.16, ease: "power2.in" }, IA - 0.08);
+      // prompt text: composer (54,404) -> bubble text box (374,144)
+      tl.fromTo("#s7-claude-ptmove", { x: 0, y: 0 }, { x: 320, y: -260, duration: 0.22, ease: "power3.inOut", immediateRender: false }, IA - 0.1);
+      // bubble forms UNDER the landing text (never an empty grey box waiting ahead of it)
+      tl.fromTo("#s7-claude-bub", { opacity: 0, scale: 0.94, y: 24 }, { opacity: 1, scale: 1, y: 0, duration: 0.16, ease: "power3.out", immediateRender: false }, IA);
+      // response + skeleton tile (hand-off anchor) — all settled by 6.96
+      IN("#s7-claude-resp", IA - 0.02, { y: 14, s: 1, b: 8, d: 0.16 });
+      IN("#s7-claude-tile", IA, { y: 18, s: 0.94, b: 8, d: 0.16 });
+      // shimmer: one linear pass that continues across the cut (s8 picks it up at x = -68)
+      tl.fromTo("#s7-claude-tsheen", { x: -260 }, { x: 460, duration: 0.6, ease: "none", immediateRender: false }, IA + 0.04);
+
+      // NO EXIT — s8-avatar starts from an identical replica of this final frame
+      window.__timelines["s7-claude"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

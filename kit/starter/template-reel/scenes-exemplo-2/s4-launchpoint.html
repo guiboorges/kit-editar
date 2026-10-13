@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+
+    #s4-launchpoint-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00; --plum:#6B2A6B; --red:#FF4A3D; --blue:#3D4EF2; }
+
+    /* ── PAGE CARD = fixed window 940x640 at (70,1000). channels: .card = transform · .lens = opacity · .dof = focus filter ──
+          inside: .strip (translateY = scroll): header 0-84 · lp-hero 892x412.15 at (24,84) · lp-grid 892x479.03 at (24,520.15) */
+    #s4-launchpoint-root .card { position: absolute; left: 70px; top: 1000px; width: 940px; height: 640px; z-index: 1;
+      transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s4-launchpoint-root .lens { position: absolute; inset: 0; will-change: opacity; }
+    #s4-launchpoint-root .dof { position: absolute; inset: 0; filter: blur(0px) brightness(1) saturate(1) contrast(1); will-change: filter; }
+    #s4-launchpoint-root .surface { position: absolute; inset: 0; border-radius: 30px; overflow: hidden; background: #141417;
+      box-shadow: 0 40px 90px rgba(10,10,0,.30), 0 8px 22px rgba(10,10,0,.16); }
+    #s4-launchpoint-root .strip { position: absolute; left: 0; top: 0; width: 940px; height: 1200px; will-change: transform; }
+    #s4-launchpoint-root .hdr { position: absolute; left: 0; top: 0; width: 940px; height: 84px; border-bottom: 1px solid rgba(255,255,255,.06); }
+    #s4-launchpoint-root .hdr img { position: absolute; left: 32px; top: 20px; width: 300px; height: 44.21px; display: block; }
+    #s4-launchpoint-root .hdr .dots { position: absolute; right: 34px; top: 32px; display: flex; gap: 10px; }
+    #s4-launchpoint-root .hdr .dots i { width: 20px; height: 20px; border-radius: 50%; background: #232327; }
+    #s4-launchpoint-root .hero { position: absolute; left: 24px; top: 84px; width: 892px; height: 412.15px; display: block; }
+    /* hides the warm glow the source print clips at its top edge */
+    #s4-launchpoint-root .herofade { position: absolute; left: 0; top: 84px; width: 940px; height: 18px;
+      background: linear-gradient(180deg, #141417 0px, #141417 4px, rgba(20,20,23,0) 18px); }
+    #s4-launchpoint-root .patch { position: absolute; left: 300px; top: 442px; width: 339px; height: 40px; border-radius: 20px;
+      background: #030202; box-shadow: 0 0 8px 5px #030202; opacity: 0; }
+    #s4-launchpoint-root .grid { position: absolute; left: 24px; top: 520.15px; width: 892px; height: 479.03px; }
+    #s4-launchpoint-root .grid img { position: absolute; left: 0; top: 0; width: 892px; height: 479.03px; display: block; }
+    /* paint out the warm rim of the print (rows 0-5 + glow bleeding into the column gap / margins) */
+    #s4-launchpoint-root .grid .fix { position: absolute; left: 0; top: 0; width: 892px; height: 38px;
+      background:
+        linear-gradient(#141417, #141417) 0 0 / 892px 5px no-repeat,
+        linear-gradient(#141417 0%, #141417 30%, rgba(20,20,23,0) 100%) 433px 0 / 25px 28px no-repeat,
+        linear-gradient(#141417, rgba(20,20,23,0)) 0 0 / 5px 32px no-repeat,
+        linear-gradient(#141417, rgba(20,20,23,0)) 887px 0 / 5px 32px no-repeat; }
+    /* the emptied slot left behind when the Higgsfield row is pulled out (img x6..516, y6..99 at k .8463) */
+    #s4-launchpoint-root .grid .hole { position: absolute; left: 5.08px; top: 5.08px; width: 431.6px; height: 78.71px; border-radius: 11.9px;
+      background: #141417; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.07), inset 0 6px 14px rgba(0,0,0,.35); opacity: 0; }
+    /* more of the page below the print (no data: neutral placeholder rows, faded) */
+    #s4-launchpoint-root .ghostrow { position: absolute; width: 431.6px; height: 78.71px; border-radius: 11.9px; background: #121215;
+      box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.06); }
+    #s4-launchpoint-root .ghostrow i { position: absolute; left: 14px; top: 17px; width: 44px; height: 44px; border-radius: 10px; background: #1F1F23; }
+    #s4-launchpoint-root .ghostrow b { position: absolute; left: 72px; top: 24px; width: 150px; height: 12px; border-radius: 6px; background: #1F1F23; }
+    #s4-launchpoint-root .ghostrow u { position: absolute; left: 72px; top: 46px; width: 210px; height: 9px; border-radius: 5px; background: #19191C; }
+    #s4-launchpoint-root .ghostrow s { position: absolute; right: 14px; top: 24px; width: 110px; height: 12px; border-radius: 6px; background: #1F1F23; }
+    #s4-launchpoint-root .botfade { position: absolute; left: 0; bottom: 0; width: 940px; height: 120px;
+      background: linear-gradient(180deg, rgba(20,20,23,0), rgba(20,20,23,.85) 70%, #141417); }
+    #s4-launchpoint-root .sheen { position: absolute; top: -70px; left: 0; width: 240px; height: 780px;
+      background: linear-gradient(90deg, rgba(212,255,58,0) 0%, rgba(212,255,58,.28) 45%, rgba(240,255,190,.40) 50%, rgba(212,255,58,.28) 55%, rgba(212,255,58,0) 100%);
+      mix-blend-mode: screen; will-change: transform; }
+    #s4-launchpoint-root .edge { position: absolute; inset: 0; border-radius: 30px; border: 2px solid rgba(255,255,255,.07); pointer-events: none; }
+
+    /* ── BRAND pill (center 540,965; top edge never above 925) ── */
+    #s4-launchpoint-root .brand-pos { position: absolute; left: 0; width: 1080px; top: 965px; height: 0; display: flex;
+      justify-content: center; align-items: center; z-index: 5; will-change: transform; }
+    #s4-launchpoint-root .brand { flex: 0 0 auto; display: flex; align-items: center; gap: 18px; height: 80px; padding: 0 36px 0 12px;
+      border-radius: 999px; background: var(--card); white-space: nowrap; opacity: 0;
+      box-shadow: 0 24px 56px rgba(24,24,12,.16), 0 5px 14px rgba(24,24,12,.08); will-change: transform, opacity, filter; }
+    #s4-launchpoint-root .brand .logo { position: relative; width: 56px; height: 56px; flex: 0 0 56px; border-radius: 14px; overflow: hidden; background: #7B45E6; }
+    #s4-launchpoint-root .brand .logo img { position: absolute; left: -2px; top: -2px; width: 60px; height: 60px; display: block; }
+    #s4-launchpoint-root .brand span { font-size: 44px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink); }
+
+    /* ── pulled-out PILLS (HTML twins of the print): h64, centres y 1420; row centred at x 540 ──
+          nesting: .pill [lift x/y/scale + visibility] > .push [focus push / dim] > .punch [IA punch] > faces + ring */
+    #s4-launchpoint-root .bloom { position: absolute; left: 12px; top: 1300px; width: 500px; height: 240px; border-radius: 50%; z-index: 2;
+      background: radial-gradient(closest-side, rgba(176,230,0,.55), rgba(212,255,58,.22) 55%, rgba(212,255,58,0)); opacity: 0; }
+    #s4-launchpoint-root .pill { position: absolute; top: 1388px; height: 64px; z-index: 3; opacity: 0; transform-origin: 50% 50%;
+      will-change: transform, opacity; }
+    #s4-launchpoint-root #s4-launchpoint-p1 { left: 119px; width: 286px; z-index: 4; }
+    #s4-launchpoint-root #s4-launchpoint-p2 { left: 425px; width: 346px; }
+    #s4-launchpoint-root #s4-launchpoint-p3 { left: 791px; width: 170px; }
+    #s4-launchpoint-root .push, #s4-launchpoint-root .punch { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    /* fill = the print's pill blue AS RENDERED (lp-hero.png carries an ICC profile: its rgb(56,85,250) paints as rgb(4,99,255)),
+       so the print → twin swap frames have no hue pop */
+    #s4-launchpoint-root .face { position: absolute; inset: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+      border-radius: 999px; border: 2px solid rgba(255,255,255,.18); color: #fff; background-color: #0463FF;
+      background-image: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,0) 55%);
+      font-size: 30px; font-weight: 500; letter-spacing: -0.01em; line-height: 1; white-space: nowrap;
+      box-shadow: 0 16px 34px rgba(4,60,200,.30), 0 3px 8px rgba(10,20,60,.16); }
+    #s4-launchpoint-root .face b { font-weight: 700; }
+    #s4-launchpoint-root .face b.x { font-weight: 800; }
+    #s4-launchpoint-root .face.lime { background-color: var(--lime); color: var(--limeInk); border-color: rgba(20,26,0,.10);
+      background-image: linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 55%);
+      box-shadow: 0 16px 34px rgba(110,150,0,.32), 0 3px 8px rgba(20,30,0,.16);
+      clip-path: inset(0% 100% 0% 0% round 999px); }
+    #s4-launchpoint-root .pring { position: absolute; inset: -13px; border-radius: 999px; border: 6px solid var(--lime); opacity: 0;
+      box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); will-change: transform, opacity; }
+
+    /* label under the row (centre y 1520) */
+    #s4-launchpoint-root .lab-pos { position: absolute; left: 0; top: 1490px; width: 1080px; height: 60px; display: flex; justify-content: center; z-index: 3; }
+    #s4-launchpoint-root .lab { flex: 0 0 auto; display: flex; align-items: center; gap: 12px; height: 60px; padding: 0 26px; border-radius: 999px;
+      background: var(--card); white-space: nowrap; line-height: 1; font-family: "Geist Mono", monospace; font-size: 26px; font-weight: 500;
+      letter-spacing: 0.01em; color: var(--ink2); opacity: 0;
+      box-shadow: 0 22px 50px rgba(24,24,12,.14), 0 5px 14px rgba(24,24,12,.07); will-change: transform, opacity, filter; }
+    #s4-launchpoint-root .lab .eq { font-weight: 700; color: #4F6B00; }
+    #s4-launchpoint-root .lab .hl { position: relative; display: inline-block; padding: 0 8px; margin-left: -4px; }
+    #s4-launchpoint-root .lab .hl-bg { position: absolute; left: 0; top: -8px; width: 100%; height: calc(100% + 16px); border-radius: 12px;
+      background: var(--lime); transform: scaleX(0); transform-origin: 0 50%; }
+    #s4-launchpoint-root .lab .hl-t { position: relative; color: var(--limeInk); font-weight: 700; }
+
+    /* ── crisp HIGGSFIELD row: natural 860x157 (= grid row 510x93 img px), lands at centre (540,1330) ──
+          nesting: .row [lift] > .rdrift [hold drift] > .rpunch [punch] > shadow / content / ring / tag */
+    #s4-launchpoint-root .row { position: absolute; left: 110px; top: 1251.5px; width: 860px; height: 157px; z-index: 6; opacity: 0;
+      transform-origin: 50% 50%; will-change: transform, opacity; }
+    #s4-launchpoint-root .rdrift, #s4-launchpoint-root .rpunch { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s4-launchpoint-root .row .sh { position: absolute; inset: 0; border-radius: 22px; opacity: 0;
+      box-shadow: 0 54px 110px rgba(8,8,0,.42), 0 18px 36px rgba(8,8,0,.30); }
+    #s4-launchpoint-root .row .rc { position: absolute; inset: 0; border-radius: 22px; background: var(--ui2); display: flex; align-items: center;
+      padding: 0 28px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.09), inset 0 1px 0 rgba(255,255,255,.10); }
+    #s4-launchpoint-root .row .rlogo { position: relative; width: 88px; height: 88px; flex: none; border-radius: 20px; overflow: hidden; }
+    #s4-launchpoint-root .row .rlogo img { position: absolute; left: -4px; top: -4px; width: 96px; height: 96px; display: block; }
+    #s4-launchpoint-root .row .txt { margin-left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    #s4-launchpoint-root .row .name { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 44px; height: 44px; color: #FFFFFF;
+      white-space: nowrap; transform-origin: 0 36px; }
+    #s4-launchpoint-root .row .sub { font-size: 26px; font-weight: 500; letter-spacing: -0.01em; line-height: 30px; height: 30px; color: #9A9AA2;
+      white-space: nowrap; transform-origin: 0 24px; }
+    #s4-launchpoint-root .row .price { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #s4-launchpoint-root .row .amtw { position: relative; height: 36px; transform-origin: 100% 28px; }
+    #s4-launchpoint-root .row .amt { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 36px; height: 36px; color: #FFFFFF;
+      white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #s4-launchpoint-root .row .amt.lime { position: absolute; left: 0; top: 0; color: var(--lime); clip-path: inset(0% 100% 0% 0%);
+      text-shadow: 0 0 18px rgba(212,255,58,.35); }
+    #s4-launchpoint-root .row .per { font-size: 24px; font-weight: 500; line-height: 28px; height: 28px; color: #9A9AA2; white-space: nowrap;
+      transform-origin: 100% 22px; }
+    #s4-launchpoint-root .row .rring, #s4-launchpoint-root .row .rpulse { position: absolute; left: -12px; top: -12px; right: -12px; bottom: -12px;
+      border-radius: 34px; opacity: 0; transform-origin: 50% 50%; }
+    #s4-launchpoint-root .row .rring { border: 6px solid var(--lime); box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); }
+    #s4-launchpoint-root .row .rpulse { border: 4px solid var(--lime); }
+    #s4-launchpoint-root .row .tag { position: absolute; right: 26px; top: -40px; padding: 11px 22px; border-radius: 999px; opacity: 0;
+      background: var(--lime); color: var(--limeInk); font-family: "Geist Mono", monospace; font-size: 26px; font-weight: 500;
+      letter-spacing: 0.02em; line-height: 30px; white-space: nowrap; transform-origin: 100% 100%;
+      box-shadow: 0 10px 24px rgba(60,80,0,.28), 0 0 0 2.5px rgba(20,26,0,.92); }
+  </style>
+
+  <div data-hf-id="hf-bj2q" id="s4-launchpoint-root" data-composition-id="s4-launchpoint" data-width="1080" data-height="1920">
+
+    <!-- page card (window) -->
+    <div data-hf-id="hf-e6bu" class="card" id="s4-launchpoint-card">
+      <div data-hf-id="hf-4h8m" class="lens" id="s4-launchpoint-lens">
+        <div data-hf-id="hf-vlte" class="dof" id="s4-launchpoint-dof">
+          <div data-hf-id="hf-9rgx" class="surface">
+            <div data-hf-id="hf-jb4a" class="strip" id="s4-launchpoint-strip">
+              <div data-hf-id="hf-tyyu" class="hdr"><img data-hf-id="hf-bqed" src="assets/img/lp-header.png" alt=""><div data-hf-id="hf-zx1w" class="dots"><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i></div></div>
+              <img data-hf-id="hf-3czv" class="hero" src="assets/img/lp-hero.png" alt="">
+              <div data-hf-id="hf-r4b6" class="herofade"></div>
+              <div data-hf-id="hf-3awq" class="patch" id="s4-launchpoint-patch"></div>
+              <div data-hf-id="hf-kxq8" class="grid">
+                <img data-hf-id="hf-bbla" src="assets/img/lp-grid.png" alt="">
+                <div data-hf-id="hf-puoi" class="hole" id="s4-launchpoint-hole"></div>
+                <div data-hf-id="hf-fmpd" class="fix"></div>
+              </div>
+              <div data-hf-id="hf-xnj1" class="ghostrow" style="left:29.08px; top:1011.9px"><i data-hf-id="hf-y7e5"></i><b data-hf-id="hf-xujp"></b><u data-hf-id="hf-w5wo"></u><s data-hf-id="hf-dljm"></s></div>
+              <div data-hf-id="hf-tc63" class="ghostrow" style="left:479.3px; top:1011.9px"><i data-hf-id="hf-ylp6"></i><b data-hf-id="hf-ey49"></b><u data-hf-id="hf-0jxc"></u><s data-hf-id="hf-tzme"></s></div>
+              <div data-hf-id="hf-q2qc" class="ghostrow" style="left:29.08px; top:1109.2px"><i data-hf-id="hf-0l8b"></i><b data-hf-id="hf-g51c"></b><u data-hf-id="hf-zd09"></u><s data-hf-id="hf-udxf"></s></div>
+              <div data-hf-id="hf-ttba" class="ghostrow" style="left:479.3px; top:1109.2px"><i data-hf-id="hf-0zjc"></i><b data-hf-id="hf-fqqb"></b><u data-hf-id="hf-zrba"></u><s data-hf-id="hf-us8g"></s></div>
+            </div>
+            <div data-hf-id="hf-g435" class="botfade"></div>
+            <div data-hf-id="hf-2wa6" class="sheen" id="s4-launchpoint-sheen"></div>
+            <div data-hf-id="hf-4eqf" class="edge"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- brand pill -->
+    <div data-hf-id="hf-t08n" class="brand-pos" id="s4-launchpoint-brandpos">
+      <div data-hf-id="hf-r1du" class="brand" id="s4-launchpoint-brand">
+        <div data-hf-id="hf-e319" class="logo"><img data-hf-id="hf-nixo" src="assets/img/logo-launchpoint.png" alt=""></div>
+        <span data-hf-id="hf-d2vw">Launchpoint</span>
+      </div>
+    </div>
+
+    <!-- pills pulled out of the print -->
+    <div data-hf-id="hf-l1km" class="bloom" id="s4-launchpoint-bloom"></div>
+    <div data-hf-id="hf-2svs" class="pill" id="s4-launchpoint-p1"><div data-hf-id="hf-ra4b" class="push" id="s4-launchpoint-p1push"><div data-hf-id="hf-8r89" class="punch" id="s4-launchpoint-p1punch">
+      <div data-hf-id="hf-8pbv" class="face">AI Videos&#160;<b data-hf-id="hf-clil" class="x">ONLY</b></div>
+      <div data-hf-id="hf-6c3s" class="face lime" id="s4-launchpoint-p1lime">AI Videos&#160;<b data-hf-id="hf-2ftt" class="x">ONLY</b></div>
+      <div data-hf-id="hf-am42" class="pring" id="s4-launchpoint-pring"></div>
+    </div></div></div>
+    <div data-hf-id="hf-bgrn" class="pill" id="s4-launchpoint-p2"><div data-hf-id="hf-da38" class="push" id="s4-launchpoint-p2push"><div data-hf-id="hf-ovv4" class="punch">
+      <div data-hf-id="hf-mqsn" class="face">Up to&#160;<b data-hf-id="hf-16k3">$2,000/Video</b></div>
+    </div></div></div>
+    <div data-hf-id="hf-7inm" class="pill" id="s4-launchpoint-p3"><div data-hf-id="hf-1tjh" class="push" id="s4-launchpoint-p3push"><div data-hf-id="hf-qeqw" class="punch">
+      <div data-hf-id="hf-ce6r" class="face"><b data-hf-id="hf-va7g">$1 CPM</b></div>
+    </div></div></div>
+    <div data-hf-id="hf-dyus" class="lab-pos">
+      <div data-hf-id="hf-362y" class="lab" id="s4-launchpoint-lab"><span data-hf-id="hf-hlwu" class="eq">=</span><span data-hf-id="hf-sz63">só aceita vídeo <span data-hf-id="hf-l9hl" class="hl"><i data-hf-id="hf-6ffv" class="hl-bg" id="s4-launchpoint-hlbg"></i><span data-hf-id="hf-w99s" class="hl-t">feito com IA</span></span></span></div>
+    </div>
+
+    <!-- crisp Higgsfield row (lifts out of the ranking) -->
+    <div data-hf-id="hf-h7dq" class="row" id="s4-launchpoint-row">
+      <div data-hf-id="hf-feho" class="rdrift" id="s4-launchpoint-rdrift"><div data-hf-id="hf-2vmi" class="rpunch" id="s4-launchpoint-rpunch">
+        <div data-hf-id="hf-akjk" class="sh" id="s4-launchpoint-sh"></div>
+        <div data-hf-id="hf-9se4" class="rc" id="s4-launchpoint-rc">
+          <div data-hf-id="hf-dd4z" class="rlogo"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div>
+          <div data-hf-id="hf-kvio" class="txt"><div data-hf-id="hf-q5jo" class="name" id="s4-launchpoint-name">Higgsfield AI</div><div data-hf-id="hf-mosi" class="sub" id="s4-launchpoint-sub">Best pay · Publicações ilimitadas</div></div>
+          <div data-hf-id="hf-4k5b" class="price">
+            <div data-hf-id="hf-6omc" class="amtw" id="s4-launchpoint-amtw"><div data-hf-id="hf-315x" class="amt">US$ 78–US$ 10.075</div><div data-hf-id="hf-ahel" class="amt lime" id="s4-launchpoint-amtlime">US$ 78–US$ 10.075</div></div>
+            <div data-hf-id="hf-t58s" class="per" id="s4-launchpoint-per">por vídeo</div>
+          </div>
+        </div>
+        <div data-hf-id="hf-c4vc" class="rpulse" id="s4-launchpoint-rpulse"></div>
+        <div data-hf-id="hf-iiwi" class="rring" id="s4-launchpoint-rring"></div>
+        <div data-hf-id="hf-fyd8" class="tag" id="s4-launchpoint-tag">#1 · quem mais paga</div>
+      </div></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s4-launchpoint-root");
+      const q = (s) => R.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const F = (b, br = 1, sa = 1, co = 1) => `blur(${b}px) brightness(${br}) saturate(${sa}) contrast(${co})`;   // one filter grammar → clean interpolation
+
+      // ── cue grid (scene-local word starts) ──
+      const EXISTE = 0.86, LAUNCH = 2.08, VIDEOS = 3.34, FEITOS = 3.64, IA = 4.08, NELA = 4.46, MAIS = 5.52, PAGA = 5.78, HIGGS = 6.70;
+      const END = 7.70;                 // HOLD — NO EXIT: the camera expands over the stage from 7.333
+      const SNAP = EXISTE - 0.10;       // 0.76: rack focus snaps sharp on "existe"
+      const PULL = 2.62;                // "que só aceita": focus pull + pills fly out
+      const APPEAR = PULL - 0.05;       // twins replace the print on one frame
+      const RING = VIDEOS - 0.10;       // 3.24
+      const LIME_AT = 3.90;             // lime wipe peaks on "IA"
+      const BACK = 4.24;                // "e nela": pills fly back into the card
+      const LAND = 4.50;                // twins sit exactly on the print (frame-aligned: global 16.40) ...
+      const SWAP = 4.55;                // ... for 2 frames, then the print takes over on one frame
+      const SCROLL = SWAP;              // 4.55-5.11 the page scrolls to the ranking
+      const LIFT = MAIS - 0.10;         // 5.42: Higgsfield row lifts out
+
+      // ── layout constants (pre-computed from the asset pixel boxes; never measured at tween time) ──
+      const CARD = { x: 70, y: 1000, w: 940, h: 640 };
+      const CC = { x: CARD.x + CARD.w / 2, y: CARD.y + CARD.h / 2 };   // card transform origin (540,1320)
+      const K = 892 / 1054;                                            // print scale inside the strip
+      const HERO = { x: 24, y: 84 }, GRID = { x: 24, y: 84 + 487 * K + 24 };   // grid top 520.15
+      const SCROLL_Y = -(GRID.y - 20);                                  // grid top lands at window top + 20
+      const DRIFT = 1.02;                                               // card hold scale reached at PULL
+      const scaleAt = (t) => 1 + (DRIFT - 1) * Math.min(Math.max((t - (SNAP + 0.34)) / (PULL - (SNAP + 0.34)), 0), 1);
+      const PILL_H = 64, PILL_CY = 1420;
+      const PILLS = [   // [selector, final left, final width, in-image box x0, x1, y0, y1]
+        ["#s4-launchpoint-p1", 119, 286, 335, 465, 430, 463],
+        ["#s4-launchpoint-p2", 425, 346, 473, 631, 430, 463],
+        ["#s4-launchpoint-p3", 791, 170, 639, 718, 430, 463],
+      ];
+      // where a pill sits in the card (print), for a card at scale s / y offset cy (about the card centre)
+      const inCard = (p, s, cy) => {
+        const [, left, w, x0, x1, y0, y1] = p;
+        const px = CARD.x + HERO.x + ((x0 + x1) / 2) * K, py = CARD.y + HERO.y + ((y0 + y1) / 2) * K;
+        const gx = CC.x + (px - CC.x) * s, gy = CC.y + (py - CC.y) * s + cy;
+        return { x: gx - (left + w / 2), y: gy - PILL_CY, scaleX: ((x1 - x0) * K * s) / w, scaleY: ((y1 - y0) * K * s) / PILL_H };
+      };
+
+      const card = q("#s4-launchpoint-card"), lens = q("#s4-launchpoint-lens"), dof = q("#s4-launchpoint-dof"), strip = q("#s4-launchpoint-strip");
+      const brandPos = q("#s4-launchpoint-brandpos"), brand = q("#s4-launchpoint-brand");
+      const p1 = q("#s4-launchpoint-p1"), p2 = q("#s4-launchpoint-p2"), p3 = q("#s4-launchpoint-p3");
+      const p1push = q("#s4-launchpoint-p1push"), p2push = q("#s4-launchpoint-p2push"), p3push = q("#s4-launchpoint-p3push");
+      const p1punch = q("#s4-launchpoint-p1punch"), p1lime = q("#s4-launchpoint-p1lime"), pring = q("#s4-launchpoint-pring");
+      const lab = q("#s4-launchpoint-lab"), hlbg = q("#s4-launchpoint-hlbg"), bloom = q("#s4-launchpoint-bloom");
+      const row = q("#s4-launchpoint-row"), rdrift = q("#s4-launchpoint-rdrift"), rpunch = q("#s4-launchpoint-rpunch");
+      const sh = q("#s4-launchpoint-sh"), rc = q("#s4-launchpoint-rc"), rring = q("#s4-launchpoint-rring"), rpulse = q("#s4-launchpoint-rpulse");
+      const tag = q("#s4-launchpoint-tag"), hole = q("#s4-launchpoint-hole"), amtlime = q("#s4-launchpoint-amtlime");
+      gsap.set(card, { transformPerspective: 1400 });
+
+      /* ── 1. "aí é que tá" → "existe": the card is already there, defocused and drifting; snaps sharp on "existe" ── */
+      tl.fromTo(card, { y: 40, scale: 0.96, rotationX: 10 }, { y: 28, scale: 0.966, rotationX: 7, duration: SNAP, ease: "none" }, 0);
+      tl.fromTo(lens, { opacity: 0.55 }, { opacity: 0.7, duration: SNAP, ease: "none" }, 0);
+      tl.fromTo(dof, { filter: F(18) }, { filter: F(14), duration: SNAP, ease: "none" }, 0);
+      tl.to(card, { y: 0, scale: 1, rotationX: 0, duration: 0.34, ease: "power3.out" }, SNAP);
+      tl.to(lens, { opacity: 1, duration: 0.3, ease: "power2.out" }, SNAP);
+      tl.to(dof, { filter: F(0), duration: 0.34, ease: "power3.out" }, SNAP);
+      tl.fromTo(card, { scale: 1 }, { scale: DRIFT, duration: PULL - (SNAP + 0.34), ease: "none", immediateRender: false }, SNAP + 0.34);
+
+      /* ── 2. "launchpoint": brand pill two-channel pop + one-shot lime sheen across the card ── */
+      tl.fromTo("#s4-launchpoint-sheen", { x: -340, skewX: -16 }, { x: 1060, skewX: -16, duration: 0.6, ease: "power1.inOut" }, LAUNCH - 0.14);
+      tl.fromTo(brand, { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.22, ease: "power2.out" }, LAUNCH - 0.12);
+      tl.fromTo(brand, { scale: 0.5, y: 14 }, { scale: 1, y: 0, duration: 0.45, ease: "back.out(1.6)", immediateRender: false }, LAUNCH - 0.12);
+      tl.fromTo(brandPos, { y: 0 }, { y: -10, duration: END - (LAUNCH + 0.4), ease: "none" }, LAUNCH + 0.4);
+
+      /* ── 3. "que só aceita": FOCUS PULL — card becomes a light ghost; the 3 printed pills are pulled out as crisp twins ── */
+      tl.to(card, { y: -30, scale: 0.95, duration: 0.5, ease: "power2.inOut" }, PULL);
+      tl.to(lens, { opacity: 0.32, duration: 0.5, ease: "power2.inOut" }, PULL);
+      tl.to(dof, { filter: F(6, 1.3, 0.5, 0.75), duration: 0.5, ease: "power2.inOut" }, PULL);
+      tl.to(card, { y: -38, scale: 0.94, duration: BACK - (PULL + 0.5), ease: "none" }, PULL + 0.5);
+      // print → twin swap is instantaneous (patch + twins on the same frame): never a double image
+      tl.fromTo("#s4-launchpoint-patch", { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none" }, APPEAR);
+      const LIFT_AT = [0, 0.12, 0.06];   // AI Videos ONLY leads (it is the one spoken), outer CPM next, centre last → no crossing
+      PILLS.forEach((p, i) => {
+        const f = inCard(p, scaleAt(APPEAR), 0);
+        tl.fromTo(p[0], { x: f.x, y: f.y, scaleX: f.scaleX, scaleY: f.scaleY, opacity: 0 },
+          { x: f.x, y: f.y, scaleX: f.scaleX, scaleY: f.scaleY, opacity: 1, duration: 0.001, ease: "none" }, APPEAR);
+        tl.to(p[0], { x: 0, y: 0, scaleX: 1, scaleY: 1, duration: 0.5, ease: "power3.out" }, PULL + LIFT_AT[i]);
+      });
+
+      /* ── 4. "vídeos": lime ring on AI Videos ONLY, the other two step back; label; "feitos" lime block; "IA" pill turns lime ── */
+      // AI Videos ONLY pushes forward (nudged left), the other two step aside + dim, so the ring never touches them
+      tl.fromTo(p1push, { scale: 1, x: 0, y: 0 }, { scale: 1.06, x: -8, y: -4, duration: 0.35, ease: "power3.out" }, RING - 0.04);
+      tl.fromTo([p2push, p3push], { opacity: 1, x: 0 }, { opacity: 0.35, x: 26, duration: 0.35, ease: "power2.out" }, RING - 0.04);
+      tl.fromTo(pring, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(2)" }, RING);
+      tl.fromTo(pring, { scale: 1 }, { scale: 1.03, duration: 0.28, ease: "sine.inOut", immediateRender: false }, RING + 0.38);
+      tl.fromTo(lab, { opacity: 0, y: 16, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, RING + 0.06);
+      tl.fromTo(hlbg, { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "expo.out" }, FEITOS - 0.08);
+      tl.fromTo(p1lime, { clipPath: "inset(0% 100% 0% 0% round 999px)" },
+        { clipPath: "inset(0% 0% 0% 0% round 999px)", duration: 0.2, ease: "power3.inOut" }, LIME_AT);
+      tl.to(pring, { opacity: 0, scale: 1.12, duration: 0.18, ease: "power2.in" }, LIME_AT);
+      tl.fromTo(bloom, { opacity: 0, scale: 0.8 }, { opacity: 0.5, scale: 1, duration: 0.3, ease: "power2.out" }, LIME_AT + 0.02);
+      tl.fromTo(p1punch, { scale: 1 }, { scale: 1.08, duration: 0.12, ease: "power2.out" }, IA - 0.14);
+      tl.to(p1punch, { scale: 1, duration: 0.26, ease: "power3.out" }, IA - 0.02);
+
+      /* ── 5. "e nela": pills + label fly back down into the card while it un-ghosts; then the page scrolls to the ranking ── */
+      PILLS.forEach((p) => {
+        const f = inCard(p, 1, 0);   // card is back at scale 1 / y 0 exactly at LAND
+        tl.to(p[0], { x: f.x, y: f.y, scaleX: f.scaleX, scaleY: f.scaleY, duration: LAND - BACK, ease: "power2.in" }, BACK);
+        tl.to(p[0], { opacity: 0, duration: 0.001, ease: "none" }, SWAP);
+      });
+      tl.to(p1push, { scale: 1, x: 0, y: 0, duration: LAND - BACK, ease: "power2.in" }, BACK);
+      tl.to([p2push, p3push], { opacity: 1, x: 0, duration: LAND - BACK, ease: "power2.in" }, BACK);
+      tl.fromTo(p1lime, { opacity: 1 }, { opacity: 0, duration: 0.16, ease: "power1.in", immediateRender: false }, BACK + 0.1);
+      tl.to(bloom, { opacity: 0, duration: 0.2, ease: "power2.in" }, BACK);
+      tl.to(lab, { opacity: 0, y: 40, scale: 0.7, filter: "blur(10px)", duration: 0.24, ease: "power2.in" }, BACK);
+      tl.to(card, { y: 0, scale: 1, duration: LAND - BACK, ease: "power2.inOut" }, BACK);
+      tl.to(lens, { opacity: 1, duration: 0.3, ease: "power2.out" }, BACK);
+      tl.to(dof, { filter: F(0), duration: 0.3, ease: "power2.out" }, BACK);
+      tl.to("#s4-launchpoint-patch", { opacity: 0, duration: 0.001, ease: "none" }, SWAP);
+      tl.to(brand, { scale: 0.8, duration: 0.4, ease: "power2.inOut" }, NELA - 0.04);
+      tl.fromTo(strip, { y: 0 }, { y: SCROLL_Y, duration: 0.56, ease: "power2.inOut" }, SCROLL);
+
+      /* ── 6. "a empresa que mais paga": focus pull on the grid; the crisp Higgsfield row lifts out of its slot ── */
+      // slot in the scrolled grid: img x6..516, y6..99 → window (24+6K .. 24+516K, 20+6K .. 20+99K) → global centre / width
+      const RX0 = CARD.x + GRID.x + 6 * K, RX1 = CARD.x + GRID.x + 516 * K;
+      const RY0 = CARD.y + 20 + 6 * K, RY1 = CARD.y + 20 + 99 * K;
+      const S0 = (RX1 - RX0) / 860, ROW_S = 1.08;
+      // swap one full frame BEFORE the lift (local 5.40 = global 17.30 is a frame): the twin is seen exactly on its print slot, then lifts
+      tl.fromTo(row, { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none" }, LIFT - 0.03);
+      tl.fromTo(hole, { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none" }, LIFT - 0.03);
+      tl.fromTo(row, { x: (RX0 + RX1) / 2 - 540, y: (RY0 + RY1) / 2 - 1330, scale: S0 },
+        { x: 0, y: 0, scale: ROW_S, duration: 0.45, ease: "power3.out" }, LIFT);
+      // at S0 the type matches the print's proportions, then grows to its legible size during the lift
+      tl.fromTo("#s4-launchpoint-name", { x: 2.6, y: -4.4, scale: 0.653 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, LIFT);
+      tl.fromTo("#s4-launchpoint-sub", { x: 3.0, y: -10.6, scale: 0.823 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, LIFT);
+      tl.fromTo("#s4-launchpoint-amtw", { x: -0.7, y: 0.3, scale: 0.85 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, LIFT);
+      tl.fromTo("#s4-launchpoint-per", { x: 0.3, y: -5.6, scale: 0.89 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, LIFT);
+      tl.fromTo(rc, { backgroundColor: "rgb(20,20,23)" }, { backgroundColor: "rgb(30,30,34)", duration: 0.45, ease: "power2.out" }, LIFT);
+      tl.fromTo(sh, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, LIFT + 0.03);
+      tl.to(card, { scale: 0.97, duration: 0.5, ease: "power2.inOut" }, LIFT);
+      tl.to(lens, { opacity: 0.38, duration: 0.5, ease: "power2.inOut" }, LIFT);
+      tl.to(dof, { filter: F(5, 1.3, 0.5, 0.75), duration: 0.5, ease: "power2.inOut" }, LIFT);
+      tl.to(card, { y: -8, scale: 0.955, duration: END - (LIFT + 0.5), ease: "none" }, LIFT + 0.5);
+      // "paga": the price lights up lime (clipped duplicate wipe)
+      tl.fromTo(amtlime, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.24, ease: "power3.inOut" }, PAGA - 0.08);
+
+      /* ── 7. "higgsfield": lime ring hugs the row + "#1" tag + punch + one echo pulse ── */
+      tl.fromTo(rring, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(2)" }, HIGGS - 0.12);
+      tl.fromTo(tag, { opacity: 0, scale: 0.5, rotation: -8 }, { opacity: 1, scale: 1, rotation: 3, duration: 0.38, ease: "back.out(2)" }, HIGGS - 0.10);
+      tl.fromTo(rpunch, { scale: 1 }, { scale: 1.035, duration: 0.12, ease: "power2.out" }, HIGGS - 0.10);
+      tl.to(rpunch, { scale: 1, duration: 0.26, ease: "power2.inOut" }, HIGGS + 0.02);
+      // pulse = instant set + expansion (invisible before its beat under any seek order)
+      tl.fromTo(rpulse, { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1, duration: 0.01, ease: "none" }, HIGGS - 0.02);
+      tl.to(rpulse, { opacity: 0, scale: 1.1, duration: 0.6, ease: "power2.out" }, HIGGS - 0.01);
+
+      /* ── 8. HOLD — NO EXIT: everything keeps drifting to the last frame (camera wipes over from 7.333) ── */
+      tl.fromTo(rdrift, { y: 0, scale: 1 }, { y: -8, scale: 1.015, duration: END - (LIFT + 0.45), ease: "none" }, LIFT + 0.45);
+      tl.fromTo(rring, { scale: 1 }, { scale: 1.015, duration: END - (HIGGS + 0.3), ease: "none", immediateRender: false }, HIGGS + 0.3);
+
+      window.__timelines["s4-launchpoint"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

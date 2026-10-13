@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s9-genjutsu-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00;
+      --hf:#0E0E10; --hfmute:#8A8A92; --hfdash:#3A3A40; }
+    #s9-genjutsu-root, #s9-genjutsu-root * { box-sizing: border-box; }
+    #s9-genjutsu-root .abs { position: absolute; }
+    /* every window wrapper is the same 940x720 box (window-local coordinates) */
+    #s9-genjutsu-root .wb { position: absolute; left: 0; top: 0; width: 940px; height: 720px; }
+
+    /* ---------- window stack: exit > drift > in > push > (win + overlays) ---------- */
+    #s9-genjutsu-root #s9-genjutsu-exit { position: absolute; left: 70px; top: 1000px; width: 940px; height: 720px; transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-drift { transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-in { transform-origin: 50% 40%; opacity: 0; }
+    /* camera push-in wrapper: origin = the SEU VÍDEO slot centre (302, 375) */
+    #s9-genjutsu-root #s9-genjutsu-push { transform-origin: 302px 375px; }
+    #s9-genjutsu-root #s9-genjutsu-win { border-radius: 30px; background: var(--hf); overflow: hidden;
+      box-shadow: 0 34px 80px rgba(10, 10, 0, 0.30), 0 6px 18px rgba(10, 10, 0, 0.16), inset 0 0 0 2px rgba(255, 255, 255, 0.08); }
+
+    /* header */
+    #s9-genjutsu-root .hdr { position: absolute; left: 0; top: 0; width: 940px; height: 92px; }
+    #s9-genjutsu-root #s9-genjutsu-logo { position: absolute; left: 30px; top: 20px; width: 52px; height: 52px; transform-origin: 50% 50%; }
+    /* squiggle-only tile: the app icon clipped to its mark so the tiny wordmark never shows */
+    #s9-genjutsu-root .ltile { position: absolute; inset: 0; border-radius: 14px; overflow: hidden; background: #CDFE36; }
+    #s9-genjutsu-root .ltile img { position: absolute; left: -0.98px; top: 3.44px; width: 52.1px; height: 52.1px; display: block;
+      clip-path: inset(5.58px 5.12px 12.56px 6.98px); }
+    #s9-genjutsu-root .brand { position: absolute; left: 96px; top: 0; height: 92px; display: flex; align-items: center;
+      font-size: 34px; font-weight: 600; letter-spacing: -0.02em; color: #FFFFFF; }
+    #s9-genjutsu-root .tabs { position: absolute; right: 30px; top: 0; height: 92px; display: flex; align-items: center; gap: 34px; }
+    #s9-genjutsu-root .tab { font-size: 28px; font-weight: 600; letter-spacing: -0.01em; color: var(--hfmute); white-space: nowrap; }
+    #s9-genjutsu-root #s9-genjutsu-tabI { color: #FFFFFF; }
+    #s9-genjutsu-root .tabG { width: 136px; display: flex; justify-content: center; }
+    #s9-genjutsu-root #s9-genjutsu-tabG { position: relative; display: inline-block; }
+    #s9-genjutsu-root #s9-genjutsu-uline { position: absolute; left: 0; right: 0; bottom: -14px; height: 4px; border-radius: 2px;
+      background: var(--lime); transform-origin: 50% 50%; transform: scaleX(0); box-shadow: 0 0 12px rgba(212, 255, 58, 0.55); }
+    #s9-genjutsu-root .hair { position: absolute; left: 0; top: 92px; width: 940px; height: 2px; background: #1E1E23; }
+    #s9-genjutsu-root .st { position: absolute; left: 0; top: 0; width: 940px; height: 720px; }
+    #s9-genjutsu-root .lbl { position: absolute; font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500;
+      letter-spacing: 0.08em; color: var(--hfmute); white-space: nowrap; line-height: 30px; }
+
+    /* state A — MEUS PROJETOS: 3 portrait tiles of the creator's own character (clipped to 284x504) */
+    #s9-genjutsu-root .tl { position: absolute; top: 156px; width: 284px; height: 504px; border-radius: 20px; overflow: hidden; background: #141417;
+      box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.06); }
+    #s9-genjutsu-root .tl video { position: absolute; left: 0; top: 0; width: 284px; height: 504.89px; display: block; object-fit: fill; }
+    #s9-genjutsu-root .tl .shade { position: absolute; left: 0; right: 0; bottom: 0; height: 150px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5)); }
+    #s9-genjutsu-root .tl .pl { position: absolute; left: 16px; bottom: 16px; width: 46px; height: 46px; border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2); box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.18); display: flex; align-items: center; justify-content: center; }
+    #s9-genjutsu-root .tl .pl svg { width: 18px; height: 18px; display: block; margin-left: 3px; }
+
+    /* state B — Genjutsu panel */
+    #s9-genjutsu-root #s9-genjutsu-stB { opacity: 0; }
+    #s9-genjutsu-root .slot { position: absolute; top: 140px; height: 470px; border-radius: 22px; border: 3px dashed var(--hfdash);
+      background: #141417; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+    #s9-genjutsu-root .slot svg { width: 64px; height: 64px; display: block; }
+    #s9-genjutsu-root .slot span { font-size: 24px; font-weight: 500; color: #6E6E76; }
+    #s9-genjutsu-root #s9-genjutsu-slotV { left: 102px; width: 400px; }
+    #s9-genjutsu-root #s9-genjutsu-slotP { left: 538px; width: 300px; }
+    /* PERSONAGEM fill: retrato 1000x1087 cover-fitted to 300x470 (432.4 x 470, centred) */
+    #s9-genjutsu-root #s9-genjutsu-pscale { position: absolute; left: 538px; top: 140px; width: 300px; height: 470px; transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-pin { position: absolute; inset: 0; opacity: 0; }
+    #s9-genjutsu-root #s9-genjutsu-pcard { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; background: #fff; }
+    #s9-genjutsu-root #s9-genjutsu-pkb { position: absolute; inset: 0; transform-origin: 50% 37%; }
+    #s9-genjutsu-root #s9-genjutsu-pkb img { position: absolute; left: -66.2px; top: 0; width: 432.4px; height: 470px; display: block; }
+    #s9-genjutsu-root #s9-genjutsu-pcard::after { content: ""; position: absolute; inset: 0; border-radius: 22px; box-shadow: inset 0 0 0 4px var(--lime); }
+    /* bottom bar */
+    #s9-genjutsu-root .hint { position: absolute; left: 102px; top: 626px; height: 60px; display: flex; align-items: center;
+      font-size: 24px; font-weight: 500; color: var(--hfmute); white-space: nowrap; }
+    #s9-genjutsu-root #s9-genjutsu-gwake { position: absolute; left: 658px; top: 626px; width: 180px; height: 60px; opacity: 0.35; }
+    #s9-genjutsu-root #s9-genjutsu-gglow { position: absolute; inset: 0; border-radius: 999px; opacity: 0;
+      box-shadow: 0 0 34px 6px rgba(212, 255, 58, 0.55), 0 0 0 6px rgba(212, 255, 58, 0.22); }
+    #s9-genjutsu-root #s9-genjutsu-gbtn { position: absolute; inset: 0; border-radius: 999px; background: var(--lime); color: var(--limeInk);
+      display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 30px; font-weight: 700; letter-spacing: -0.02em;
+      transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-gbtn svg { width: 22px; height: 22px; display: block; }
+
+    /* ---------- picker popover (floats over the left slot) ---------- */
+    #s9-genjutsu-root #s9-genjutsu-pop { position: absolute; left: 41px; top: 196px; width: 522px; height: 350px; transform-origin: 50% 60%; opacity: 0; }
+    #s9-genjutsu-root .popbg { position: absolute; inset: 0; border-radius: 26px; background: #1B1B1F;
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), 0 6px 16px rgba(0, 0, 0, 0.35), inset 0 0 0 2px rgba(255, 255, 255, 0.09); }
+    #s9-genjutsu-root #s9-genjutsu-shuf { position: absolute; right: 20px; top: 14px; width: 36px; height: 36px; transform-origin: 50% 50%; color: var(--hfmute); }
+    #s9-genjutsu-root #s9-genjutsu-shuf svg { width: 36px; height: 36px; display: block; }
+    #s9-genjutsu-root .th { position: absolute; top: 62px; width: 150px; height: 267px; }
+    #s9-genjutsu-root .thp { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s9-genjutsu-root .thc { position: absolute; inset: 0; border-radius: 16px; overflow: hidden; background: #000; }
+    #s9-genjutsu-root .thc img { width: 150px; height: 267px; display: block; object-fit: cover; }
+    /* ring: 8px outside the thumb (border-box), radius 16 + 8 */
+    #s9-genjutsu-root #s9-genjutsu-ringhop { position: absolute; left: 12px; top: 54px; width: 166px; height: 283px; }
+    #s9-genjutsu-root #s9-genjutsu-ringpop, #s9-genjutsu-root #s9-genjutsu-ringin { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-ringin { opacity: 0; }
+    #s9-genjutsu-root .ring { position: absolute; inset: 0; border: 6px solid var(--lime); border-radius: 24px;
+      box-shadow: 0 0 0 10px rgba(212, 255, 58, 0.28), 0 10px 30px rgba(120, 160, 0, 0.25); }
+
+    /* ---------- chosen video: FLIPs from the thumb into the slot (native 9:16 box 400x711.11, clipped to 400x470) ---------- */
+    #s9-genjutsu-root #s9-genjutsu-vm { position: absolute; left: 102px; top: 19.445px; width: 400px; height: 711.11px; overflow: hidden;
+      transform-origin: 50% 50%; opacity: 0; clip-path: inset(120.555px 0px 120.555px 0px round 22px); }
+    #s9-genjutsu-root #s9-genjutsu-vkb { position: absolute; left: 0; top: 0; width: 400px; height: 711.11px; transform-origin: 183px 383px; }
+    /* the still is a background (same file as the picker thumb -> avoid a duplicate <img> media node) */
+    #s9-genjutsu-root #s9-genjutsu-vstill { position: absolute; left: 0; top: 0; width: 400px; height: 711.11px;
+      background: #000 url("assets/img/thumb-original.jpg") center / 100% 100% no-repeat; }
+    #s9-genjutsu-root #s9-genjutsu-vid { position: absolute; left: 0; top: 0; width: 400px; height: 711.11px; display: block; object-fit: fill; }
+    #s9-genjutsu-root #s9-genjutsu-vvid { position: absolute; left: 0; top: 0; width: 400px; height: 711.11px; opacity: 0; }
+
+    /* ---------- slot V overlays (flash, shimmer, scan) — clipped to the slot ---------- */
+    #s9-genjutsu-root #s9-genjutsu-sfx { position: absolute; left: 102px; top: 140px; width: 400px; height: 470px; border-radius: 22px; overflow: hidden; }
+    #s9-genjutsu-root #s9-genjutsu-flash { position: absolute; inset: 0; border-radius: 22px; box-shadow: inset 0 0 0 6px var(--lime); opacity: 0; }
+    #s9-genjutsu-root #s9-genjutsu-shim { position: absolute; inset: 0; opacity: 0;
+      background: linear-gradient(180deg, rgba(212, 255, 58, 0.16), rgba(212, 255, 58, 0.04) 45%, rgba(212, 255, 58, 0.20)); }
+    #s9-genjutsu-root #s9-genjutsu-scan { position: absolute; left: 0; top: 0; width: 400px; height: 70px; opacity: 0; }
+    #s9-genjutsu-root #s9-genjutsu-scan .tail { position: absolute; left: 0; top: 0; width: 400px; height: 64px;
+      background: linear-gradient(180deg, rgba(212, 255, 58, 0), rgba(212, 255, 58, 0.30)); }
+    #s9-genjutsu-root #s9-genjutsu-scan .bar { position: absolute; left: 0; top: 62px; width: 400px; height: 5px; background: var(--lime);
+      box-shadow: 0 0 16px 3px rgba(212, 255, 58, 0.75); }
+    /* processing pill (over the slot bottom) */
+    #s9-genjutsu-root #s9-genjutsu-pillrow { position: absolute; left: 102px; top: 536px; width: 400px; height: 54px; display: flex; justify-content: center; }
+    #s9-genjutsu-root #s9-genjutsu-pillsc { transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-pill { height: 54px; padding: 0 22px 0 16px; border-radius: 999px; background: rgba(12, 12, 14, 0.82);
+      display: flex; align-items: center; gap: 12px; white-space: nowrap; opacity: 0;
+      font-family: "Geist Mono", monospace; font-size: 25px; font-weight: 500; letter-spacing: 0.02em; color: #FFFFFF;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35), inset 0 0 0 1.5px rgba(255, 255, 255, 0.12); }
+    #s9-genjutsu-root #s9-genjutsu-pill svg { width: 26px; height: 26px; display: block; }
+    #s9-genjutsu-root #s9-genjutsu-pct { display: inline-block; width: 2ch; text-align: right; color: var(--lime); font-variant-numeric: tabular-nums; }
+    #s9-genjutsu-root .pctsign { color: var(--lime); }
+
+    /* ---------- fx layer (not clipped by the window) ---------- */
+    #s9-genjutsu-root #s9-genjutsu-lpulse { position: absolute; left: 30px; top: 20px; width: 52px; height: 52px; border-radius: 16px;
+      border: 3px solid var(--lime); opacity: 0; transform-origin: 50% 50%; }
+    #s9-genjutsu-root .spk { position: absolute; opacity: 0; }
+    #s9-genjutsu-root .spk svg { width: 100%; height: 100%; display: block; overflow: visible; }
+    #s9-genjutsu-root #s9-genjutsu-gburst { position: absolute; left: 658px; top: 626px; width: 180px; height: 60px; border-radius: 999px;
+      border: 3px solid var(--lime); opacity: 0; transform-origin: 50% 50%; }
+    #s9-genjutsu-root #s9-genjutsu-gdots { position: absolute; left: 748px; top: 656px; width: 0; height: 0; }
+    #s9-genjutsu-root .gd { position: absolute; left: -6px; top: -6px; width: 12px; height: 12px; border-radius: 50%; background: var(--lime);
+      box-shadow: 0 0 10px rgba(212, 255, 58, 0.8); opacity: 0; }
+
+    /* ---------- cursor (tip at the wrapper origin) ---------- */
+    #s9-genjutsu-root #s9-genjutsu-curmove { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+    #s9-genjutsu-root #s9-genjutsu-curfade { position: absolute; left: 0; top: 0; opacity: 0; }
+    #s9-genjutsu-root #s9-genjutsu-curpress { position: absolute; left: -3px; top: -2px; width: 36px; height: 48px; transform-origin: 3px 2px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.45)); }
+    #s9-genjutsu-root #s9-genjutsu-curpress svg { width: 36px; height: 48px; display: block; }
+  </style>
+
+  <div data-hf-id="hf-oatk" id="s9-genjutsu-root" data-composition-id="s9-genjutsu" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-fgei" id="s9-genjutsu-exit">
+      <div data-hf-id="hf-cqr7" class="wb" id="s9-genjutsu-drift">
+        <div data-hf-id="hf-d5mn" class="wb" id="s9-genjutsu-in">
+          <div data-hf-id="hf-0zra" class="wb" id="s9-genjutsu-push">
+
+            <!-- ===== the Higgsfield window ===== -->
+            <div data-hf-id="hf-o784" class="wb" id="s9-genjutsu-win">
+              <div data-hf-id="hf-tyyu" class="hdr">
+                <div data-hf-id="hf-3mcj" id="s9-genjutsu-logo"><div data-hf-id="hf-pqxk" class="ltile"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div></div>
+                <div data-hf-id="hf-nfql" class="brand">Higgsfield</div>
+                <div data-hf-id="hf-5rmk" class="tabs">
+                  <div data-hf-id="hf-m8tu" class="tab" id="s9-genjutsu-tabI">Imagem</div>
+                  <div data-hf-id="hf-0k3s" class="tab">Vídeo</div>
+                  <div data-hf-id="hf-3gfc" class="tabG"><div data-hf-id="hf-4695" class="tab" id="s9-genjutsu-tabG">Genjutsu<i data-hf-id="hf-hpbh" id="s9-genjutsu-uline"></i></div></div>
+                </div>
+              </div>
+              <div data-hf-id="hf-hx7w" class="hair"></div>
+
+              <!-- state A: home gallery -->
+              <div data-hf-id="hf-zfz2" class="st" id="s9-genjutsu-stA">
+                <div data-hf-id="hf-qkw8" class="lbl" id="s9-genjutsu-lblA" style="left:36px;top:112px">MEUS PROJETOS</div>
+                <!-- the creator's own Higgsfield generations (his AI character) — stills, cover-fitted with explicit boxes -->
+                <div data-hf-id="hf-vvo5" class="tl s9-genjutsu-tile" style="left:30px">
+                  <div data-hf-id="hf-ktqs" style="position:absolute;left:-89.8px;top:0;width:463.6px;height:504px;background:url('assets/img/personagem-retrato.jpg') center / 100% 100% no-repeat"></div>
+                  <div data-hf-id="hf-q0n7" class="shade"></div>
+                </div>
+                <div data-hf-id="hf-7y6z" class="tl s9-genjutsu-tile" style="left:326px">
+                  <img data-hf-id="hf-i834" src="assets/img/thumb-genjutsu.jpg" alt="" style="position:absolute;left:0;top:0;width:284px;height:504.9px;display:block">
+                  <div data-hf-id="hf-iber" class="shade"></div><div data-hf-id="hf-3f18" class="pl"><svg data-hf-id="hf-pok3" viewBox="0 0 18 18"><path data-hf-id="hf-9v1s" d="M3 1.5v15l13-7.5z" fill="#FFFFFF" /></svg></div>
+                </div>
+                <div data-hf-id="hf-o9o6" class="tl s9-genjutsu-tile" style="left:622px">
+                  <img data-hf-id="hf-3xn3" src="assets/img/personagem-corpo.jpg" alt="" style="position:absolute;left:-7.2px;top:0;width:298.4px;height:504px;display:block">
+                  <div data-hf-id="hf-hx3q" class="shade"></div>
+                </div>
+              </div>
+
+              <!-- state B: Genjutsu panel -->
+              <div data-hf-id="hf-vhv1" class="st" id="s9-genjutsu-stB">
+                <div data-hf-id="hf-oex9" class="lbl" style="left:102px;top:104px">SEU VÍDEO</div>
+                <div data-hf-id="hf-7grp" class="slot" id="s9-genjutsu-slotV">
+                  <svg data-hf-id="hf-l6o9" viewBox="0 0 64 64"><path data-hf-id="hf-vd6a" d="M32 40V13M21 24l11-11 11 11" fill="none" stroke="#6E6E76" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /><path data-hf-id="hf-fnvp" d="M13 38v7a7 7 0 0 0 7 7h24a7 7 0 0 0 7-7v-7" fill="none" stroke="#6E6E76" stroke-width="4" stroke-linecap="round" /></svg>
+                  <span data-hf-id="hf-1yor">enviar vídeo</span>
+                </div>
+                <div data-hf-id="hf-v0re" class="st" id="s9-genjutsu-rest">
+                  <div data-hf-id="hf-r2pr" class="lbl" style="left:538px;top:104px">PERSONAGEM</div>
+                  <div data-hf-id="hf-u6lf" class="slot" id="s9-genjutsu-slotP">
+                    <svg data-hf-id="hf-tsl9" viewBox="0 0 64 64"><circle data-hf-id="hf-0q7i" cx="32" cy="23" r="10" fill="none" stroke="#6E6E76" stroke-width="4" /><path data-hf-id="hf-32uo" d="M14 52c2.4-10 9.4-15 18-15s15.6 5 18 15" fill="none" stroke="#6E6E76" stroke-width="4" stroke-linecap="round" /></svg>
+                    <span data-hf-id="hf-gmc0">escolher</span>
+                  </div>
+                  <div data-hf-id="hf-mnxc" id="s9-genjutsu-pscale"><div data-hf-id="hf-s6mf" id="s9-genjutsu-pin"><div data-hf-id="hf-begg" id="s9-genjutsu-pcard"><div data-hf-id="hf-pwfl" id="s9-genjutsu-pkb"><img data-hf-id="hf-gzbg" src="assets/img/personagem-retrato.jpg" alt=""></div></div></div></div>
+                  <div data-hf-id="hf-pv7c" class="hint">troca o personagem do vídeo</div>
+                  <div data-hf-id="hf-6akh" id="s9-genjutsu-gwake">
+                    <div data-hf-id="hf-2lje" id="s9-genjutsu-gglow"></div>
+                    <div data-hf-id="hf-m1h0" id="s9-genjutsu-gbtn"><svg data-hf-id="hf-ulu9" viewBox="0 0 24 24"><path data-hf-id="hf-dwxi" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#141A00" /></svg>Gerar</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== picker popover ("selecionei um vídeo meu aleatório") ===== -->
+            <div data-hf-id="hf-70bz" id="s9-genjutsu-pop">
+              <div data-hf-id="hf-fvs0" class="popbg"></div>
+              <div data-hf-id="hf-ztzm" class="lbl" style="left:22px;top:18px">SEUS VÍDEOS</div>
+              <div data-hf-id="hf-ejce" id="s9-genjutsu-shuf"><svg data-hf-id="hf-7z07" viewBox="0 0 36 36"><path data-hf-id="hf-8s9g" d="M4 11h6c4 0 6 2 8.5 6.5S23 25 27 25h5M4 25h6c2.2 0 3.8-.8 5.2-2.2M21 13.2c1.4-1.4 3-2.2 5.8-2.2H32M28 7l4 4-4 4M28 21l4 4-4 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></div>
+              <div data-hf-id="hf-iej6" class="th" id="s9-genjutsu-th0" style="left:20px"><div data-hf-id="hf-r9tw" class="thp"><div data-hf-id="hf-dgav" class="thc" id="s9-genjutsu-thc0"><img data-hf-id="hf-q2gp" src="assets/img/thumb-take-a.jpg" alt=""></div></div></div>
+              <div data-hf-id="hf-vffk" class="th" id="s9-genjutsu-th1" style="left:186px"><div data-hf-id="hf-kytc" class="thp" id="s9-genjutsu-thp1"><div data-hf-id="hf-7al2" class="thc" id="s9-genjutsu-thc1"><img data-hf-id="hf-ackv" src="assets/img/thumb-original.jpg" alt=""></div></div></div>
+              <div data-hf-id="hf-x7zk" class="th" id="s9-genjutsu-th2" style="left:352px"><div data-hf-id="hf-hn0c" class="thp"><div data-hf-id="hf-3ch1" class="thc" id="s9-genjutsu-thc2"><img data-hf-id="hf-ekri" src="assets/img/thumb-take-b.jpg" alt=""></div></div></div>
+              <div data-hf-id="hf-bjih" id="s9-genjutsu-ringhop"><div data-hf-id="hf-czo1" id="s9-genjutsu-ringpop"><div data-hf-id="hf-xqll" id="s9-genjutsu-ringin"><div data-hf-id="hf-0qcu" class="ring"></div></div></div></div>
+            </div>
+
+            <!-- ===== the chosen video (FLIP thumb -> slot, then still -> video) ===== -->
+            <div data-hf-id="hf-uqph" id="s9-genjutsu-vm">
+              <div data-hf-id="hf-rhxf" id="s9-genjutsu-vkb">
+                <div data-hf-id="hf-euyu" id="s9-genjutsu-vstill"></div>
+                <div data-hf-id="hf-f6gl" id="s9-genjutsu-vvid">
+                  <video data-hf-id="hf-zhmu" id="s9-genjutsu-vid" src="assets/broll/original-2883.mp4" muted playsinline data-start="4.55" data-duration="3.4" data-media-start="0.5" data-hf-media-start-basis="local"></video>
+                </div>
+              </div>
+            </div>
+
+            <!-- slot V overlays + processing pill -->
+            <div data-hf-id="hf-5jxv" id="s9-genjutsu-sfx">
+              <div data-hf-id="hf-e6rl" id="s9-genjutsu-shim"></div>
+              <div data-hf-id="hf-qtu1" id="s9-genjutsu-scan"><div data-hf-id="hf-1jja" class="tail"></div><div data-hf-id="hf-ufsv" class="bar"></div></div>
+              <div data-hf-id="hf-n2ms" id="s9-genjutsu-flash"></div>
+            </div>
+            <div data-hf-id="hf-34xh" id="s9-genjutsu-pillrow"><div data-hf-id="hf-ssr1" id="s9-genjutsu-pillsc"><div data-hf-id="hf-lgy3" id="s9-genjutsu-pill">
+              <svg data-hf-id="hf-neyx" viewBox="0 0 26 26"><circle data-hf-id="hf-98s4" cx="13" cy="13" r="10" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="3" /><path data-hf-id="hf-je2q" id="s9-genjutsu-spin" d="M13 3a10 10 0 0 1 10 10" fill="none" stroke="#D4FF3A" stroke-width="3" stroke-linecap="round" /></svg>
+              <span data-hf-id="hf-dcvp">manipulando…</span><span data-hf-id="hf-uckh"><b data-hf-id="hf-ga46" id="s9-genjutsu-pct" style="font-weight:600">0</b><b data-hf-id="hf-evx8" class="pctsign" style="font-weight:600">%</b></span>
+            </div></div></div>
+
+            <!-- fx: logo pulse, tab sparkles, Gerar burst -->
+            <div data-hf-id="hf-8a6l" id="s9-genjutsu-lpulse"></div>
+            <div data-hf-id="hf-5rzj" class="spk" id="s9-genjutsu-sp0" style="left:744px;top:2px;width:30px;height:30px"><svg data-hf-id="hf-1tol" viewBox="0 0 24 24"><path data-hf-id="hf-gy3r" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#D4FF3A" /></svg></div>
+            <div data-hf-id="hf-msmo" class="spk" id="s9-genjutsu-sp1" style="left:910px;top:-6px;width:26px;height:26px"><svg data-hf-id="hf-30lo" viewBox="0 0 24 24"><path data-hf-id="hf-9buv" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#D4FF3A" /></svg></div>
+            <div data-hf-id="hf-ipjf" class="spk" id="s9-genjutsu-sp2" style="left:836px;top:-30px;width:34px;height:34px"><svg data-hf-id="hf-2man" viewBox="0 0 24 24"><path data-hf-id="hf-8xju" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#D4FF3A" /></svg></div>
+            <div data-hf-id="hf-gskx" class="spk" id="s9-genjutsu-sp3" style="left:752px;top:62px;width:22px;height:22px"><svg data-hf-id="hf-3t7q" viewBox="0 0 24 24"><path data-hf-id="hf-8j8t" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#D4FF3A" /></svg></div>
+            <div data-hf-id="hf-05hw" class="spk" id="s9-genjutsu-sp4" style="left:906px;top:58px;width:24px;height:24px"><svg data-hf-id="hf-3ewp" viewBox="0 0 24 24"><path data-hf-id="hf-bbe0" d="M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z" fill="#D4FF3A" /></svg></div>
+            <div data-hf-id="hf-kdgd" id="s9-genjutsu-gburst"></div>
+            <div data-hf-id="hf-fv8t" id="s9-genjutsu-gdots"></div>
+
+            <!-- cursor -->
+            <div data-hf-id="hf-j9d7" id="s9-genjutsu-curmove"><div data-hf-id="hf-ljxi" id="s9-genjutsu-curfade"><div data-hf-id="hf-30o9" id="s9-genjutsu-curpress">
+              <svg data-hf-id="hf-623q" viewBox="0 0 30 40"><path data-hf-id="hf-cxi9" d="M2.5 2 L2.5 31.5 L10 24.6 L15 36.4 L20.6 34 L15.6 22.4 L25.6 22.4 Z" fill="#FFFFFF" stroke="#111113" stroke-width="2.2" stroke-linejoin="round" /></svg>
+            </div></div></div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      /* s9-genjutsu — global 46.633 → 54.600 (7.967s). Cues are scene-local word starts.
+         Window (window-local px; global = +70, +1000): 940x720 dark card. Header 92. Genjutsu tab centre (842, 46).
+         State A (MEUS PROJETOS): 3 portrait tiles of the creator's own character 284x504 at left 30/326/622, top 156.
+         State B: labels top 104; SEU VÍDEO slot 102..502 x 140..610 (centre 302,375); PERSONAGEM slot 538..838 x 140..610;
+         Gerar 658..838 x 626..686 (centre 748,656 -> global 818,1656). Popover 41..563 x 196..546, thumbs 150x267 at
+         left 61/227/393, top 258 (centre y 391.5). Exit ends 7.92 < 7.934 (last frame). No hand-off: s10 enters fresh. */
+      const R = document.getElementById("s9-genjutsu-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.fromTo(el, { opacity: 1, scale: 1, filter: "blur(0px)" },
+        { opacity: 0, scale: o.s ?? 1.04, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in", immediateRender: false }, t);
+      const NIR = { immediateRender: false };
+      const ft = (el, from, to, t) => tl.fromTo(el, from, Object.assign({}, to, NIR), t);
+
+      /* ---------------- cue grid (scene-local word starts) ---------------- */
+      const EU_FUI = 0.66, HIGGS = 1.22, NA_ABA = 1.84, GENJ = 2.20, SELEC = 2.78, ALEAT = 3.96, PEDI = 4.94, FIZ = 5.88, MANIP = 7.00;
+
+      /* ---------------- 0.48 window enters ("eu fui até a higgsfield"), settled by 1.12 ---------------- */
+      IN("#s9-genjutsu-in", EU_FUI - 0.18, { y: 140, d: 0.64 });
+      IN("#s9-genjutsu-lblA", 0.68, { y: 14, s: 1, b: 6, d: 0.36 });
+      qa(".s9-genjutsu-tile").forEach((el, i) => IN(el, 0.70 + i * 0.07, { y: 30, s: 0.96, b: 8, d: 0.44 }));
+      // alive while holding: slow sink + breathe for the whole hold
+      tl.fromTo("#s9-genjutsu-drift", { y: 0, scale: 1 }, { y: -10, scale: 1.015, duration: 7.92 - 1.12, ease: "none" }, 1.12);
+
+      /* ---------------- 1.16 "higgsfield": header logo pulse ---------------- */
+      tl.fromTo("#s9-genjutsu-logo", { scale: 1 }, { scale: 1.18, duration: 0.14, ease: "power2.out", immediateRender: false }, HIGGS - 0.06);
+      ft("#s9-genjutsu-logo", { scale: 1.18 }, { scale: 1, duration: 0.34, ease: "back.out(2.4)" }, HIGGS + 0.08);
+      ft("#s9-genjutsu-lpulse", { opacity: 0.95, scale: 1 }, { opacity: 0, scale: 1.9, duration: 0.55, ease: "power2.out" }, HIGGS - 0.04);
+
+      /* ---------------- cursor: appears at the window centre, glides to the Genjutsu tab ("na aba") ---------------- */
+      const CUR = "#s9-genjutsu-curmove", CF = "#s9-genjutsu-curfade", CP = "#s9-genjutsu-curpress";
+      const P_START = { x: 470, y: 400 }, P_TAB = { x: 842, y: 48 }, P_SLOT = { x: 302, y: 392 }, P_REST = { x: 572, y: 540 }, P_BTN = { x: 752, y: 660 };
+      tl.set(CUR, { x: P_START.x, y: P_START.y }, 0);
+      ft(CF, { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power2.out" }, 1.56);
+      ft(CUR, P_START, Object.assign({}, P_TAB, { duration: 0.34, ease: "power2.inOut" }), NA_ABA - 0.08);
+      // click = press-release
+      const CLICK = (t) => { ft(CP, { scale: 1 }, { scale: 0.82, duration: 0.07, ease: "power1.in" }, t);
+        ft(CP, { scale: 0.82 }, { scale: 1, duration: 0.3, ease: "back.out(2.5)" }, t + 0.07); };
+      CLICK(GENJ - 0.10);
+
+      /* ---------------- 2.12 "genjutsu": tab activates + sparkle, body crossfades to the Genjutsu panel ---------------- */
+      const TAB = GENJ - 0.08;
+      ft("#s9-genjutsu-tabI", { color: "#FFFFFF" }, { color: "#8A8A92", duration: 0.2, ease: "power1.inOut" }, TAB);
+      ft("#s9-genjutsu-tabG", { color: "#8A8A92" }, { color: "#D4FF3A", duration: 0.16, ease: "power1.out" }, TAB);
+      ft("#s9-genjutsu-uline", { scaleX: 0 }, { scaleX: 1, duration: 0.28, ease: "power3.out" }, TAB);
+      [["#s9-genjutsu-sp0", 0.00, -22, -10], ["#s9-genjutsu-sp1", 0.03, 18, -14], ["#s9-genjutsu-sp2", 0.05, 0, -22],
+       ["#s9-genjutsu-sp3", 0.07, -18, 12], ["#s9-genjutsu-sp4", 0.09, 16, 12]].forEach(([id, d, dx, dy]) => {
+        const t = TAB + 0.02 + d;
+        ft(id, { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.14, ease: "power2.out" }, t);
+        ft(id, { x: 0, y: 0, rotation: -30 }, { x: dx, y: dy, rotation: 30, duration: 0.42, ease: "power2.out" }, t);
+        ft(id, { opacity: 1 }, { opacity: 0, duration: 0.22, ease: "power2.in" }, t + 0.2);
+      });
+      ft("#s9-genjutsu-stA", { opacity: 1, y: 0, filter: "blur(0px)" }, { opacity: 0, y: -24, filter: "blur(10px)", duration: 0.24, ease: "power2.in" }, TAB + 0.04);
+      ft("#s9-genjutsu-stB", { opacity: 0, y: 30, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out" }, TAB + 0.22);
+
+      /* ---------------- cursor clicks the SEU VÍDEO slot -> picker floats up ("selecionei") ---------------- */
+      ft(CUR, P_TAB, Object.assign({}, P_SLOT, { duration: 0.32, ease: "power2.inOut" }), 2.28);
+      CLICK(2.62);
+      ft("#s9-genjutsu-slotV", { borderColor: "#3A3A40" }, { borderColor: "#D4FF3A", duration: 0.16, ease: "power1.out" }, 2.66);
+      ft(CF, { opacity: 1, x: 0, y: 0 }, { opacity: 0, x: 36, y: 54, duration: 0.24, ease: "power2.in" }, 2.94);
+
+      IN("#s9-genjutsu-pop", SELEC - 0.10, { y: 60, s: 0.92, b: 14, d: 0.45 });
+      ["#s9-genjutsu-th0", "#s9-genjutsu-th1", "#s9-genjutsu-th2"].forEach((id, i) => IN(id, SELEC - 0.02 + i * 0.06, { y: 34, s: 0.9, b: 10, d: 0.4 }));
+
+      /* ---------------- 3.38–4.00 "um vídeo meu aleatório": the lime ring hops a→b→c→a→b (quickening), lands on the ORIGINAL ---------------- */
+      tl.fromTo("#s9-genjutsu-shuf", { color: "#8A8A92", rotation: 0 }, { color: "#D4FF3A", rotation: 180, duration: 0.4, ease: "power2.inOut", immediateRender: false }, 3.36);
+      ft("#s9-genjutsu-ringin", { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power2.out" }, 3.36);
+      ft("#s9-genjutsu-ringin", { scale: 1.14 }, { scale: 1, duration: 0.32, ease: "back.out(2)" }, 3.36);
+      const STEP = 166;
+      // [start, from slot, to slot, duration] — intervals .16/.12/.08 (quickening); no two hops overlap
+      const HOPS = [[3.56, 0, 1, 0.12], [3.72, 1, 2, 0.10], [3.84, 2, 0, 0.075], [3.92, 0, 1, 0.14]];
+      HOPS.forEach(([t, a, b, d], i) => {
+        const last = i === HOPS.length - 1;
+        ft("#s9-genjutsu-ringhop", { x: a * STEP }, { x: b * STEP, duration: d, ease: last ? "back.out(1.6)" : "power2.out" }, t);
+        // each hop is a small pop (own wrapper); pop length clipped to the next hop so pops never overlap
+        const pd = last ? 0.16 : Math.min(0.12, HOPS[i + 1][0] - t);
+        ft("#s9-genjutsu-ringpop", { scale: 1.08 }, { scale: 1, duration: pd, ease: "power2.out" }, t);
+      });
+      // landing on "aleatório": chosen thumb punches (back to exactly 1 before the FLIP), the others recede
+      ft("#s9-genjutsu-thp1", { scale: 1 }, { scale: 1.06, duration: 0.11, ease: "power2.out" }, 4.0);
+      ft("#s9-genjutsu-thp1", { scale: 1.06 }, { scale: 1, duration: 0.13, ease: "power2.inOut" }, 4.11);
+      ft(["#s9-genjutsu-thc0", "#s9-genjutsu-thc2"], { opacity: 1, filter: "blur(0px)" }, { opacity: 0.4, filter: "blur(2px)", duration: 0.25, ease: "power2.out" }, 4.0);
+
+      /* ---------------- 4.25 FLIP: the chosen thumb fills the SEU VÍDEO slot (one element, transform + clip-path) ---------------- */
+      // start pose == the thumb on screen: centre (302, 391.5) vs slot centre (302, 375); 400x711.11 at scale .375 = 150x266.7;
+      // clip radius 16 / .375 so the corners read as the thumb's 16px
+      const FL0 = 4.25, FLD = 0.45, S0 = 150 / 400;
+      tl.set("#s9-genjutsu-thc1", { opacity: 0 }, FL0);
+      tl.set("#s9-genjutsu-vm", { opacity: 1 }, FL0);
+      tl.fromTo("#s9-genjutsu-vm",
+        { x: 0, y: 391.5 - 375, scale: S0, clipPath: `inset(0px 0px 0px 0px round ${16 / S0}px)` },
+        { x: 0, y: 0, scale: 1, clipPath: "inset(120.555px 0px 120.555px 0px round 22px)", duration: FLD, ease: "power3.inOut", force3D: false, immediateRender: false }, FL0);
+      OUT("#s9-genjutsu-pop", FL0, { d: 0.24, s: 1.03, b: 12 });
+      // the dashed drop-target dissolves under the landing video (its lime dashes fringed the clip edge before)
+      ft("#s9-genjutsu-slotV", { opacity: 1 }, { opacity: 0, duration: 0.18, ease: "power1.inOut" }, FL0 + FLD - 0.2);
+      ft("#s9-genjutsu-flash", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out" }, FL0 + FLD - 0.06);
+      ft("#s9-genjutsu-flash", { opacity: 1 }, { opacity: 0, duration: 0.36, ease: "power2.inOut" }, FL0 + FLD + 0.08);
+
+      /* ---------------- 4.55 still -> video takeover (media-start 0.5 = the thumb's exact frame) ---------------- */
+      ft("#s9-genjutsu-vvid", { opacity: 0 }, { opacity: 1, duration: 0.18, ease: "power1.inOut" }, 4.55);
+      ft("#s9-genjutsu-vkb", { scale: 1 }, { scale: 1.05, duration: 7.92 - (FL0 + FLD), ease: "none" }, FL0 + FLD);
+
+      /* ---------------- 4.84 "pedi": PERSONAGEM slot fills (two-channel pop: fade/blur power2, scale back.out) ---------------- */
+      ft("#s9-genjutsu-pin", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.3, ease: "power2.out" }, PEDI - 0.12);
+      ft("#s9-genjutsu-pscale", { scale: 0.8 }, { scale: 1, duration: 0.46, ease: "back.out(1.8)" }, PEDI - 0.12);
+      // the empty PERSONAGEM placeholder ("escolher" + dashed border) clears so it never shows through the fading portrait
+      ft("#s9-genjutsu-slotP", { opacity: 1 }, { opacity: 0, duration: 0.16, ease: "power1.in" }, PEDI - 0.24);
+      ft("#s9-genjutsu-pkb", { scale: 1 }, { scale: 1.04, duration: 7.92 - PEDI, ease: "none" }, PEDI);
+
+      /* ---------------- 5.30 Gerar wakes; cursor glides to it; 5.80 "fizesse" click ---------------- */
+      ft("#s9-genjutsu-gwake", { opacity: 0.35 }, { opacity: 1, duration: 0.24, ease: "power1.out" }, 5.3);
+      ft("#s9-genjutsu-gglow", { opacity: 0 }, { opacity: 1, duration: 0.36, ease: "power2.out" }, 5.3);
+      tl.set(CUR, { x: P_REST.x, y: P_REST.y }, 5.16);
+      ft(CF, { opacity: 0, x: 0, y: 0, scale: 0.8 }, { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.16, ease: "power2.out" }, 5.16);
+      ft(CUR, P_REST, Object.assign({}, P_BTN, { duration: 0.4, ease: "power2.inOut" }), 5.32);
+      const CLK = FIZ - 0.10;
+      CLICK(CLK);
+      ft("#s9-genjutsu-gbtn", { scale: 1 }, { scale: 0.9, duration: 0.08, ease: "power1.in" }, CLK);
+      ft("#s9-genjutsu-gbtn", { scale: 0.9 }, { scale: 1, duration: 0.45, ease: "back.out(2.2)" }, CLK + 0.08);
+      ft("#s9-genjutsu-gburst", { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 1.4, duration: 0.5, ease: "power2.out" }, CLK + 0.08);
+      // small radial lime burst: 8 dots, deterministic angles, one proxy drives them all (opacity 0 at T=0 for back-seeks)
+      const field = q("#s9-genjutsu-gdots"), dots = [];
+      for (let i = 0; i < 8; i++) {
+        const el = document.createElement("i"); el.className = "gd"; field.appendChild(el);
+        const a = (i / 8) * Math.PI * 2 + 0.2;
+        dots.push({ el, ax: Math.cos(a) * 130, ay: Math.sin(a) * 58 });     // elliptical spread hugging the pill shape
+      }
+      const bd = { T: 0 };
+      tl.fromTo(bd, { T: 0 }, { T: 1, duration: 0.5, ease: "none", immediateRender: false, onUpdate: () => {
+        const e = 1 - Math.pow(1 - bd.T, 3);
+        const op = bd.T === 0 ? 0 : (bd.T < 0.15 ? bd.T / 0.15 : Math.max(0, 1 - (bd.T - 0.15) / 0.85));
+        dots.forEach((d) => { d.el.style.transform = `translate(${(d.ax * e).toFixed(2)}px, ${(d.ay * e).toFixed(2)}px) scale(${(1 - 0.5 * bd.T).toFixed(3)})`;
+          d.el.style.opacity = op.toFixed(3); });
+      } }, CLK + 0.08);
+      ft(CF, { opacity: 1 }, { opacity: 0, duration: 0.22, ease: "power2.in" }, 6.08);
+
+      /* ---------------- 6.15 attention moves to the video: rest of the panel recedes, camera pushes in on the slot ---------------- */
+      ft("#s9-genjutsu-rest", { opacity: 1, filter: "blur(0px)" }, { opacity: 0.42, filter: "blur(3px)", duration: 0.5, ease: "power2.out" }, 6.15);
+      ft("#s9-genjutsu-push", { scale: 1 }, { scale: 1.04, duration: 7.68 - 6.15, ease: "sine.inOut" }, 6.15);
+
+      /* ---------------- 6.85 "manipulação": scan line (3 finite passes) + lime shimmer + counting pill ---------------- */
+      ft("#s9-genjutsu-shim", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out" }, MANIP - 0.15);
+      ft("#s9-genjutsu-scan", { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "none" }, MANIP - 0.14);
+      ft("#s9-genjutsu-scan", { y: -70 }, { y: 470, duration: 0.3, ease: "power1.inOut", repeat: 2 }, MANIP - 0.14);
+      ft("#s9-genjutsu-pill", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.24, ease: "power2.out" }, MANIP - 0.15);
+      ft("#s9-genjutsu-pillsc", { scale: 0.7, y: 10 }, { scale: 1, y: 0, duration: 0.4, ease: "back.out(2)" }, MANIP - 0.15);
+      ft("#s9-genjutsu-spin", { rotation: 0 }, { rotation: 720, svgOrigin: "13 13", duration: 1.1, ease: "none" }, MANIP - 0.15);
+      const pct = q("#s9-genjutsu-pct"), pc = { v: 0 }; let lastP = -1;
+      tl.fromTo(pc, { v: 0 }, { v: 87, duration: 0.95, ease: "power1.out", immediateRender: false,
+        onUpdate: () => { const k = Math.round(pc.v); if (k !== lastP) { lastP = k; pct.textContent = String(k); } } }, 6.9);
+
+      /* ---------------- 7.68 EXIT (ends 7.92 < 7.934) ---------------- */
+      OUT("#s9-genjutsu-exit", 7.68, { d: 0.24, s: 1.04, b: 14 });
+
+      window.__timelines["s9-genjutsu"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

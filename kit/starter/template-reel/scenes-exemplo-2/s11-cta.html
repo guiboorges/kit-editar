@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "S11 Emoji"; src: local("Apple Color Emoji"), local("AppleColorEmoji"), local("Noto Color Emoji"), local("Segoe UI Emoji"); }
+    #s11-cta-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --meta:#66666E; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00; --igblue:#3D8BFF; }
+    #s11-cta-root .abs { position: absolute; }
+    #s11-cta-root .emo { font-family: "S11 Emoji", sans-serif; font-weight: 400; }
+    /* pre-cue states live in CSS so frame 0 is right */
+    #s11-cta-root #s11-cta-rowNew .tint, #s11-cta-root #s11-cta-rowNew .av, #s11-cta-root #s11-cta-rowNew .nm,
+    #s11-cta-root #s11-cta-rowNew .rp, #s11-cta-root #s11-cta-rowNew .hrt, #s11-cta-root #s11-cta-rowNew .tok .tt,
+    #s11-cta-root #s11-cta-focus, #s11-cta-root #s11-cta-caret, #s11-cta-root #s11-cta-burst, #s11-cta-root #s11-cta-fly,
+    #s11-cta-root #s11-cta-dmB, #s11-cta-root #s11-cta-hair2, #s11-cta-root #s11-cta-lab, #s11-cta-root .rowW,
+    #s11-cta-root .chk, #s11-cta-root .ico, #s11-cta-root #s11-cta-ring, #s11-cta-root #s11-cta-rEcho,
+    #s11-cta-root #s11-cta-ppop, #s11-cta-root #s11-cta-stamp, #s11-cta-root #s11-cta-sEcho, #s11-cta-root #s11-cta-sEcho2,
+    #s11-cta-root #s11-cta-heart { opacity: 0; }
+    #s11-cta-root #s11-cta-send { opacity: .4; }
+
+    #s11-cta-root #s11-cta-drift { position: absolute; inset: 0; transform-origin: 540px 1380px; }
+
+    /* ================= comments sheet: 940 wide at (70,1010); 572 tall before the new comment, 700 after ================= */
+    #s11-cta-root #s11-cta-sheetE { position: absolute; left: 70px; top: 1010px; width: 940px; height: 700px; transform-origin: 50% 0%; }
+    #s11-cta-root #s11-cta-sheetG { position: absolute; inset: 0; transform-origin: 50% 30%; }
+    #s11-cta-root #s11-cta-sheetW { position: absolute; inset: 0;
+      filter: drop-shadow(0 26px 34px rgba(24,24,12,.15)) drop-shadow(0 4px 8px rgba(24,24,12,.07)); }
+    #s11-cta-root .surfT { position: absolute; left: 0; top: 0; width: 940px; height: 486px; background: var(--card); border-radius: 34px 34px 0 0; }
+    #s11-cta-root .surfB { position: absolute; left: 0; top: 480px; width: 940px; height: 220px; background: var(--card); border-radius: 0 0 34px 34px; }
+    #s11-cta-root .grab { position: absolute; left: 438px; top: 14px; width: 64px; height: 8px; border-radius: 4px; background: #DADAD4; }
+    #s11-cta-root .title { position: absolute; left: 0; top: 28px; width: 940px; text-align: center; font-size: 32px; line-height: 44px; font-weight: 600; letter-spacing: -0.015em; }
+    #s11-cta-root .hair { position: absolute; left: 0; width: 940px; height: 2px; background: #ECECE6; }
+
+    /* comment rows (940 x 128) */
+    #s11-cta-root .row { position: absolute; left: 0; width: 940px; height: 128px; }
+    #s11-cta-root .row.old { background: var(--card); }
+    #s11-cta-root .row .av { position: absolute; left: 32px; top: 20px; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; }
+    #s11-cta-root .row .av.gui, #s11-cta-root .meav { background: #2A2A2E url("assets/img/avatar-gui.jpg") center / cover no-repeat; }
+    #s11-cta-root .row .ini { display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600; color: var(--ink2); }
+    #s11-cta-root .row .nm { position: absolute; left: 108px; top: 16px; font-size: 26px; line-height: 34px; font-weight: 600; letter-spacing: -0.01em; white-space: nowrap; }
+    #s11-cta-root .row .nm .tm { font-size: 24px; font-weight: 500; color: var(--meta); margin-left: 10px; letter-spacing: 0; }
+    #s11-cta-root .row .tx { position: absolute; left: 108px; top: 52px; font-size: 28px; line-height: 38px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+    #s11-cta-root .row .rp { position: absolute; left: 108px; top: 92px; font-size: 24px; line-height: 28px; font-weight: 500; color: var(--meta); }
+    #s11-cta-root .row .hrt { position: absolute; right: 36px; top: 30px; width: 32px; height: 32px; }
+    /* the new comment: bigger CLONE token line (name 12..46 · token 46..94 · reply 96..124) */
+    #s11-cta-root #s11-cta-rowNew .tint { position: absolute; left: 20px; right: 20px; top: 6px; bottom: 6px; border-radius: 24px; background: #F6FFD4; }
+    #s11-cta-root #s11-cta-rowNew .av { top: 18px; }
+    #s11-cta-root #s11-cta-rowNew .nm { top: 12px; }
+    #s11-cta-root #s11-cta-rowNew .tx { top: 46px; font-size: 36px; line-height: 48px; }
+    #s11-cta-root #s11-cta-rowNew .rp { top: 96px; }
+    #s11-cta-root .tok { position: relative; display: inline-block; padding: 0 14px; transform-origin: 0% 50%; }
+    #s11-cta-root .tok .blk { position: absolute; left: 0; top: 1px; width: 100%; height: 46px; border-radius: 12px; background: var(--lime); transform-origin: 0 50%;
+      box-shadow: 0 6px 16px rgba(120,160,0,.22); }
+    #s11-cta-root .tok .tt { position: relative; font-weight: 800; color: var(--limeInk); letter-spacing: 0.01em; }
+    /* FLIP traveller: identical box model to .tx > .tok at rest (left 108, padding 14, 36px / 48px) */
+    #s11-cta-root .fly { position: absolute; left: 108px; top: 142px; height: 48px; padding: 0 14px; font-size: 36px; line-height: 48px;
+      white-space: nowrap; transform-origin: 0% 50%; }
+    #s11-cta-root .fly .fblk { position: absolute; left: 0; top: 1px; width: 100%; height: 46px; border-radius: 12px; background: var(--lime); transform-origin: 0 50%;
+      box-shadow: 0 6px 16px rgba(120,160,0,.22); }
+    #s11-cta-root .fly .fsh { position: absolute; left: 0; top: 1px; width: 100%; height: 46px; border-radius: 12px; box-shadow: 0 14px 30px rgba(24,24,12,.20); opacity: 0; }
+    #s11-cta-root .fly .ftt { position: relative; font-weight: 800; color: var(--limeInk); letter-spacing: 0.01em; }
+
+    /* emoji + input bar (final positions; parked one row up until the comment posts) */
+    #s11-cta-root .emorow { position: absolute; left: 44px; top: 500px; width: 852px; height: 56px; display: flex; justify-content: space-between; align-items: center; }
+    #s11-cta-root .emorow span { display: block; width: 56px; height: 56px; font-size: 42px; line-height: 56px; text-align: center; }
+    #s11-cta-root .meav { position: absolute; left: 32px; top: 590px; width: 48px; height: 48px; border-radius: 50%; }
+    #s11-cta-root .pill { position: absolute; left: 96px; top: 578px; width: 728px; height: 72px; border-radius: 999px; background: var(--paper); }
+    #s11-cta-root .ph { position: absolute; left: 124px; top: 578px; font-size: 28px; line-height: 72px; font-weight: 500; color: var(--meta); white-space: nowrap; }
+    #s11-cta-root .typ { position: absolute; left: 124px; top: 578px; height: 72px; display: flex; align-items: center; white-space: pre; }
+    #s11-cta-root .typ .t { font-size: 30px; font-weight: 700; color: var(--ink); letter-spacing: 0.01em; }
+    #s11-cta-root .typ .caret { display: block; width: 3px; height: 36px; margin-left: 3px; border-radius: 2px; background: var(--ink); }
+    #s11-cta-root .focus { position: absolute; left: 96px; top: 578px; width: 728px; height: 72px; border-radius: 999px; border: 3px solid var(--lime);
+      box-shadow: 0 0 0 6px rgba(212,255,58,.32); }
+    #s11-cta-root .sendWrap { position: absolute; left: 846px; top: 582px; width: 64px; height: 64px; }
+    #s11-cta-root .burst { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(212,255,58,.95), rgba(212,255,58,.40) 55%, rgba(212,255,58,0)); }
+    #s11-cta-root .send { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%; background: var(--igblue);
+      box-shadow: 0 8px 18px rgba(61,139,255,.35); display: flex; align-items: center; justify-content: center; }
+    #s11-cta-root .send svg { width: 30px; height: 30px; }
+
+    /* ================= DM: banner (top 110px of the card) that grows into the 900x584 card at (90,960) ================= */
+    #s11-cta-root #s11-cta-dmA { position: absolute; left: 90px; top: 960px; width: 900px; height: 584px; transform-origin: 50% 0%; }
+    #s11-cta-root #s11-cta-dmB, #s11-cta-root #s11-cta-dmP { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s11-cta-root #s11-cta-dmS { position: absolute; inset: 0;
+      filter: drop-shadow(0 30px 40px rgba(10,10,0,.26)) drop-shadow(0 6px 10px rgba(10,10,0,.14)); }
+    #s11-cta-root #s11-cta-dmC { position: absolute; left: 0; top: 0; width: 900px; height: 584px; border-radius: 34px; background: #161618;
+      box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.08); clip-path: inset(0px 0px 474px 0px round 34px); }
+    #s11-cta-root .dav { position: absolute; left: 24px; top: 23px; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; display: block;
+      box-shadow: 0 0 0 3px #161618, 0 0 0 5px var(--lime); }
+    #s11-cta-root .dhead { position: absolute; left: 108px; top: 18px; height: 38px; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+    #s11-cta-root .dname { font-size: 28px; line-height: 34px; font-weight: 600; letter-spacing: -0.01em; color: #FFFFFF; }
+    #s11-cta-root .ddm { height: 30px; padding: 0 12px; border-radius: 999px; background: #2A2A2E; font-family: "Geist Mono", monospace; font-size: 24px;
+      line-height: 30px; font-weight: 500; letter-spacing: .04em; color: #C9C9CF; }
+    #s11-cta-root .dtime { font-family: "Geist Mono", monospace; font-size: 24px; line-height: 30px; font-weight: 500; letter-spacing: .02em; color: #8A8A92; }
+    #s11-cta-root .dmsg { position: absolute; left: 108px; top: 58px; font-size: 26px; line-height: 34px; font-weight: 500; color: #C9C9CF; white-space: nowrap; }
+    #s11-cta-root #s11-cta-hair2 { position: absolute; left: 24px; top: 110px; width: 852px; height: 2px; background: rgba(255,255,255,.08); }
+    #s11-cta-root #s11-cta-lab { position: absolute; left: 32px; top: 130px; font-family: "Geist Mono", monospace; font-size: 24px; line-height: 30px; font-weight: 500;
+      letter-spacing: .08em; color: var(--lime); white-space: nowrap; }
+
+    /* checklist rows (836 x 108 at left 32; tops 172 / 298 / 424) */
+    #s11-cta-root .rowW { position: absolute; left: 32px; width: 836px; height: 108px; }
+    #s11-cta-root .rowP { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s11-cta-root .rowBox { position: absolute; inset: 0; border-radius: 24px; background: #1F1F23; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.06); }
+    #s11-cta-root .chk { position: absolute; left: 24px; top: 28px; width: 52px; height: 52px; display: block; overflow: visible; }
+    #s11-cta-root .rtx { position: absolute; left: 96px; top: 0; height: 108px; display: flex; align-items: center; gap: 12px; white-space: nowrap;
+      font-size: 30px; font-weight: 600; letter-spacing: -0.015em; color: #FFFFFF; }
+    #s11-cta-root .rtx .n { font-family: "Geist Mono", monospace; font-weight: 600; color: var(--lime); letter-spacing: 0; }
+    #s11-cta-root .rtx .d { color: #6A6A72; font-weight: 500; }
+    #s11-cta-root .ico { position: absolute; right: 24px; top: 26px; height: 56px; display: flex; align-items: center; transform-origin: 50% 50%; }
+    #s11-cta-root .tileC { width: 52px; height: 52px; border-radius: 15px; background: #F5F0E8; display: flex; align-items: center; justify-content: center; }
+    #s11-cta-root .tileC img { width: 38px; height: 38px; display: block; }
+    #s11-cta-root .tileH { width: 52px; height: 52px; border-radius: 15px; display: block; margin-left: -10px; box-shadow: 0 0 0 3px #1F1F23; }
+    #s11-cta-root .rnd { position: relative; width: 56px; height: 56px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px rgba(255,255,255,.85); background: #2A2A2E; }
+    #s11-cta-root .rnd img { position: absolute; display: block; }
+    #s11-cta-root #s11-cta-icoP img { left: -12px; top: -7.2px; width: 80px; height: 86.96px; }
+    #s11-cta-root #s11-cta-icoG img { left: -35.4px; top: -93.3px; width: 134.4px; height: 238.9px; }
+    #s11-cta-root #s11-cta-ring { position: absolute; left: -8px; top: -8px; width: 852px; height: 124px; border-radius: 32px; border: 6px solid var(--lime);
+      box-shadow: 0 0 0 8px rgba(212,255,58,.26), 0 10px 30px rgba(120,160,0,.25); transform-origin: 50% 50%; }
+    #s11-cta-root #s11-cta-rEcho { position: absolute; left: -8px; top: -8px; width: 852px; height: 124px; border-radius: 32px; border: 4px solid var(--lime);
+      transform-origin: 50% 50%; }
+    #s11-cta-root #s11-cta-heart { position: absolute; left: 768px; top: 82px; width: 48px; height: 48px; border-radius: 50%; background: #2A2A2E;
+      box-shadow: 0 0 0 3px #161618, 0 8px 18px rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; transform-origin: 50% 50%; }
+    #s11-cta-root #s11-cta-heart svg { width: 26px; height: 26px; display: block; }
+
+    /* "+ $" pill at the DM card's top-right (outside the card clip) */
+    #s11-cta-root #s11-cta-ppos { position: absolute; left: 742px; top: -5px; width: 116px; height: 62px; transform: rotate(4deg); }
+    #s11-cta-root #s11-cta-ppunch, #s11-cta-root #s11-cta-ppop { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s11-cta-root .mpill { position: absolute; inset: 0; border-radius: 999px; background: var(--lime); color: var(--limeInk); display: flex; align-items: center;
+      justify-content: center; font-size: 36px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; white-space: nowrap;
+      box-shadow: 0 12px 28px rgba(120,160,0,.36), 0 2px 6px rgba(60,80,0,.16); }
+    #s11-cta-root #s11-cta-pburst { position: absolute; left: 58px; top: 31px; width: 0; height: 0; }
+    #s11-cta-root .pt { position: absolute; left: 0; top: 0; opacity: 0; filter: drop-shadow(0 0 6px rgba(212,255,58,.7)) drop-shadow(0 2px 3px rgba(70,100,0,.30)); }
+    #s11-cta-root .pt svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+    /* "AINDA HOJE" stamp straddling the DM card's bottom edge (card bottom 1544; stamp centre 540, 1566) */
+    #s11-cta-root .stamp-pos { position: absolute; left: 0; top: 1566px; width: 1080px; height: 0; display: flex; justify-content: center; align-items: center; }
+    #s11-cta-root #s11-cta-stamp { position: relative; flex: 0 0 auto; padding: 16px 34px 14px; border-radius: 18px; background: var(--lime);
+      color: var(--limeInk); font-weight: 800; font-size: 64px; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase; white-space: nowrap;
+      box-shadow: 0 26px 60px rgba(10,10,0,.34), 0 8px 18px rgba(10,10,0,.20); will-change: transform, opacity, filter; }
+    #s11-cta-root .sEcho { position: absolute; inset: -4px; border-radius: 22px; border: 5px solid var(--lime); }
+  </style>
+
+  <div data-hf-id="hf-3q8g" id="s11-cta-root" data-composition-id="s11-cta" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-wy8y" id="s11-cta-drift" data-layout-allow-overflow="">
+
+      <!-- ================= comments sheet ================= -->
+      <div data-hf-id="hf-xfbm" id="s11-cta-sheetE"><div data-hf-id="hf-spjs" id="s11-cta-sheetG">
+        <div data-hf-id="hf-wme1" id="s11-cta-sheetW" data-layout-ignore="">
+          <div data-hf-id="hf-7814" class="surfT"></div>
+          <div data-hf-id="hf-3lc6" class="grab"></div>
+          <div data-hf-id="hf-w4h4" class="title">Comentários</div>
+          <div data-hf-id="hf-djfy" class="hair" style="top:90px"></div>
+
+          <!-- the new comment (revealed when CLONE posts) -->
+          <div data-hf-id="hf-0oaf" class="row" id="s11-cta-rowNew" style="top:96px">
+            <div data-hf-id="hf-tcq7" class="tint"></div>
+            <div data-hf-id="hf-65e8" class="av gui"></div>
+            <div data-hf-id="hf-fd1i" class="nm">guiborges<span data-hf-id="hf-pyx8" class="tm">agora</span></div>
+            <div data-hf-id="hf-xias" class="tx"><span data-hf-id="hf-py6g" class="tok" id="s11-cta-tok"><span data-hf-id="hf-uj0e" class="blk" id="s11-cta-blk"></span><span data-hf-id="hf-nyoy" class="tt">CLONE</span></span></div>
+            <div data-hf-id="hf-q9f8" class="rp">Responder</div>
+            <svg data-hf-id="hf-be5e" class="hrt" viewBox="0 0 32 32"><path data-hf-id="hf-q923" d="M16 27.5 5.6 17.4a6.6 6.6 0 0 1 9.3-9.4L16 9.1l1.1-1.1a6.6 6.6 0 0 1 9.3 9.4Z" fill="none" stroke="#66666E" stroke-width="2.4" stroke-linejoin="round" /></svg>
+          </div>
+
+          <!-- everything the new comment pushes down -->
+          <div data-hf-id="hf-xhna" class="abs" id="s11-cta-below" style="left:0;top:0;width:940px;height:700px">
+            <div data-hf-id="hf-d9po" class="row old" style="top:224px">
+              <div data-hf-id="hf-flmy" class="av ini" style="background:#ECE9F6">L</div>
+              <div data-hf-id="hf-1st7" class="nm">lucas.ia</div>
+              <div data-hf-id="hf-c4tf" class="tx">esse cara não existe?? <span data-hf-id="hf-ct9y" class="emo">😳</span></div>
+              <div data-hf-id="hf-td8s" class="rp">Responder</div>
+              <svg data-hf-id="hf-gx8m" class="hrt" viewBox="0 0 32 32"><path data-hf-id="hf-bnob" d="M16 27.5 5.6 17.4a6.6 6.6 0 0 1 9.3-9.4L16 9.1l1.1-1.1a6.6 6.6 0 0 1 9.3 9.4Z" fill="none" stroke="#66666E" stroke-width="2.4" stroke-linejoin="round" /></svg>
+            </div>
+            <div data-hf-id="hf-nz5m" class="row old" style="top:352px">
+              <div data-hf-id="hf-tjz8" class="av ini" style="background:#F1ECE2">B</div>
+              <div data-hf-id="hf-7afy" class="nm">bia.cria</div>
+              <div data-hf-id="hf-4w3r" class="tx">como faz isso?!</div>
+              <div data-hf-id="hf-s6bp" class="rp">Responder</div>
+              <svg data-hf-id="hf-hbjn" class="hrt" viewBox="0 0 32 32"><path data-hf-id="hf-b9da" d="M16 27.5 5.6 17.4a6.6 6.6 0 0 1 9.3-9.4L16 9.1l1.1-1.1a6.6 6.6 0 0 1 9.3 9.4Z" fill="none" stroke="#66666E" stroke-width="2.4" stroke-linejoin="round" /></svg>
+            </div>
+            <div data-hf-id="hf-i706" class="surfB"></div>
+            <div data-hf-id="hf-vbh5" class="hair" style="top:486px"></div>
+            <div data-hf-id="hf-6rh9" class="emorow emo" id="s11-cta-emos">
+              <span data-hf-id="hf-extc">❤️</span><span data-hf-id="hf-xxfs">🙌</span><span data-hf-id="hf-b7s3">🔥</span><span data-hf-id="hf-sbb5">👏</span><span data-hf-id="hf-bfuq">😢</span><span data-hf-id="hf-myqj">😍</span><span data-hf-id="hf-9umm">😮</span><span data-hf-id="hf-o5nm">😂</span>
+            </div>
+            <div data-hf-id="hf-olo3" class="meav"></div>
+            <div data-hf-id="hf-kndt" class="pill"></div>
+            <div data-hf-id="hf-arbu" class="ph" id="s11-cta-ph">Adicione um comentário…</div>
+            <div data-hf-id="hf-n9db" class="typ"><span data-hf-id="hf-mj48" class="t" id="s11-cta-typed"></span><span data-hf-id="hf-a5xy" class="caret" id="s11-cta-caret"></span></div>
+            <div data-hf-id="hf-kmc9" class="focus" id="s11-cta-focus"></div>
+            <div data-hf-id="hf-kpry" class="sendWrap">
+              <div data-hf-id="hf-ndd9" class="burst" id="s11-cta-burst"></div>
+              <div data-hf-id="hf-x9ov" class="send" id="s11-cta-send">
+                <svg data-hf-id="hf-u3w7" viewBox="0 0 30 30"><path data-hf-id="hf-3ehd" d="M15 25V6M7.5 13 15 5.5 22.5 13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- FLIP traveller (typed CLONE -> comment token), above the sheet surface -->
+        <div data-hf-id="hf-u1n3" class="fly" id="s11-cta-fly"><span data-hf-id="hf-0mcu" class="fsh" id="s11-cta-fsh"></span><span data-hf-id="hf-5sye" class="fblk" id="s11-cta-fblk"></span><span data-hf-id="hf-s1t2" class="ftt">CLONE</span></div>
+      </div></div>
+
+      <!-- ================= DM banner -> DM card ================= -->
+      <div data-hf-id="hf-sddi" id="s11-cta-dmA"><div data-hf-id="hf-of9h" id="s11-cta-dmB"><div data-hf-id="hf-dgaf" id="s11-cta-dmP">
+        <div data-hf-id="hf-2kss" id="s11-cta-dmS">
+          <div data-hf-id="hf-nnlo" id="s11-cta-dmC">
+            <img data-hf-id="hf-fw4c" class="dav" src="assets/img/avatar-gui.jpg" alt="">
+            <div data-hf-id="hf-wpj6" class="dhead"><div data-hf-id="hf-e60g" class="dname">guiborges</div><div data-hf-id="hf-xbga" class="ddm">DM</div><div data-hf-id="hf-bqth" class="dtime">agora</div></div>
+            <div data-hf-id="hf-qf0m" class="dmsg">te enviei o passo a passo <span data-hf-id="hf-1sqg" class="emo">📩</span></div>
+            <div data-hf-id="hf-y596" id="s11-cta-hair2"></div>
+            <div data-hf-id="hf-y724" id="s11-cta-lab">PASSO A PASSO</div>
+
+            <div data-hf-id="hf-6bsc" class="rowW" id="s11-cta-row1" style="top:172px"><div data-hf-id="hf-51gc" class="rowP">
+              <div data-hf-id="hf-w36v" class="rowBox"></div>
+              <svg data-hf-id="hf-ogf5" class="chk" viewBox="0 0 52 52" aria-hidden="true">
+                <circle data-hf-id="hf-297u" class="cc" cx="26" cy="26" r="22" fill="rgba(212,255,58,.10)" stroke="#D4FF3A" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="138.23" transform="rotate(-90 26 26)" />
+                <path data-hf-id="hf-ocdv" class="ck" d="M16 26.5 L23.5 33.5 L36.5 19.5" fill="none" stroke="#D4FF3A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="30" stroke-dashoffset="30" />
+              </svg>
+              <div data-hf-id="hf-ix26" class="rtx"><span data-hf-id="hf-e3y0" class="n">1</span><span data-hf-id="hf-q3t8" class="d">·</span><span data-hf-id="hf-vmjk">ligar o Claude ao Higgsfield (MCP)</span></div>
+              <div data-hf-id="hf-5hk7" class="ico"><div data-hf-id="hf-yton" class="tileC"><img data-hf-id="hf-tlnk" src="assets/img/logo-claude.svg" alt=""></div><img data-hf-id="hf-0pj6" class="tileH" src="assets/img/logo-higgsfield.png" alt=""></div>
+            </div></div>
+
+            <div data-hf-id="hf-isjg" class="rowW" id="s11-cta-row2" style="top:298px"><div data-hf-id="hf-cu3b" class="rowP" id="s11-cta-row2P">
+              <div data-hf-id="hf-njrb" class="rowBox"></div>
+              <svg data-hf-id="hf-2j3p" class="chk" viewBox="0 0 52 52" aria-hidden="true">
+                <circle data-hf-id="hf-8v72" class="cc" cx="26" cy="26" r="22" fill="rgba(212,255,58,.10)" stroke="#D4FF3A" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="138.23" transform="rotate(-90 26 26)" />
+                <path data-hf-id="hf-j02b" class="ck" d="M16 26.5 L23.5 33.5 L36.5 19.5" fill="none" stroke="#D4FF3A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="30" stroke-dashoffset="30" />
+              </svg>
+              <div data-hf-id="hf-vwsi" class="rtx"><span data-hf-id="hf-cx0x" class="n">2</span><span data-hf-id="hf-w3qc" class="d">·</span><span data-hf-id="hf-0mqd">criar o seu personagem</span></div>
+              <div data-hf-id="hf-xvbb" class="ico"><div data-hf-id="hf-wj76" class="rnd" id="s11-cta-icoP"><img data-hf-id="hf-gzbg" src="assets/img/personagem-retrato.jpg" alt=""></div></div>
+              <div data-hf-id="hf-rqnt" id="s11-cta-rEcho"></div>
+              <div data-hf-id="hf-mucq" id="s11-cta-ring"></div>
+            </div></div>
+
+            <div data-hf-id="hf-jk4q" class="rowW" id="s11-cta-row3" style="top:424px"><div data-hf-id="hf-va8k" class="rowP">
+              <div data-hf-id="hf-n5ga" class="rowBox"></div>
+              <svg data-hf-id="hf-3q0s" class="chk" viewBox="0 0 52 52" aria-hidden="true">
+                <circle data-hf-id="hf-99i3" class="cc" cx="26" cy="26" r="22" fill="rgba(212,255,58,.10)" stroke="#D4FF3A" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="138.23" transform="rotate(-90 26 26)" />
+                <path data-hf-id="hf-ilra" class="ck" d="M16 26.5 L23.5 33.5 L36.5 19.5" fill="none" stroke="#D4FF3A" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="30" stroke-dashoffset="30" />
+              </svg>
+              <div data-hf-id="hf-wb3j" class="rtx"><span data-hf-id="hf-dbby" class="n">3</span><span data-hf-id="hf-uwt9" class="d">·</span><span data-hf-id="hf-gsqb">Genjutsu no seu vídeo</span></div>
+              <div data-hf-id="hf-xh0a" class="ico"><div data-hf-id="hf-uwad" class="rnd" id="s11-cta-icoG"><img data-hf-id="hf-u5th" src="assets/img/thumb-genjutsu.jpg" alt=""></div></div>
+              <div data-hf-id="hf-ikrc" id="s11-cta-heart"><svg data-hf-id="hf-161r" viewBox="0 0 32 32"><path data-hf-id="hf-kxr5" d="M16 27.5 5.6 17.4a6.6 6.6 0 0 1 9.3-9.4L16 9.1l1.1-1.1a6.6 6.6 0 0 1 9.3 9.4Z" fill="#FF3B5C" stroke="#FF3B5C" stroke-width="2.4" stroke-linejoin="round" /></svg></div>
+            </div></div>
+          </div>
+        </div>
+        <!-- "+ $" pill (top-right corner, outside the card clip) -->
+        <div data-hf-id="hf-usga" id="s11-cta-ppos"><div data-hf-id="hf-uhmc" id="s11-cta-ppunch"><div data-hf-id="hf-quc9" id="s11-cta-ppop"><div data-hf-id="hf-rg1d" class="mpill">+ $</div></div></div>
+          <div data-hf-id="hf-61zq" id="s11-cta-pburst"></div></div>
+      </div></div></div>
+
+      <!-- ================= "AINDA HOJE" stamp ================= -->
+      <div data-hf-id="hf-0ed8" class="stamp-pos">
+        <div data-hf-id="hf-k6e8" id="s11-cta-stamp">ainda hoje<div data-hf-id="hf-pieh" class="sEcho" id="s11-cta-sEcho"></div><div data-hf-id="hf-uxvl" class="sEcho" id="s11-cta-sEcho2"></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s11-cta-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6 },
+        { opacity: 1, scale: 1, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2)", immediateRender: false }, t);
+
+      /* ---------------- cue grid (scene-local word starts) ---------------- */
+      const COMENTA = 0.45, CLONE = 0.87, AQUI = 1.17, ENVIAR = 1.91, PASSO1 = 2.59, PASSO2 = 2.89, PRA = 3.17;
+      const CRIAR = 3.57, GANHAR = 4.65, DIN = 4.97, AINDA = 5.47, HOJE = 5.79;
+      const LAST = 6.12;          // every tween ends inside the last frame (6.133) — NO EXIT, held to the end
+      const ROW_H = 128;
+
+      /* ---- 0.08 sheet blur-rise: still moving while the camera collapses (0.24-0.60) and uncovers the stage ---- */
+      IN("#s11-cta-sheetE", 0.08, { y: 160, b: 14, d: 0.72 });
+      qa("#s11-cta-emos span").forEach((el, i) => POP(el, 0.30 + i * 0.045, { from: 0.4, d: 0.34, e: "back.out(1.7)" }));
+
+      /* ---- collapsed list until CLONE posts: everything below the new slot is parked one row up ---- */
+      gsap.set("#s11-cta-below", { y: -ROW_H });
+      gsap.set(["#s11-cta-blk", "#s11-cta-fblk"], { scaleX: 0 });
+
+      /* ---- 0.40 "comenta": the input focuses (lime outline) ---- */
+      tl.fromTo("#s11-cta-focus", { opacity: 0, scale: 1.015 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, COMENTA - 0.05);
+      tl.fromTo("#s11-cta-ph", { opacity: 1 }, { opacity: 0, duration: 0.12, ease: "power1.out" }, COMENTA - 0.05);
+
+      /* ---- typing CLONE: discrete states on the key-press beats (0.06 apart), derived from absolute t ---- */
+      const SEQ = [
+        { t: 0, text: "" }, { t: 0.80, text: "C" }, { t: 0.86, text: "CL" }, { t: 0.92, text: "CLO" },
+        { t: 0.98, text: "CLON" }, { t: 1.04, text: "CLONE" }, { t: 1.16, text: "" },
+      ];
+      const textAt = (t) => { for (let i = SEQ.length - 1; i >= 0; i--) if (t >= SEQ[i].t) return SEQ[i].text; return ""; };
+      const typedEl = q("#s11-cta-typed"), caretEl = q("#s11-cta-caret");
+      const drv = { t: 0 }; let lastTxt = null, lastCar = null;
+      tl.fromTo(drv, { t: 0 }, { t: 1.6, duration: 1.6, ease: "none", immediateRender: false, onUpdate: () => {
+        const t = drv.t, txt = textAt(t);
+        if (txt !== lastTxt) { lastTxt = txt; typedEl.textContent = txt; }
+        // caret: visible while focused; solid while typing, blinking (0.8s square wave) otherwise
+        let c = 0;
+        if (t >= 0.44 && t < 1.16) c = (t >= 0.74 && t < 1.10) ? 1 : (Math.sin((t - 0.44) * Math.PI * 2 / 0.8 + Math.PI / 2) > -0.2 ? 1 : 0);
+        if (c !== lastCar) { lastCar = c; caretEl.style.opacity = String(c); }
+      } }, 0);
+
+      /* ---- 1.12 "aqui": send press-release spring + radial lime burst ---- */
+      tl.fromTo("#s11-cta-send", { opacity: 0.4 }, { opacity: 1, duration: 0.08, ease: "power1.out", immediateRender: false }, 1.02);
+      tl.fromTo("#s11-cta-send", { scale: 1 }, { scale: 0.85, duration: 0.06, ease: "power1.in", immediateRender: false }, 1.06);
+      tl.to("#s11-cta-send", { scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 1.12);
+      tl.fromTo("#s11-cta-burst", { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 2.4, duration: 0.22, ease: "power2.out", immediateRender: false }, 1.12);
+      tl.to("#s11-cta-burst", { opacity: 0, scale: 3.0, duration: 0.36, ease: "power2.in" }, 1.34);
+      // input back to idle once posted
+      tl.to("#s11-cta-send", { opacity: 0.4, duration: 0.2, ease: "power1.out" }, 1.58);
+      tl.to("#s11-cta-focus", { opacity: 0, duration: 0.22, ease: "power1.out" }, 1.22);
+      tl.to("#s11-cta-ph", { opacity: 1, duration: 0.22, ease: "power1.out" }, 1.22);
+
+      /* ---- 1.18 the new comment pushes the list down (one tween drives the seam) ---- */
+      tl.fromTo("#s11-cta-below", { y: -ROW_H }, { y: 0, duration: 0.5, ease: "power3.out", immediateRender: false }, 1.18);
+      tl.fromTo("#s11-cta-rowNew .tint", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power1.out", immediateRender: false }, 1.22);
+      tl.fromTo(["#s11-cta-rowNew .av", "#s11-cta-rowNew .nm", "#s11-cta-rowNew .rp", "#s11-cta-rowNew .hrt"],
+        { opacity: 0, y: 18, filter: "blur(4px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out", stagger: 0.03, immediateRender: false }, 1.20);
+
+      /* ---- 1.16 FLIP: the typed CLONE travels from the input (text left 124, centre y 486 pre-push, 30px)
+             into the token slot (text left 122, centre y 166, 36px) and lands as a lime token ---- */
+      const SC0 = 30 / 36;
+      tl.set("#s11-cta-fly", { opacity: 1 }, 1.16);
+      tl.fromTo("#s11-cta-fly", { x: 124 - (108 + 14 * SC0), y: 486 - 166, scale: SC0, fontWeight: 700 },
+        { x: 0, y: 0, scale: 1, fontWeight: 800, duration: 0.38, ease: "power3.inOut", immediateRender: false }, 1.16);
+      tl.fromTo("#s11-cta-fblk", { scaleX: 0 }, { scaleX: 1, duration: 0.24, ease: "power2.out", immediateRender: false }, 1.19);
+      tl.fromTo("#s11-cta-fsh", { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power1.out", immediateRender: false }, 1.21);
+      tl.to("#s11-cta-fsh", { opacity: 0, duration: 0.12, ease: "power1.in" }, 1.42);
+      // hand-off on the landing frame (identical box/font/block): invisible swap
+      tl.set("#s11-cta-blk", { scaleX: 1 }, 1.54);
+      tl.set("#s11-cta-rowNew .tok .tt", { opacity: 1 }, 1.54);
+      tl.set("#s11-cta-fly", { opacity: 0 }, 1.54);
+      tl.fromTo("#s11-cta-tok", { scale: 1 }, { scale: 1.1, duration: 0.1, ease: "power2.out", immediateRender: false }, 1.54);
+      tl.to("#s11-cta-tok", { scale: 1, duration: 0.36, ease: "back.out(2)" }, 1.65);
+
+      /* ---- 1.79 "enviar": DM banner drops in (geometry on back.out, opacity/blur on power2.out) ---- */
+      // starts 0.12 early so the banner is already legible ON "enviar" (opacity ~.7 at 1.91, settled ~2.05)
+      tl.fromTo("#s11-cta-dmA", { y: -60, scale: 0.96 }, { y: 0, scale: 1, duration: 0.55, ease: "back.out(1.4)", immediateRender: false }, ENVIAR - 0.12);
+      tl.fromTo("#s11-cta-dmB", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.26, ease: "power2.out", immediateRender: false }, ENVIAR - 0.12);
+
+      /* ---- 2.36 "todo o passo a passo": the banner unrolls into the DM card; the sheet recedes to a light ghost ---- */
+      const EXP = 2.36;
+      tl.fromTo("#s11-cta-dmC", { clipPath: "inset(0px 0px 474px 0px round 34px)" },
+        { clipPath: "inset(0px 0px 0px 0px round 34px)", duration: 0.5, ease: "power3.out", immediateRender: false }, EXP);
+      tl.set("#s11-cta-dmC", { clipPath: "none" }, EXP + 0.52);   // rings/punches may now breathe past the edge
+      tl.fromTo("#s11-cta-hair2", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power1.out", immediateRender: false }, EXP + 0.04);
+      tl.fromTo("#s11-cta-sheetG", { opacity: 1, scale: 1, filter: "blur(0px) brightness(1)" },
+        { opacity: 0.3, scale: 0.97, filter: "blur(6px) brightness(1.25)", duration: 0.45, ease: "power2.out", immediateRender: false }, EXP);
+      IN("#s11-cta-lab", EXP + 0.08, { y: 12, b: 8, s: 1, d: 0.3 });
+
+      /* ---- checklist: one row per beat (passo 2.59 · passo 2.89 · pra 3.17) ---- */
+      [["#s11-cta-row1", PASSO1 - 0.07], ["#s11-cta-row2", PASSO2 - 0.07], ["#s11-cta-row3", PRA - 0.05]].forEach(([sel, t]) => {
+        const row = q(sel), svg = row.querySelector(".chk");
+        tl.fromTo(row, { opacity: 0, x: -28, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.38, ease: "power3.out", immediateRender: false }, t);
+        // check circle draws (svg hidden until the draw starts: no lone round-cap dot), then the tick
+        tl.fromTo(svg, { opacity: 0 }, { opacity: 1, duration: 0.02, ease: "none", immediateRender: false }, t + 0.10);
+        tl.fromTo(row.querySelector(".cc"), { strokeDashoffset: 138.23 }, { strokeDashoffset: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, t + 0.10);
+        tl.fromTo(row.querySelector(".ck"), { strokeDashoffset: 30 }, { strokeDashoffset: 0, duration: 0.18, ease: "power2.out", immediateRender: false }, t + 0.30);
+        POP(row.querySelector(".ico"), t + 0.12, { from: 0.5, d: 0.4, e: "back.out(2)" });
+      });
+
+      /* ---- 3.50 "criar o seu": lime ring hugs row 2 + punch + one echo ---- */
+      tl.fromTo("#s11-cta-ring", { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(1.8)", immediateRender: false }, CRIAR - 0.09);
+      tl.fromTo("#s11-cta-row2P", { scale: 1 }, { scale: 1.03, duration: 0.14, ease: "power2.out", immediateRender: false }, CRIAR - 0.07);
+      tl.to("#s11-cta-row2P", { scale: 1.015, duration: 0.4, ease: "back.out(2)" }, CRIAR + 0.08);
+      tl.fromTo("#s11-cta-rEcho", { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1, duration: 0.01, ease: "none", immediateRender: false }, CRIAR + 0.04);
+      tl.to("#s11-cta-rEcho", { opacity: 0, scale: 1.06, duration: 0.6, ease: "power2.out" }, CRIAR + 0.05);
+
+      /* ---- 4.58 "ganhar dinheiro": "+ $" pill pops at the card's top-right + coin sparkle; punch on "dinheiro" ---- */
+      const PP = GANHAR - 0.07;
+      tl.fromTo("#s11-cta-ppop", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out", immediateRender: false }, PP);
+      tl.fromTo("#s11-cta-ppop", { scale: 0.4 }, { scale: 1, duration: 0.42, ease: "back.out(2.4)", immediateRender: false }, PP);
+      tl.fromTo("#s11-cta-ppunch", { scale: 1 }, { scale: 1.18, duration: 0.1, ease: "power2.out", immediateRender: false }, DIN - 0.06);
+      tl.to("#s11-cta-ppunch", { scale: 1, duration: 0.36, ease: "back.out(2)" }, DIN + 0.05);
+
+      // deterministic coin sparkle (seeded; one proxy tween; opacity 0 at T=0 so backward seeks hide it)
+      const prand = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const P4 = "M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z";
+      const STAR = '<svg viewBox="0 0 24 24"><path d="' + P4 + '" fill="#D4FF3A"/><path d="' + P4 + '" fill="#FFFFFF" transform="translate(12 12) scale(.42) translate(-12 -12)"/></svg>';
+      const field = q("#s11-cta-pburst"), parts = [], N = 7;
+      const SIZE = [26, 18, 30, 20, 28, 18, 22], SPEED = [230, 190, 260, 200, 240, 180, 210];
+      for (let i = 0; i < N; i++) {
+        const el = document.createElement("div");
+        el.className = "pt"; const s = SIZE[i];
+        el.style.width = s + "px"; el.style.height = s + "px"; el.style.marginLeft = (-s / 2) + "px"; el.style.marginTop = (-s / 2) + "px";
+        el.innerHTML = STAR; field.appendChild(el);
+        // fan -175..-5 deg (up and sideways), never down into the card text
+        const a = (-175 + (170 * i) / (N - 1) + (prand(i * 5 + 9) - 0.5) * 8) * Math.PI / 180;
+        parts.push({ el, vx: Math.cos(a) * SPEED[i], vy: Math.sin(a) * SPEED[i], spin: (prand(i * 11 + 4) * 2 - 1) * 150 });
+      }
+      const FL = 0.6, bd = { T: 0 }; let lastK = -1;
+      tl.fromTo(bd, { T: 0 }, { T: 1, duration: FL, ease: "none", immediateRender: false, onUpdate: () => {
+        const k = Math.round(bd.T * 1000); if (k === lastK) return; lastK = k;
+        const t = bd.T * FL, drag = 1 - 0.45 * bd.T;
+        const fade = bd.T < 0.45 ? 1 : Math.max(0, (1 - bd.T) / 0.55);
+        const sc = bd.T < 0.18 ? 0.3 + 0.7 * (bd.T / 0.18) : 1 - 0.5 * (bd.T - 0.18);
+        parts.forEach((p) => {
+          const x = p.vx * t * drag, y = p.vy * t * drag + 0.5 * 90 * t * t;
+          p.el.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${(p.spin * t).toFixed(1)}deg) scale(${sc.toFixed(3)})`;
+          p.el.style.opacity = String(bd.T === 0 || bd.T === 1 ? 0 : fade);
+        });
+      } }, PP + 0.06);
+
+      /* ---- 5.40 "ainda hoje": stamp slam (expo.out: no overshoot, blur may ride it) + echo + card impact ---- */
+      const SL = AINDA - 0.07;
+      tl.fromTo("#s11-cta-stamp", { opacity: 0, scale: 1.7, rotation: -4, filter: "blur(8px)" },
+        { opacity: 1, scale: 1, rotation: -4, filter: "blur(0px)", duration: 0.22, ease: "expo.out", immediateRender: false }, SL);
+      tl.fromTo("#s11-cta-stamp", { scale: 1 }, { scale: 1.03, duration: LAST - (SL + 0.22), ease: "none", immediateRender: false }, SL + 0.22);
+      tl.fromTo("#s11-cta-sEcho", { opacity: 0, scale: 1 }, { opacity: 0.95, scale: 1, duration: 0.01, ease: "none", immediateRender: false }, SL + 0.11);
+      tl.to("#s11-cta-sEcho", { opacity: 0, scale: 1.32, duration: 0.42, ease: "power2.out" }, SL + 0.12);
+      tl.fromTo("#s11-cta-dmP", { scale: 1 }, { scale: 1.012, duration: 0.07, ease: "power2.out", immediateRender: false }, SL + 0.04);
+      tl.to("#s11-cta-dmP", { scale: 1, duration: 0.32, ease: "power3.out" }, SL + 0.11);
+      // a late micro-beat: the creator hearts the checklist; then a soft second echo on "hoje" (ends 6.11)
+      tl.fromTo("#s11-cta-heart", { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.38, ease: "back.out(2.4)", immediateRender: false }, 5.72);
+      tl.fromTo("#s11-cta-sEcho2", { opacity: 0, scale: 1 }, { opacity: 0.7, scale: 1, duration: 0.01, ease: "none", immediateRender: false }, HOJE);
+      tl.to("#s11-cta-sEcho2", { opacity: 0, scale: 1.24, duration: 0.31, ease: "power2.out" }, HOJE + 0.01);
+
+      /* ---- alive while holding: the whole stage breathes up + in (linear; DM/pill tops stay below the caption band) ---- */
+      tl.fromTo("#s11-cta-drift", { y: 0, scale: 1 }, { y: -10, scale: 1.015, duration: LAST - 0.70, ease: "none", immediateRender: false }, 0.70);
+
+      window.__timelines["s11-cta"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

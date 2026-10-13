@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Os prompts, em ordem, para editar um reel com Claude Code + HyperFrames, com motion e legenda karaokê batendo na palavra.">
+<meta property="og:title" content="Kit EDITAR">
+<meta property="og:description" content="Os prompts e arquivos para editar um reel com Claude Code + HyperFrames.">
+<title>Kit EDITAR</title>
+<style>html{-webkit-text-size-adjust:100%} body{margin:0}</style>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: navegação lateral fixa (passos em ordem) + coluna de leitura de ~68 caracteres; no celular a navegação vira um menu no topo. */
+  :root {
+    --bg: #F3F3F0; --surface: #FFFFFF; --fg: #141416; --fg2: #4A4A52; --mute: #6E6E76; --line: #DEDED6;
+    --accent: #D4FF3A; --accent-ink: #141A00; --link: #2F43D1;
+    --code-bg: #17171A; --code-fg: #ECECE6; --code-mute: #9A9AA2; --code-line: #2A2A30;
+    --display: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #111113; --surface: #1A1A1D; --fg: #ECECE6; --fg2: #B9B9C0; --mute: #8E8E96; --line: #2B2B30;
+    --accent: #D4FF3A; --accent-ink: #141A00; --link: #A3ADFF;
+    --code-bg: #0B0B0D; --code-fg: #E9E9E3; --code-mute: #8A8A92; --code-line: #26262B; color-scheme: dark; } }
+  :root[data-theme="dark"] {
+    --bg: #111113; --surface: #1A1A1D; --fg: #ECECE6; --fg2: #B9B9C0; --mute: #8E8E96; --line: #2B2B30;
+    --accent: #D4FF3A; --accent-ink: #141A00; --link: #A3ADFF;
+    --code-bg: #0B0B0D; --code-fg: #E9E9E3; --code-mute: #8A8A92; --code-line: #26262B; color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 16px; padding-block: 0 64px; }
+  a { color: var(--link); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+  .wrap-all { max-width: 1120px; margin: 0 auto; }
+  header.top { padding-block: 40px 28px; border-bottom: 1px solid var(--line); margin-bottom: 28px; }
+  .kick { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); }
+  h1.name { font-family: var(--display); font-weight: 800; font-size: clamp(40px, 7vw, 64px); letter-spacing: -0.045em; line-height: 1; margin: 10px 0 14px; text-wrap: balance; }
+  h1.name mark { background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 0 .12em .04em; }
+  .lead { font-size: 18px; color: var(--fg2); max-width: 62ch; margin: 0 0 18px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .facts li { font-family: var(--mono); font-size: 12.5px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 12px; color: var(--fg2); }
+  .grid { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 48px; align-items: start; }
+  nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); max-height: calc(100vh - 32px); overflow: auto; font-size: 14px; display: grid; gap: 2px; padding-bottom: 12px; }
+  nav.toc .ttl { font-family: var(--mono); font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); margin-bottom: 6px; }
+  nav.toc a { color: var(--fg2); text-decoration: none; padding: 5px 10px; border-radius: 8px; line-height: 1.35; }
+  nav.toc a:hover { background: var(--surface); color: var(--fg); }
+  nav.toc a.on { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  details.toc-m { display: none; }
+  main { min-width: 0; max-width: 760px; }
+  main section { scroll-margin-top: 16px; }
+  h2, h3 { font-family: var(--display); text-wrap: balance; scroll-margin-top: 16px; }
+  h2 { font-size: 28px; font-weight: 750; letter-spacing: -0.03em; line-height: 1.15; margin: 56px 0 14px; }
+  h2.step { display: grid; gap: 6px; padding-top: 28px; border-top: 1px solid var(--line); }
+  h2.step .n { justify-self: start; font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+    background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 2px 9px; }
+  h3 { font-size: 19px; font-weight: 700; letter-spacing: -0.015em; margin: 30px 0 8px; }
+  p, li { max-width: 68ch; }
+  p { margin: 0 0 12px; }
+  ul, ol { padding-left: 22px; margin: 0 0 14px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 650; }
+  code { font-family: var(--mono); font-size: .86em; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; padding: .05em .35em; overflow-wrap: anywhere; }
+  blockquote { margin: 16px 0; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; color: var(--fg2); }
+  blockquote p:last-child, blockquote ul:last-child { margin-bottom: 0; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 36px 0; }
+  .tw { overflow-x: auto; margin: 10px 0 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-weight: 500; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  tr:last-child td { border-bottom: 0; }
+  .prompt, .cmd { margin: 12px 0 20px; border-radius: 14px; overflow: hidden; background: var(--code-bg); border: 1px solid var(--code-line); }
+  .prompt { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 10px 8px 14px; border-bottom: 1px solid var(--code-line); }
+  .lbl { font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--code-mute); }
+  .prompt .lbl { color: var(--accent); }
+  button.copy { font-family: var(--body); font-size: 13px; font-weight: 600; border: 0; border-radius: 8px; padding: 6px 12px; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); }
+  .cmd button.copy { background: transparent; color: var(--code-fg); box-shadow: inset 0 0 0 1px var(--code-line); }
+  button.copy.ok { background: var(--code-fg); color: var(--code-bg); }
+  pre { margin: 0; padding: 14px 16px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.6; color: var(--code-fg); }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; overflow-wrap: normal; }
+  pre.wrap { white-space: pre-wrap; word-break: break-word; }
+  pre.tree { background: var(--code-bg); border-radius: 14px; margin: 12px 0 20px; border: 1px solid var(--code-line); }
+  input.chk { width: 18px; height: 18px; vertical-align: -3px; margin: 0 6px 0 0; accent-color: #7FA800; }
+  ul:has(> li > input.chk) { list-style: none; padding-left: 0; }
+  .toplink { font-family: var(--mono); font-size: 12.5px; }
+  .dl { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 18px; }
+  .dlbtn { display: inline-block; background: var(--accent); color: var(--accent-ink); font-weight: 700; text-decoration: none; border-radius: 10px; padding: 11px 18px; }
+  .dl span { font-family: var(--mono); font-size: 12.5px; color: var(--mute); }
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--mute); font-size: 13.5px; }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    nav.toc { display: none; }
+    details.toc-m { display: block; margin: 0 0 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+    details.toc-m summary { cursor: pointer; font-weight: 600; }
+    details.toc-m nav { display: grid; gap: 2px; margin-top: 8px; font-size: 15px; }
+    details.toc-m nav a { color: var(--fg2); text-decoration: none; padding: 6px 4px; }
+    h2 { font-size: 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap-all">
+  <header class="top">
+    <div class="kick">Claude Code + HyperFrames · reel 9:16</div>
+    <h1 class="name">Kit <mark>EDITAR</mark></h1>
+    <p class="lead">Os prompts, em ordem, para editar um reel de talking head com motion, legenda karaokê e efeitos sonoros, cada um batendo na palavra falada. É o mesmo processo do reel CLONE.</p>
+    <p class="dl"><a class="dlbtn" href="kit-reel-ia.zip" download>Baixar o kit (.zip, 375 KB)</a><span>LEIA-ME · PROMPTS · pasta starter</span></p>
+    <ul class="facts">
+      <li>11 prompts · Passo 0 ao 10</li>
+      <li>Mac com chip Apple</li>
+      <li>plano pago do Claude com Claude Code</li>
+      <li>exemplo: 65 s · 11 cenas · 108 legendas · −14 LUFS</li>
+    </ul>
+  </header>
+
+  <details class="toc-m"><summary>Ir para um passo</summary><nav>
+      <a href="#leia-me">Comece aqui</a>
+      <a href="#antes-de-começar">Antes de começar</a>
+      <a href="#passo-0-preparar-a-pasta-e-o-projeto">0 · Preparar a pasta e o projeto</a>
+      <a href="#passo-1-analisar-a-referência-e-escrever-o-designmd">1 · Analisar a referência e escrever o DESIGN.md</a>
+      <a href="#passo-2-analisar-o-vídeo-bruto-e-escolher-o-pipeline">2 · Analisar o vídeo bruto e escolher o pipeline</a>
+      <a href="#passo-3-proxy-alinhamento-forçado-cortes-e-enquadramento">3 · Proxy, alinhamento forçado, cortes e enquadramento</a>
+      <a href="#passo-4-legendas-karaokê">4 · Legendas karaokê</a>
+      <a href="#passo-5-brief-e-storyboard-o-contrato">5 · BRIEF e STORYBOARD (o contrato)</a>
+      <a href="#passo-6-câmera-indexhtml-e-snapshot-de-calibração">6 · Câmera, index.html e snapshot de calibração</a>
+      <a href="#passo-7-as-cenas-com-workflow-multiagente">7 · As cenas, com workflow multiagente</a>
+      <a href="#passo-8-revisão-própria">8 · Revisão própria</a>
+      <a href="#passo-9-render-final-e-verificação">9 · Render final e verificação</a>
+      <a href="#passo-10-ajustes-finos-no-studio-ou-no-app-hyperframes">10 · Ajustes finos no Studio ou no app HyperFrames</a>
+      <a href="#prompt-único-atalho">Prompt único (atalho)</a>
+      <a href="#checklist-de-qualidade">Checklist de qualidade</a>
+      <a href="#perguntas-frequentes">Perguntas frequentes</a>
+      <a href="#de-onde-vem-cada-coisa">De onde vem cada coisa</a>
+  </nav></details>
+
+  <div class="grid">
+    <nav class="toc" aria-label="Passos">
+      <div class="ttl">Na ordem</div>
+      <a href="#leia-me">Comece aqui</a>
+      <a href="#antes-de-começar">Antes de começar</a>
+      <a href="#passo-0-preparar-a-pasta-e-o-projeto">0 · Preparar a pasta e o projeto</a>
+      <a href="#passo-1-analisar-a-referência-e-escrever-o-designmd">1 · Analisar a referência e escrever o DESIGN.md</a>
+      <a href="#passo-2-analisar-o-vídeo-bruto-e-escolher-o-pipeline">2 · Analisar o vídeo bruto e escolher o pipeline</a>
+      <a href="#passo-3-proxy-alinhamento-forçado-cortes-e-enquadramento">3 · Proxy, alinhamento forçado, cortes e enquadramento</a>
+      <a href="#passo-4-legendas-karaokê">4 · Legendas karaokê</a>
+      <a href="#passo-5-brief-e-storyboard-o-contrato">5 · BRIEF e STORYBOARD (o contrato)</a>
+      <a href="#passo-6-câmera-indexhtml-e-snapshot-de-calibração">6 · Câmera, index.html e snapshot de calibração</a>
+      <a href="#passo-7-as-cenas-com-workflow-multiagente">7 · As cenas, com workflow multiagente</a>
+      <a href="#passo-8-revisão-própria">8 · Revisão própria</a>
+      <a href="#passo-9-render-final-e-verificação">9 · Render final e verificação</a>
+      <a href="#passo-10-ajustes-finos-no-studio-ou-no-app-hyperframes">10 · Ajustes finos no Studio ou no app HyperFrames</a>
+      <a href="#prompt-único-atalho">Prompt único (atalho)</a>
+      <a href="#checklist-de-qualidade">Checklist de qualidade</a>
+      <a href="#perguntas-frequentes">Perguntas frequentes</a>
+      <a href="#de-onde-vem-cada-coisa">De onde vem cada coisa</a>
+    </nav>
+    <main>
+      <section id="leia-me">
+        <h2>Comece aqui</h2>
+        <p>Se você comentou <strong>EDITAR</strong> no meu reel, é este o material que eu prometi.</p>
+<p>Com este kit, você edita um reel de talking head no mesmo nível do nosso: <strong>você em cima</strong>, <strong>legenda karaokê</strong> na
+emenda e <strong>motion design</strong> embaixo, com uma cena para cada frase, cada animação, legenda e efeito sonoro batendo na
+palavra falada. Quem faz o trabalho é o <strong>Claude Code</strong> (aba Code do app Claude) junto com o <strong>HyperFrames</strong>, uma
+ferramenta que monta o vídeo como uma página animada e renderiza em MP4. Você cola os prompts em ordem, confere cada
+etapa e aprova.</p>
+<h2 id="o-que-tem-no-kit">O que tem no kit</h2>
+<pre class="tree"><code>2-kit-para-seguidores/
+├─ LEIA-ME.md                 ← este arquivo
+├─ PROMPTS.md                 ← o passo a passo: os prompts para colar no Claude Code, em ordem
+└─ starter/                   ← copie o CONTEÚDO desta pasta para a sua pasta de trabalho
+    ├─ PADRAO-DE-QUALIDADE.md ← as regras de qualidade (formato, legenda, motion, áudio, checklist final)
+    ├─ RECEITAS-DE-MOTION.md  ← 59 receitas de motion com números exatos (duração, easing, escala)
+    └─ template-reel/
+        ├─ DESIGN.md · STORYBOARD-exemplo.md · BRIEF-exemplo.md   ← modelos do design e do &quot;contrato&quot; das cenas
+        ├─ fonts/              ← Geist e Geist Mono (+ licença OFL.txt)
+        ├─ scenes-exemplo/     ← as 8 cenas do exemplo 1 (reel PERSONAGEM), para adaptar
+        ├─ scenes-exemplo-2/   ← as 11 cenas do exemplo 2 (reel CLONE), para adaptar
+        └─ edit/
+            ├─ takes-brutos/   ← scripts para quando você grava vários takes crus (o Claude corta a voz)
+            ├─ take-cortado/   ← scripts para quando você manda um arquivo já cortado por você
+            ├─ tools/          ← detector de cortes, medidor do rosto (macOS) e coletor de efeitos sonoros
+            └─ workflow-cenas.js ← o workflow com vários agentes que constrói e revisa as cenas
+</code></pre>
+<p><strong>Os mesmos nomes em todo o kit:</strong> pipeline A = <code>takes-brutos</code> = exemplo 1 (reel PERSONAGEM, 47,9 s);
+pipeline B = <code>take-cortado</code> = exemplo 2 (reel CLONE, 65,4 s). "Pipeline" é só o caminho que o seu vídeo segue: um
+para vários takes crus, outro para um arquivo que você já cortou.</p>
+<h2 id="começo-rápido">Começo rápido</h2>
+<ol>
+<li><strong>Instale o básico no Mac</strong> (veja "Primeira vez no Terminal" logo abaixo se nunca usou o Terminal): app Claude com
+   Claude Code, <a href="https://brew.sh" target="_blank" rel="noopener">Homebrew</a>, <code>brew install node ffmpeg whisper-cpp uv</code>, <code>xcode-select --install</code> e
+   <code>npx --yes hyperframes@0.8.141 skills update general-video</code>.</li>
+<li><strong>Monte a pasta de trabalho:</strong> crie uma pasta (ex.: <code>Documentos/Reels</code>), copie para ela o conteúdo de <code>starter/</code>,
+   crie <code>materiais/</code> e, dentro dela, <code>bruto/</code> (o seu vídeo), <code>referencia/</code> (o reel que você quer copiar), <code>prints/</code>,
+   <code>broll/</code> e o <code>roteiro.txt</code>.</li>
+<li><strong>Abra essa pasta na aba Code do app Claude.</strong> Leia "Antes de começar" no <code>PROMPTS.md</code> e depois cole os passos
+   0 a 10, conferindo cada etapa.</li>
+</ol>
+<blockquote>
+<p><strong>Primeira vez no Terminal</strong>
+1. Aperte <strong>Cmd + Espaço</strong>, digite <strong>Terminal</strong> e aperte <strong>Enter</strong>.
+2. Copie um comando por vez, cole com <strong>Cmd + V</strong> e aperte <strong>Enter</strong>. Espere terminar antes do próximo.
+3. Quando ele pedir a senha do Mac, digite e aperte Enter. <strong>A senha não aparece enquanto você digita</strong>: é normal.
+4. No fim da instalação do Homebrew aparece <strong>"Next steps"</strong>: copie e rode as linhas que ele mostra. Num Mac com
+   chip Apple, são estas:
+   <code>bash
+   echo &gt;&gt; ~/.zprofile
+   echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' &gt;&gt; ~/.zprofile
+   eval "$(/opt/homebrew/bin/brew shellenv)"</code>
+   Depois feche e abra o Terminal. Sem esse passo, o Mac responde <code>brew: command not found</code>.
+5. Se preferir, depois que o Homebrew estiver instalado, peça ao Claude Code para rodar os <code>brew install</code> por você
+   (ele pede permissão antes de cada comando).</p>
+</blockquote>
+<h2 id="requisitos">Requisitos</h2>
+<ul>
+<li><strong>Mac com chip Apple (M1, M2, M3…).</strong> O kit foi feito e testado no macOS. Em <strong>Mac Intel não funciona sem um
+  ajuste</strong>: o alinhamento das palavras (passo 3) usa uma versão do PyTorch que só existe para chip Apple (no
+  <code>PROMPTS.md</code>, pergunta "Meu Mac é Intel" nas Perguntas frequentes). O medidor de rosto usa o Apple Vision, que só
+  existe no Mac (no <code>PROMPTS.md</code> tem a alternativa manual para Windows/Linux).</li>
+<li><strong>App Claude com Claude Code</strong>, num plano pago que inclua o Claude Code.</li>
+<li><strong>Node.js, Homebrew, ffmpeg, whisper.cpp, uv</strong> e as <strong>ferramentas de linha de comando do Xcode</strong>.</li>
+<li><strong>Skills do HyperFrames</strong> instaladas (<code>npx --yes hyperframes@0.8.141 skills update general-video</code>). Depois de
+  instalar, abra uma sessão nova do Claude Code.</li>
+<li><strong>O "doctor" do HyperFrames vai mostrar alguns ✗ mesmo com tudo certo.</strong> Ignore: Version (usamos a 0.8.141 de
+  propósito; não atualize), Docker, TTS (Kokoro) e BGM (MusicGen). Para este kit só importam Node.js, FFmpeg,
+  FFprobe, whisper-cpp e Chrome.</li>
+<li><strong>Internet na primeira vez:</strong> o modelo de transcrição, o Python 3.12, o PyTorch e o modelo de alinhamento são
+  baixados no primeiro uso (o Claude pede permissão), e também o navegador Chrome que o HyperFrames usa para tirar
+  snapshots e renderizar (baixado no passo 6).</li>
+<li><strong>O seu material:</strong> vídeo em pé (9:16), um reel de referência para copiar o formato, prints de tudo o que você cita,
+  B-roll e o roteiro.</li>
+</ul>
+<p><strong>Tempo e custo, com honestidade:</strong> no nosso caso, com tudo pronto, foram cerca de 1h15 da primeira análise até a
+primeira versão do vídeo. Na sua primeira vez, conte com mais. A etapa das cenas (workflow com 10 agentes, ~42 min) é
+a que mais consome uso do seu plano; o <code>PROMPTS.md</code> explica como controlar esse gasto.</p>
+<h2 id="o-que-não-vem-no-kit-e-por-quê">O que NÃO vem no kit, e por quê</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>Não vem</th>
+<th>Por quê</th>
+<th>Como conseguir</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Os efeitos sonoros (.mp3)</strong></td>
+<td>São do Pixabay, sob a Pixabay Content License: dá para usar dentro dos seus vídeos, mas não para redistribuir os arquivos soltos.</td>
+<td>Eles já vêm com as skills do HyperFrames. Depois de instalar, ficam em <code>~/.claude/skills/media-use/audio/assets/sfx/</code>, e o passo 0 copia de lá para o seu projeto.</td>
+</tr>
+<tr>
+<td><strong>As minhas gravações</strong></td>
+<td>São o meu rosto e a minha voz; o seu vídeo vai ser você.</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>B-roll, prints e o reel de referência que eu usei</strong></td>
+<td>São conteúdo de outras pessoas e empresas (perfis do Instagram, sites, o reel da Higgsfield); não tenho direito de redistribuir. Nas cenas-exemplo, os @ dos criadores viraram marcadores (<code>@criador_1</code>, <code>@criador_2</code>).</td>
+<td>Junte os seus. Use só o que você tem direito de usar e dê o crédito na tela.</td>
+</tr>
+<tr>
+<td><strong>O modelo de transcrição, o PyTorch e o modelo de alinhamento</strong></td>
+<td>Arquivos grandes, com fontes oficiais.</td>
+<td>São baixados no primeiro uso (passos 0 a 3).</td>
+</tr>
+<tr>
+<td><strong>App desktop do HyperFrames</strong> (opcional, passo 10)</td>
+<td>É um programa à parte, só para ajustes visuais no fim.</td>
+<td>hyperframes.dev/studio/download</td>
+</tr>
+</tbody>
+</table></div>
+<p>Como o B-roll e os prints não vêm, as <strong>cenas-exemplo</strong> aparecem com buracos (sem os vídeos e as imagens) se você
+abrir direto. Elas são código para o Claude adaptar ao seu vídeo, não cenas prontas.</p>
+<h2 id="uma-regra-antes-de-começar">Uma regra antes de começar</h2>
+<p>Números na tela só os que estão nos seus prints ou no seu roteiro, e nada de associar criadores ou marcas reais a algo
+que não é verdade. O <code>PROMPTS.md</code> já pede isso ao Claude em todos os passos que importam. Confira mesmo assim.</p>
+<p>Bom vídeo! Se usar o kit, me marca. Quero ver o resultado.</p>
+      </section>
+      <section id="passos">
+        <p>Estes são os prompts que você cola no <strong>Claude Code</strong> (aba <strong>Code</strong> do app Claude), <strong>em ordem</strong>, para editar um reel
+de talking head com motion design, legenda karaokê e efeitos sonoros. É o mesmo processo que usamos no reel
+"CLONE" (65 s, 11 cenas de motion, 108 blocos de legenda, 116 efeitos sonoros, −14 LUFS).</p>
+<p>O formato de saída é este: <strong>você em cima</strong> (câmera), <strong>legenda karaokê na emenda</strong> e <strong>motion design sobre papel claro
+embaixo</strong>, com uma cena para cada frase, batendo na palavra falada. Cores, fontes e a linguagem de motion seguem o
+<code>DESIGN.md</code>, que o passo 1 adapta à sua referência. Mudar o <strong>formato</strong> (zonas da tela, posição da legenda, câmera
+sempre em tela cheia) exige pedir ao Claude para adaptar também <code>build_index.py</code>, <code>build_captions.py</code> e o bloco
+<code>COMMON</code> do <code>workflow-cenas.js</code>; o kit só foi testado no formato tela dividida.</p>
+<blockquote>
+<p><strong>Como usar este arquivo</strong>
+- Cada passo tem um bloco <strong>O PROMPT</strong>. Copie o bloco inteiro e cole no Claude Code.
+- Tudo que estiver em <code>[COLCHETES E MAIÚSCULAS]</code> você troca pelo seu antes de colar.
+- Não pule a parte <strong>Como conferir</strong>. A qualidade vem justamente de conferir cada etapa antes de seguir.
+- O Claude vai pedir permissão para rodar comandos. Leia o que ele quer fazer e clique em permitir.</p>
+</blockquote>
+<hr />
+<h2 id="antes-de-começar">Antes de começar</h2>
+<h3 id="o-que-você-precisa-ter">O que você precisa ter</h3>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>O quê</th>
+<th>Para quê</th>
+<th>Como instalar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Um Mac com chip Apple</strong> (M1, M2, M3…)</td>
+<td>O kit foi feito e testado no macOS. <strong>Em Mac Intel não funciona sem ajuste</strong>: o alinhamento do passo 3 usa uma versão do PyTorch que só existe para chip Apple (veja "Meu Mac é Intel" nas <a href="#perguntas-frequentes">Perguntas frequentes</a>). O passo que mede o seu rosto usa o Apple Vision, que só existe no Mac (veja as Perguntas frequentes se você usa Windows ou Linux).</td>
+<td>Para saber: menu Apple → Sobre Este Mac → "Chip Apple M…" (ou "Processador Intel").</td>
+</tr>
+<tr>
+<td><strong>App Claude</strong> com o <strong>Claude Code</strong> (aba Code), num <strong>plano pago</strong> que inclua o Claude Code</td>
+<td>É quem faz todo o trabalho: lê os arquivos, roda os comandos, cria as cenas e revisa. Nós usamos o Claude Opus 5.5.</td>
+<td><a href="https://claude.ai/download" target="_blank" rel="noopener">claude.ai/download</a></td>
+</tr>
+<tr>
+<td><strong>Homebrew</strong></td>
+<td>Instalador de programas pelo Terminal.</td>
+<td>Siga <a href="https://brew.sh" target="_blank" rel="noopener">brew.sh</a>. Ele pede a senha do Mac, então rode você mesmo, no app Terminal. Primeira vez no Terminal? Veja o quadro "Primeira vez no Terminal" no <code>LEIA-ME.md</code> (a senha não aparece enquanto você digita, e no fim é preciso rodar as linhas de "Next steps").</td>
+</tr>
+<tr>
+<td><strong>Node.js</strong></td>
+<td>Para o comando <code>npx</code>, que roda o HyperFrames.</td>
+<td><code>brew install node</code></td>
+</tr>
+<tr>
+<td><strong>ffmpeg, whisper.cpp e uv</strong></td>
+<td>Vídeo e áudio (ffmpeg/ffprobe), transcrição (whisper), Python isolado para o alinhamento (uv).</td>
+<td><code>brew install ffmpeg whisper-cpp uv</code></td>
+</tr>
+<tr>
+<td><strong>Ferramentas de linha de comando do Xcode</strong></td>
+<td>Para compilar o script que mede o rosto (<code>swiftc</code>). Também trazem o <code>python3</code>.</td>
+<td><code>xcode-select --install</code></td>
+</tr>
+<tr>
+<td><strong>Skills do HyperFrames</strong></td>
+<td>Ensinam o Claude a montar vídeo em HTML + GSAP e trazem a biblioteca de efeitos sonoros.</td>
+<td><code>npx --yes hyperframes@0.8.141 skills update general-video</code> (instala também o conjunto básico, com a <code>media-use</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Depois de instalar as skills, <strong>feche e abra uma sessão nova</strong> do Claude Code. Skills só são carregadas quando a sessão
+começa.</p>
+<p>Na primeira vez, alguns downloads grandes acontecem sozinhos (com a sua permissão): o modelo de transcrição do whisper
+(<code>ggml-large-v3-turbo-q5_0.bin</code>, de huggingface.co/ggerganov/whisper.cpp), o Python 3.12, o PyTorch e o modelo de
+alinhamento (via <code>uv</code>) e, no primeiro snapshot (passo 6), o navegador Chrome que o HyperFrames usa para tirar snapshots
+e renderizar.</p>
+<blockquote>
+<p><strong>Quer que o Claude confira tudo isso para você?</strong> Cole isto numa sessão nova:
+<code>text
+Confira se tenho tudo para editar vídeo com HyperFrames: node e npx, ffmpeg, ffprobe, whisper-cli, uv, swiftc, python3,
+as skills do HyperFrames em ~/.claude/skills (hyperframes, general-video e media-use) e o modelo do whisper em
+~/.cache/hyperframes/whisper/models/ggml-large-v3-turbo-q5_0.bin. Veja também se o Mac é chip Apple (uname -m deve
+dar arm64). Rode npx --yes hyperframes@0.8.141 doctor. No doctor, IGNORE: Version (usamos a 0.8.141 de propósito;
+não atualize), Docker, TTS (Kokoro) e BGM (MusicGen). Para este kit só importam Node.js, FFmpeg, FFprobe,
+whisper-cpp e Chrome. Me diga o que falta e como instalar. Não instale nem baixe nada sem me perguntar.</code></p>
+</blockquote>
+<h3 id="monte-a-pasta-de-trabalho">Monte a pasta de trabalho</h3>
+<ol>
+<li>Crie uma pasta para os seus reels, por exemplo <code>Documentos/Reels</code>.</li>
+<li>Copie para dentro dela <strong>o conteúdo</strong> da pasta <code>starter/</code> deste kit (não a pasta <code>starter</code> em si).</li>
+<li>Crie uma pasta <code>materiais/</code> e coloque nela o seu material (lista abaixo).</li>
+</ol>
+<p>Vai ficar assim:</p>
+<pre class="tree"><code>Reels/                          ← a pasta de trabalho: abra ESTA pasta no Claude Code
+├─ PADRAO-DE-QUALIDADE.md       ← (do starter) as regras de qualidade
+├─ RECEITAS-DE-MOTION.md        ← (do starter) 59 receitas de motion com números exatos
+├─ template-reel/               ← (do starter) design, storyboard de exemplo, scripts, cenas prontas, fontes
+├─ materiais/
+│   ├─ bruto/                   ← seu(s) vídeo(s) gravado(s), em pé (9:16)
+│   ├─ referencia/              ← o reel que você quer copiar (MP4)
+│   ├─ prints/                  ← prints de sites, perfis, rankings, apps
+│   ├─ broll/                   ← vídeos de apoio
+│   └─ roteiro.txt              ← o texto do que você fala (ou .pdf)
+└─ meu-reel/                    ← o projeto do vídeo, criado no passo 0
+</code></pre>
+<p>No app Claude, abra a aba <strong>Code</strong> e escolha a pasta <code>Reels</code> como pasta do projeto. Todos os prompts partem dela.</p>
+<h3 id="o-material-que-você-precisa-juntar">O material que você precisa juntar</h3>
+<ul>
+<li><input type="checkbox" class="chk" id="c1" aria-label="feito"> <strong>O vídeo bruto</strong>, gravado em pé (9:16). Funciona de dois jeitos:</li>
+<li><strong>vários takes crus</strong> (um por bloco do roteiro, com 2 ou 3 tentativas cada, com pausas): o Claude corta a voz para você;</li>
+<li><strong>um arquivo só, já cortado por você</strong> (com os cortes que você mesmo fez): o Claude mantém a sua fala e só disfarça os cortes.
+  Mesma luz, mesmo fundo e mesma roupa do começo ao fim ajudam muito.</li>
+<li><input type="checkbox" class="chk" id="c2" aria-label="feito"> <strong>Um reel de referência</strong> para copiar o formato. Isto é o que mais pesa na qualidade: um visual copiado de um
+  reel real fica muito melhor do que um "estilo de IA" genérico. Se você quer exatamente o nosso visual, o
+  <code>template-reel/DESIGN.md</code> já é ele.</li>
+<li><input type="checkbox" class="chk" id="c3" aria-label="feito"> <strong>Prints</strong> de tudo que você cita (site, ranking, perfil, app), de preferência em resolução 2× (tela retina),
+  para não amolecer no zoom. <strong>Todo número que aparecer na tela vai sair desses prints ou do roteiro.</strong></li>
+<li><input type="checkbox" class="chk" id="c4" aria-label="feito"> <strong>B-roll</strong> (vídeos de apoio) que você tem direito de usar, e prints dos perfis se for dar crédito
+  (<code>@perfil · N mil seguidores</code>).</li>
+<li><input type="checkbox" class="chk" id="c5" aria-label="feito"> <strong>O roteiro</strong>, com os nomes próprios escritos certo (marcas, ferramentas, siglas). Ajuda muito na transcrição.</li>
+<li><input type="checkbox" class="chk" id="c6" aria-label="feito"> <strong>A palavra do CTA</strong> ("comenta [PALAVRA] que eu te mando...") e o seu @.</li>
+</ul>
+<p>Material faltando? Comece mesmo assim. O Claude deixa um espaço reservado e troca depois.</p>
+<h3 id="quanto-tempo-e-quanto-custa">Quanto tempo e quanto custa</h3>
+<ul>
+<li><strong>No nosso caso</strong>, com o padrão já escrito e o material pronto, foram <strong>cerca de 1h15</strong> da primeira análise até o v1.
+  Na primeira vez, conte com bem mais: instalação, downloads e você conferindo cada etapa com calma.</li>
+<li><strong>A etapa pesada é o passo 7</strong> (as cenas). No nosso reel ela usou <strong>10 agentes</strong> (5 construtores e 5 revisores), fez
+  <strong>647 chamadas de ferramenta</strong>, tirou <strong>905 snapshots</strong> e levou <strong>cerca de 42 minutos</strong>. Isso consome <strong>muito mais uso
+  do seu plano</strong> do que uma conversa normal. Se o seu plano tiver limite, ele pode acabar no meio da etapa. O passo 7
+  mostra como reduzir esse custo.</li>
+<li>Renders no nosso Mac, para 65 s de vídeo: rascunho em 1 min 32 s, final em 2 min 29 s.</li>
+</ul>
+<h3 id="glossário-rápido-as-palavras-que-vão-aparecer">Glossário rápido (as palavras que vão aparecer)</h3>
+<ul>
+<li><strong>Talking head</strong>: você falando para a câmera. <strong>B-roll</strong>: vídeos de apoio que aparecem enquanto você fala.</li>
+<li><strong>CTA</strong>: a chamada final do vídeo ("comenta X que eu te mando...").</li>
+<li><strong>Pipeline</strong>: o caminho que o seu vídeo segue. Pipeline A = <code>takes-brutos</code> = exemplo 1 (reel PERSONAGEM, 47,9 s):
+  vários takes crus. Pipeline B = <code>take-cortado</code> = exemplo 2 (reel CLONE, 65,4 s): um arquivo que você já cortou.</li>
+<li><strong>HyperFrames</strong>: ferramenta que monta o vídeo como uma página HTML animada (com GSAP) e a renderiza quadro a quadro para MP4.</li>
+<li><strong>Proxy</strong>: uma cópia mais leve e fácil de editar do seu vídeo bruto. É ela que o vídeo final usa.</li>
+<li><strong>H.264 / HEVC</strong>: formatos de vídeo. O iPhone grava em HEVC, que não toca bem no navegador; o proxy é H.264.</li>
+<li><strong>GOP / keyframe</strong>: de quantos em quantos quadros o vídeo guarda uma imagem completa (o keyframe). GOP curto =
+  pular na timeline sem travar.</li>
+<li><strong>EDL</strong>: a lista de pedaços da câmera (de onde até onde cada um vai, e com qual enquadramento), no <code>edit/edl.json</code>.</li>
+<li><strong>Alinhamento forçado</strong>: dado o texto certo e o áudio, achar o instante exato em que cada palavra começa e termina.
+  É o que faz cada animação, legenda e efeito sonoro cair <strong>na palavra</strong>.</li>
+<li><strong>Jump cut / zoom cut</strong>: corte dentro do mesmo plano. Mudar o tamanho do plano no corte (A 1,00× e B 1,10×) disfarça o pulo.</li>
+<li><strong>Punch-in</strong>: zoom rápido na câmera para dar ênfase a uma palavra.</li>
+<li><strong>Snapshot</strong>: um quadro do vídeo salvo como imagem (PNG) para conferir. <strong>Folha de contato</strong>: vários quadros numa grade.</li>
+<li><strong>Storyboard</strong>: o roteiro visual. Aqui ele é um <strong>contrato</strong>: diz o que aparece, onde, de que tamanho e em que palavra.</li>
+<li><strong>Cue</strong>: uma palavra com o seu tempo, escrita <code>palavra@segundo</code> (ex.: <code>pagaria@1.59</code>).</li>
+<li><strong>Tempo global × local</strong>: global = segundos no vídeo inteiro; local = segundos desde o início da cena (o
+  storyboard usa o local).</li>
+<li><strong>HOLD / handoff</strong>: HOLD = a cena segura parada até o fim (por exemplo, enquanto a câmera cobre o palco). Handoff =
+  o último quadro de uma cena é igual ao primeiro da seguinte, para a passagem não piscar.</li>
+<li><strong>Tween / easing</strong>: uma animação de A para B, e a curva do movimento (<code>power3.out</code> = começa rápido e freia).</li>
+<li><strong>Wrapper</strong>: uma caixa em volta de um elemento, só para carregar um tipo de movimento (a regra é um wrapper por
+  responsabilidade).</li>
+<li><strong>Workflow</strong>: um script que coordena vários agentes do Claude ao mesmo tempo (uns constroem, outros revisam). Ele só
+  roda quando você pede explicitamente ("use um workflow"), e este kit só pede isso no passo 7. Existe também a
+  palavra <strong>"ultracode"</strong>, que liga o modo de workflows para a sessão inteira (toda tarefa seguinte vira workflow e o
+  gasto dispara): o kit <strong>não</strong> usa.</li>
+<li><strong>Seek</strong>: pular direto para um instante do vídeo. O render faz isso a cada quadro, por isso as animações precisam
+  estar certas em qualquer ponto ("seek-safe").</li>
+<li><strong>Hold morto</strong>: mais de ~1 s sem nada se mexendo no palco.</li>
+<li><strong>LUFS</strong>: volume percebido. O alvo usual das redes é −14 LUFS. <strong>dBFS</strong>: pico do sinal (0 é o máximo).</li>
+<li><strong>lint / check</strong>: verificações automáticas do HyperFrames (estrutura, erros, layout, contraste).</li>
+</ul>
+<hr />
+<h2 id="passo-0-preparar-a-pasta-e-o-projeto" class="step"><span class="n">Passo 0</span><span class="t">Preparar a pasta e o projeto</span></h2>
+<p><strong>Objetivo:</strong> criar o projeto HyperFrames e fazer o Claude ler as regras antes de qualquer coisa.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Estou na minha pasta de trabalho de reels. Aqui tem PADRAO-DE-QUALIDADE.md, RECEITAS-DE-MOTION.md, a pasta
+template-reel/ e a pasta materiais/ com o meu material. Vamos editar um reel no formato do template: câmera em cima,
+legenda karaokê na emenda e motion design sobre papel claro embaixo, tudo batendo na palavra falada.
+O processo é o do PADRAO-DE-QUALIDADE.md: não rode a entrevista de intenção da skill /hyperframes e não troque para
+outro fluxo (como o /talking-head-recut).
+
+1. Leia o PADRAO-DE-QUALIDADE.md inteiro. Ele é a regra de tudo o que vamos fazer neste vídeo e substitui a fase de
+   &quot;descobrir o visual&quot;. Leia também template-reel/DESIGN.md, template-reel/STORYBOARD-exemplo.md,
+   template-reel/BRIEF-exemplo.md e o índice do RECEITAS-DE-MOTION.md.
+2. Crie o projeto HyperFrames nesta pasta:
+   npx --yes hyperframes@0.8.141 init &quot;meu-reel&quot; --non-interactive --example=blank --skill=general-video
+   Use sempre essa mesma versão (npx --yes hyperframes@0.8.141 ...) em todos os comandos do HyperFrames daqui pra frente.
+   Logo depois do init, crie meu-reel/BRIEF.md só com o cabeçalho (o trecho entre as linhas ---) do modelo em branco
+   de template-reel/BRIEF-exemplo.md: workflow: general-video, flow: companion, destination, aspect &quot;9:16&quot; e
+   language pt-BR (message e length ficam como no modelo). O resto do BRIEF é preenchido no passo 5.
+3. Dentro de meu-reel/, crie as pastas media/, edit/audio/, edit/tools/, assets/fonts/, assets/img/, assets/broll/,
+   assets/sfx/, reference/, analise/, ff/ e renders/.
+   - Copie template-reel/fonts/*.woff2 para meu-reel/assets/fonts/.
+   - Copie os efeitos sonoros (.mp3) de ~/.claude/skills/media-use/audio/assets/sfx/ para meu-reel/assets/sfx/.
+     Se essa pasta não existir, pare e me avise (as skills do HyperFrames não estão instaladas).
+   - Copie template-reel/edit/tools/* para meu-reel/edit/tools/.
+   - Copie template-reel/DESIGN.md para meu-reel/DESIGN.md.
+4. Faça um inventário de materiais/: para cada arquivo, tipo, duração, resolução e fps (ffprobe). Compare com o
+   checklist de materiais do PADRAO-DE-QUALIDADE.md e me diga o que está faltando.
+
+Regras: não edite nada fora de meu-reel/ (os arquivos do starter são o modelo e ficam intactos). Termine com um resumo
+curto do que foi feito e do que falta.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>npx --yes hyperframes@0.8.141 init &quot;meu-reel&quot; --non-interactive --example=blank --skill=general-video
+mkdir -p meu-reel/{media,edit/audio,edit/tools,assets/fonts,assets/img,assets/broll,assets/sfx,reference,analise,ff,renders}
+cp template-reel/fonts/*.woff2 meu-reel/assets/fonts/
+cp ~/.claude/skills/media-use/audio/assets/sfx/*.mp3 meu-reel/assets/sfx/
+cp template-reel/edit/tools/* meu-reel/edit/tools/
+cp template-reel/DESIGN.md meu-reel/
+# meu-reel/BRIEF.md: só o cabeçalho (workflow: general-video · flow: companion · aspect &quot;9:16&quot; · language: pt-BR)
+ffprobe -v error -show_entries format=duration:stream=codec_name,width,height,r_frame_rate -of default=nw=1 &quot;&lt;arquivo&gt;&quot;
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Existe a pasta <code>meu-reel/</code> com <code>index.html</code>, <code>package.json</code> e <code>hyperframes.json</code>, e um <code>meu-reel/BRIEF.md</code> só com o
+  cabeçalho.
+- <code>meu-reel/assets/sfx/</code> tem os <code>.mp3</code> (click, pop, ping, whoosh...) e <code>meu-reel/assets/fonts/</code> tem os dois <code>.woff2</code>.
+- O inventário lista todos os seus arquivos e diz o que falta.</p>
+<p><strong>Armadilhas</strong>
+- Se o Claude começar a fazer perguntas sobre o vídeo (público, estilo, "pitch", itens obrigatórios) ou sugerir outro
+  fluxo, responda: <em>"Siga o PADRAO-DE-QUALIDADE.md; o BRIEF.md já tem o cabeçalho e o resto vem no passo 5."</em>
+- Skills instaladas com a sessão aberta não aparecem: abra uma sessão nova do Claude Code.
+- O <code>init</code> busca as skills no GitHub, então precisa de internet.
+- Os caminhos das fontes no DESIGN.md e nos scripts são <code>assets/fonts/...</code>. Se as fontes não estiverem lá, o texto
+  sai numa fonte genérica.</p>
+<hr />
+<h2 id="passo-1-analisar-a-referência-e-escrever-o-designmd" class="step"><span class="n">Passo 1</span><span class="t">Analisar a referência e escrever o DESIGN.md</span></h2>
+<p><strong>Objetivo:</strong> transformar o reel de referência num documento de design (<code>DESIGN.md</code>) que todos os agentes vão seguir.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Agora analise o vídeo de referência: materiais/referencia/[ARQUIVO-DA-REFERENCIA].mp4. É o formato que eu quero copiar.
+Não quero um &quot;visual genérico de IA&quot;: quero o jeito dessa referência.
+
+1. Faça folhas de contato a 2 quadros por segundo e salve em meu-reel/reference/:
+   ffmpeg -i &lt;referência&gt; -vf &quot;fps=2,scale=240:-1,tile=8x2:padding=4:color=white&quot; meu-reel/reference/sheet_%02d.png
+   Olhe todas as folhas.
+2. Extraia quadros em resolução cheia dos momentos-chave e MEÇA (em pixels, num quadro 1080×1920): a altura da
+   câmera e do palco, onde fica a legenda (caixa, tamanho, cor, quantas palavras por vez, minúsculas ou não), a paleta,
+   a tipografia, como os cards entram e saem (blur? escala? de onde vêm?), como os números aparecem, como é o CTA e o
+   ritmo (de quantos em quantos segundos algo muda no palco).
+3. Veja se a referência tem trilha musical: rode ffmpeg -i &lt;referência&gt; -af ebur128 -f null -, meça um trecho sem
+   fala (ebur128 ou astats) e me diga se parece haver trilha por baixo; eu confirmo ouvindo.
+4. Compare com meu-reel/DESIGN.md (que veio do template) e reescreva-o para esta referência: zonas da tela, paleta,
+   tipografia, superfícies, linguagem de motion e o contrato da sub-composição (o esqueleto HTML/GSAP que toda cena
+   copia). Se a referência tiver o mesmo formato do template (câmera em cima, legenda na emenda, motion embaixo), mude
+   só o que for diferente. Se o FORMATO da referência for diferente do template (outras zonas da tela, legenda em
+   outro lugar, câmera sempre em tela cheia), PARE e me liste o que teria de mudar nos scripts (build_index.py,
+   build_captions.py) e no bloco COMMON do workflow-cenas.js antes de reescrever o DESIGN.md. As regras técnicas do
+   PADRAO-DE-QUALIDADE.md (seek-safe, pop em dois canais, um wrapper por responsabilidade, fromTo sempre, nada
+   aleatório) continuam valendo seja qual for o visual.
+5. Me mostre 3 ou 4 quadros da referência e, para cada um, a decisão correspondente no DESIGN.md. Depois, uma lista
+   &quot;o que mudou em relação ao template e por quê&quot;.
+</code></pre></div>
+<blockquote>
+<p>Sem referência própria? Troque o prompt por: <em>"Não tenho referência. Use o meu-reel/DESIGN.md como está (é o visual
+do template) e só me mostre um resumo dele."</em></p>
+</blockquote>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>ffmpeg -i ref.mp4 -vf &quot;fps=2,scale=240:-1,tile=8x2:padding=4:color=white&quot; reference/sheet_%02d.png
+ffmpeg -ss 12.5 -i ref.mp4 -frames:v 1 reference/quadro_12.5.png      # quadros cheios nos momentos-chave
+ffmpeg -i ref.mp4 -af ebur128 -f null -                                # volume e se há trilha (você confirma ouvindo)
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Abra as folhas em <code>meu-reel/reference/</code> e o <code>meu-reel/DESIGN.md</code>. As cores, a posição da legenda e o jeito como os
+  cards entram descritos no DESIGN.md batem com o que você vê na referência?
+- O DESIGN.md tem a seção do contrato da sub-composição (um esqueleto de código). Sem ela, as cenas saem inconsistentes.</p>
+<p><strong>Armadilhas</strong>
+- "Inspirado em" vira genérico. Peça medidas (px, segundos, easing), não adjetivos.
+- Se a referência tem música, anote. A música não vem no kit (veja as <a href="#perguntas-frequentes">Perguntas frequentes</a>).</p>
+<hr />
+<h2 id="passo-2-analisar-o-vídeo-bruto-e-escolher-o-pipeline" class="step"><span class="n">Passo 2</span><span class="t">Analisar o vídeo bruto e escolher o pipeline</span></h2>
+<p><strong>Objetivo:</strong> medir o seu vídeo antes de editar (texto, volume, cortes) e decidir qual dos dois pipelines usar.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Agora analise o meu vídeo bruto em materiais/bruto/ (pode ser um arquivo só ou vários takes). O roteiro está em
+materiais/roteiro.* (se existir). Trabalhe em meu-reel/analise/.
+
+Para cada arquivo:
+1. Ficha técnica com ffprobe (codec, resolução, fps, duração, áudio) e uma folha de contato a 1 quadro por segundo.
+2. Transcrição: extraia o áudio em 16 kHz mono e rode
+   whisper-cli -m ~/.cache/hyperframes/whisper/models/ggml-large-v3-turbo-q5_0.bin -l pt -f &lt;audio.wav&gt; --prompt &quot;[NOMES PRÓPRIOS E SIGLAS DO SEU VÍDEO, SEPARADOS POR VÍRGULA]&quot;
+   (se o modelo não estiver nessa pasta, peça minha permissão e baixe ggml-large-v3-turbo-q5_0.bin de
+   huggingface.co/ggerganov/whisper.cpp para lá). Corrija a transcrição comparando com o roteiro. Trechos duvidosos:
+   recorte só aquele pedaço e transcreva de novo. Lembre: os tempos por palavra do whisper NÃO servem para corte nem
+   para sincronia; do whisper só usamos o TEXTO.
+3. Áudio: loudness com ebur128 e pausas com silencedetect=noise=-38dB:d=0.12. Diga se o áudio parece já processado
+   (muito alto e comprimido, quase sem pausas).
+4. Cortes: rode o scdet do ffmpeg (scale=270:-1,scdet=threshold=4) e olhe a folha de contato. Diga se o vídeo já vem
+   cortado por mim (um arquivo com jump cuts e fala contínua) ou se são takes brutos (pausas, tentativas repetidas).
+5. Escolha o pipeline e me explique por quê:
+   - takes-brutos (template-reel/edit/takes-brutos/): vários takes crus; o script corta as pausas na voz e usa a
+     melhor tentativa de cada bloco.
+   - take-cortado (template-reel/edit/take-cortado/): um arquivo já cortado por mim; a voz NÃO é recortada de novo, a
+     timeline fica 1:1 com o arquivo e cada corte meu vira uma troca de enquadramento.
+   Copie os 4 scripts do pipeline escolhido (align.py, build_edl.py, build_captions.py, build_index.py) para
+   meu-reel/edit/.
+6. Me entregue: a ficha, a transcrição corrigida (marque as palavras que você mudou), as medidas de áudio e a decisão
+   do pipeline. PARE e espere eu confirmar a transcrição antes de seguir.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>ffprobe -v error -show_entries format=duration:stream=codec_name,width,height,r_frame_rate,sample_rate,channels -of default=nw=1 &quot;$SRC&quot;
+ffmpeg -i &quot;$SRC&quot; -vf &quot;fps=1,scale=180:-1,tile=11x6:padding=4:color=white&quot; -frames:v 1 analise/sheet.png
+ffmpeg -i &quot;$SRC&quot; -ac 1 -ar 16000 analise/a16.wav
+whisper-cli -m ~/.cache/hyperframes/whisper/models/ggml-large-v3-turbo-q5_0.bin -l pt -f analise/a16.wav --prompt &quot;Nome1, Nome2, SIGLA&quot;
+ffmpeg -i &quot;$SRC&quot; -af ebur128 -f null -
+ffmpeg -i analise/a16.wav -af silencedetect=noise=-38dB:d=0.12 -f null -
+ffmpeg -i &quot;$SRC&quot; -vf &quot;scale=270:-1,scdet=threshold=4&quot; -an -f null -
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- <strong>Leia a transcrição inteira.</strong> Nomes próprios são onde o whisper mais erra. No nosso vídeo ele escreveu "Claudio"
+  no lugar de "Claude" e "em quem Sam Consciência" no lugar de "quem em sã consciência", mesmo com o <code>--prompt</code>.
+- A decisão do pipeline faz sentido? Você sabe se exportou o vídeo já cortado ou não.</p>
+<p><strong>Armadilhas</strong>
+- A transcrição errada contamina tudo depois (alinhamento, legendas, storyboard). Corrija agora.
+- No nosso caso o áudio veio a −8,2 LUFS (alto e comprimido por um aprimorador de voz) e quase sem pausas: sinal de
+  que o vídeo já vinha cortado. Isso mudou o plano inteiro.
+- Vídeo de iPhone em HEVC não toca bem no navegador. Não tem problema: o proxy do próximo passo resolve.</p>
+<hr />
+<h2 id="passo-3-proxy-alinhamento-forçado-cortes-e-enquadramento" class="step"><span class="n">Passo 3</span><span class="t">Proxy, alinhamento forçado, cortes e enquadramento</span></h2>
+<p><strong>Objetivo:</strong> criar o arquivo de câmera leve (proxy), achar o tempo exato de cada palavra, fechar a lista de cortes e
+medir onde está o seu rosto.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Transcrição confirmada. Agora proxy, alinhamento forçado, cortes e enquadramento, seguindo o pipeline escolhido
+(os scripts estão em meu-reel/edit/; o que precisa mudar fica no bloco &quot;EDITE AQUI&quot; no topo de cada script, que vem
+com valores de EXEMPLO do reel do kit: troque todos pelos meus). Trabalhe dentro de meu-reel/.
+
+1. PROXY da câmera (o arquivo que o vídeo realmente usa): 1440×2560, 30 fps, H.264, GOP de 15 quadros (um keyframe a
+   cada 0,5 s, senão o preview trava a cada salto), cadeia de voz do padrão com loudnorm em −14 LUFS e uma cauda de
+   0,3 s para o último quadro não sair preto. Referência:
+   ffmpeg -i &quot;$SRC&quot; -vf &quot;scale=1440:2560:flags=lanczos,format=yuv420p,tpad=stop_mode=clone:stop_duration=0.3&quot; -r 30 \
+     -c:v libx264 -preset medium -crf 17 -g 15 -keyint_min 15 -sc_threshold 0 -movflags +faststart \
+     -af &quot;highpass=f=75,acompressor=threshold=-22dB:ratio=2.5:attack=8:release=120:makeup=2,loudnorm=I=-14:TP=-1.5:LRA=9,apad=pad_dur=0.25&quot; \
+     -c:a aac -b:a 192k -ar 48000 -t &lt;duração do áudio + 0,27 s&gt; media/take.mp4
+   Take cortado: um proxy (media/take.mp4). Takes brutos: o mesmo comando para cada take (media/t1-....mp4 etc.), mas
+   SEM tpad, apad e -t (a cauda só é necessária no take cortado). Depois, o WAV 16 kHz mono de cada proxy em
+   edit/audio/ (o nome do arquivo é o &quot;clip&quot; do segments.json).
+2. MÍDIA DE APOIO: B-roll recodificado em assets/broll/ (H.264, 30 fps, GOP curto -g 12 -keyint_min 12
+   -sc_threshold 0, sem áudio; vertical em 720×1280) e prints em assets/img/. Atualize a tabela de assets do
+   meu-reel/DESIGN.md: arquivo, tamanho em px, o que mostra e, nos prints, as regiões importantes em px
+   (ex.: &quot;linha do ranking: x 7–515, y 8–92&quot;).
+3. ALINHAMENTO FORÇADO: escreva edit/segments.json com o texto corrigido, sem pontuação, em minúsculas, exceto nomes
+   próprios e siglas. No dicionário NUM do edit/align.py, coloque números por extenso e uma grafia &quot;fonética&quot; para cada
+   nome próprio ou sigla (ex.: &quot;MCP&quot;: &quot;emecepe&quot;, &quot;Claude&quot;: &quot;cloud&quot;); no segments.json esses nomes ficam escritos
+   exatamente como as chaves do NUM. Rode (na primeira vez SEM --offline, para baixar o que falta):
+   uv run --offline --no-project -p 3.12 --with torch==2.5.1 --with torchaudio==2.5.1 --with numpy python edit/align.py
+   Se este Mac for Intel (uname -m dá x86_64), troque por --with torch==2.2.2 --with torchaudio==2.2.2
+   --with &quot;numpy&lt;2&quot; e me avise que essa combinação não foi testada pelo kit. Me mostre as palavras com score baixo.
+4. CORTES:
+   - take cortado: ache os cortes que já existem comparando quadro a quadro só a parte de cima do fundo (parede,
+     luminária), que não mexe quando eu gesticulo:
+     ffmpeg -i media/take.mp4 -vf &quot;scale=72:128,format=gray&quot; -f rawvideo analise/g.raw &amp;&amp; python3 edit/tools/cuts.py analise/g.raw
+     Isso dá CANDIDATOS. Para cada um, monte um par &quot;quadro antes / quadro depois&quot; e olhe: só é corte se o fundo e a
+     postura pulam; gesto de mão não conta. Cole os aprovados em CUTS no edit/build_edl.py e sugira 1 ou 2 &quot;zoom cuts&quot;
+     (ZOOM) em respiros dentro de trechos longos.
+   - takes brutos: configure CLIP_FILE, ORDER (a melhor tentativa de cada bloco), KEEP (pausas que são de propósito) e
+     TAIL no edit/build_edl.py. Regra: pausa maior que 0,30 s só é cortada se tiver pelo menos 0,16 s de silêncio real;
+     toda borda de corte precisa ficar em −40 dB ou menos (edge_db).
+5. ROSTO MEDIDO, NÃO CHUTADO: extraia 3 quadros (a 20%, 50% e 80%) de cada trecho entre cortes (take cortado) ou de
+   cada take (takes brutos) para ff/, em 1080×1920. Compile e rode o detector de rosto do macOS:
+   swiftc -O edit/tools/face.swift -o face &amp;&amp; ./face ff/*.png
+   Cole a média dos olhos de cada trecho em EYES no edit/build_edl.py (take cortado) ou em FACE no
+   edit/build_index.py (takes brutos, um valor por take). Os trechos de zoom cut herdam a medida do trecho de origem.
+6. Antes, no take cortado, ponha em TOTAL (edit/build_edl.py) a duração do vídeo ORIGINAL:
+   ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 &quot;materiais/bruto/&lt;arquivo&gt;&quot;
+   Rode python3 edit/build_edl.py e me mostre: a lista de peças (A/B alternando, início, duração e texto de cada uma)
+   e os pares antes/depois que você usou para aprovar ou descartar cada corte. Se ele imprimir &quot;AVISO: ... ainda tem
+   o valor de EXEMPLO do kit&quot;, troque esse valor pelo meu e rode de novo.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>ffmpeg -i &quot;$SRC&quot; -vf &quot;scale=1440:2560:...,tpad=...&quot; -r 30 -c:v libx264 -crf 17 -g 15 ... -af &quot;highpass...,loudnorm=I=-14...&quot; media/take.mp4
+ffmpeg -i media/take.mp4 -ac 1 -ar 16000 edit/audio/take.wav
+uv run --no-project -p 3.12 --with torch==2.5.1 --with torchaudio==2.5.1 --with numpy python edit/align.py   # → edit/words_source.json
+ffmpeg -i media/take.mp4 -vf &quot;scale=72:128,format=gray&quot; -f rawvideo analise/g.raw &amp;&amp; python3 edit/tools/cuts.py analise/g.raw
+f=816; ffmpeg -i media/take.mp4 -vf &quot;select='between(n,$((f-1)),$f)',scale=200:-1,tile=2x1&quot; -fps_mode passthrough -frames:v 1 analise/par_$f.png
+ffmpeg -v error -y -ss 12.3 -i media/take.mp4 -frames:v 1 -vf scale=1080:1920 ff/f_12.3.png     # 3 por trecho
+swiftc -O edit/tools/face.swift -o face &amp;&amp; ./face ff/*.png
+python3 edit/build_edl.py    # → edit/edl.json (peças A/B) + edit/words.json (palavras na timeline)
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Olhe os pares antes/depois dos cortes. No nosso vídeo o script achou 23 candidatos; olhando os pares, 7 eram só
+  gesto e foram descartados. Ficaram 16 cortes reais, todos em fronteira de frase.
+- Na lista de peças, A e B se alternam e o texto de cada peça termina em fim de frase.
+- Palavras com score muito baixo no alinhamento costumam ser nomes sem grafia fonética no NUM. Ajuste e rode de novo.</p>
+<p><strong>Armadilhas</strong>
+- Os scripts <strong>não leem sozinhos</strong> a saída do <code>cuts.py</code> nem do <code>face</code>. Os valores são colados à mão no topo dos
+  scripts: TOTAL, CUTS, ZOOM e EYES no <code>build_edl.py</code> (take cortado), FACE no <code>build_index.py</code> (takes brutos). Os
+  scripts vêm com os valores do nosso reel como exemplo e avisam quando um deles continua lá
+  (<code>AVISO: CUTS ainda tem o valor de EXEMPLO do kit; troque pelo seu</code>). Não siga em frente com esse aviso.
+- Mac Intel: o comando do alinhador muda (veja "Meu Mac é Intel" nas <a href="#perguntas-frequentes">Perguntas frequentes</a>).
+- A primeira execução do alinhador baixa Python, PyTorch e o modelo: demora e precisa de internet.
+- No take cortado, não deixe o Claude "limpar" pausas: a sua fala já está decupada, recortar de novo dá áudio picotado.</p>
+<hr />
+<h2 id="passo-4-legendas-karaokê" class="step"><span class="n">Passo 4</span><span class="t">Legendas karaokê</span></h2>
+<p><strong>Objetivo:</strong> gerar a legenda da emenda: blocos curtos escritos à mão, palavra acendendo no tempo exato e destaques
+em lima.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Agora as legendas karaokê: compositions/captions.html, gerado por edit/build_captions.py a partir de edit/words.json.
+O words.json é escrito pelo edit/build_edl.py, então o que muda o TEXTO da legenda fica nele.
+
+1. No edit/build_edl.py: configure DISPLAY com as siglas e a palavra do CTA em MAIÚSCULAS ([SIGLAS],
+   [PALAVRA-DO-CTA]; tire os exemplos &quot;ia&quot;, &quot;mcp&quot; e &quot;clone&quot; que não forem meus; o resto fica em minúsculas) e, no take
+   cortado, SKIP com as muletas que eu falei mas não devem aparecer na legenda: [EX.: O &quot;A&quot; EM &quot;COMENTA A PALAVRA&quot;].
+   Nos takes brutos não existe SKIP: adapte o build_edl.py e o build_captions.py para ter o mesmo efeito. Rode
+   python3 edit/build_edl.py de novo antes de escrever os blocos (eles usam as palavras como ficaram no words.json).
+2. Escreva os blocos À MÃO (CHUNK_TEXT no take cortado, CHUNKS no takes brutos). Não use divisão automática:
+   1 a 3 palavras por bloco (até 4 em expressões como &quot;o passo a passo&quot;), até uns 18–22 caracteres, sempre uma linha,
+   quebrando onde a minha voz quebra. Nunca termine um bloco em palavra fraca (&quot;de&quot;, &quot;o&quot;, &quot;que&quot;, &quot;e&quot;, &quot;pra&quot;, &quot;por&quot;),
+   a não ser onde a fala pedir.
+3. Destaques em lima: mais ou menos 1 a cada 3 segundos, nas palavras que importam (o gancho, números, marcas, a
+   prova, a palavra do CTA). No take cortado, HL_AT com o tempo exato de início de cada palavra. Nos takes brutos, HL
+   pelas palavras (ele destaca TODAS as vezes em que a sequência aparece) + HL_JANELA para limitar as repetições a um
+   intervalo de tempo.
+4. Modos: &quot;broll&quot; (branca com sombra, sobre o B-roll do gancho), &quot;paper&quot; (tinta escura sobre o papel) e &quot;full&quot; (branca,
+   mais embaixo, quando a câmera está em tela cheia). Proponha agora: até que segundo vai o B-roll do gancho
+   (BROLL_END; nos takes brutos também BROLL_HIDE; 0 se não houver B-roll) e 1 ou 2 momentos de câmera em tela cheia,
+   em frases de conversa direta comigo (tipo &quot;e pensa comigo&quot;): FULLS no take cortado; nos takes brutos, FULL +
+   FULL_HIDE, e ali o script aceita exatamente UMA tela cheia (para nenhuma ou duas, adapte build_index.py e
+   build_captions.py). Esses tempos valem também para a câmera no passo 6.
+5. Rode python3 edit/build_edl.py &amp;&amp; python3 edit/build_captions.py e me mostre a lista de blocos com tempo, modo e
+   [destaques]. Se aparecer &quot;AVISO: ... ainda tem o valor de EXEMPLO do kit&quot;, troque esse valor pelo meu e rode de novo.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>python3 edit/build_edl.py &amp;&amp; python3 edit/build_captions.py    # words.json (DISPLAY/SKIP) → compositions/captions.html;
+                                                              # imprime cada bloco com tempos, modo e [destaques]
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Leia a lista de blocos em voz alta junto com o vídeo. Cada bloco tem que soar como uma unidade da sua fala.
+- Os destaques estão espaçados (não 3 seguidos, não 10 segundos sem nenhum)?</p>
+<p><strong>Armadilhas</strong>
+- No nosso primeiro teste, a divisão automática gerou blocos ruins ("e" sozinho, "eu" sozinho). Por isso a lista é manual.
+- Mudou DISPLAY ou SKIP? Rode o <code>build_edl.py</code> antes do <code>build_captions.py</code>; senão a legenda não muda.
+- O script confere palavra por palavra se os blocos batem com o áudio. Se der erro, é porque a lista pulou ou repetiu
+  uma palavra.
+- Nas trocas de modo, a legenda tem que sair antes da borda da câmera passar por ela; senão aparece texto escuro sobre
+  o vídeo ou texto branco sobre o papel. Confira isso nos snapshots do passo 6.</p>
+<hr />
+<h2 id="passo-5-brief-e-storyboard-o-contrato" class="step"><span class="n">Passo 5</span><span class="t">BRIEF e STORYBOARD (o contrato)</span></h2>
+<p><strong>Objetivo:</strong> escrever o que cada cena mostra, em que palavra, onde e de que tamanho, para que os agentes do passo 7
+trabalhem em paralelo sem precisar adivinhar nada.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Agora o contrato do vídeo: complete meu-reel/BRIEF.md (o cabeçalho já existe desde o passo 0: mantenha) e escreva
+meu-reel/STORYBOARD.md. Use template-reel/BRIEF-exemplo.md e
+template-reel/STORYBOARD-exemplo.md como modelo de formato. As cenas prontas para adaptar estão em
+template-reel/scenes-exemplo/ e template-reel/scenes-exemplo-2/, e as receitas delas no RECEITAS-DE-MOTION.md.
+
+BRIEF.md: a mensagem do vídeo numa frase, o destino (Reels/TikTok, 9:16), a duração, os materiais e de onde veio cada
+um, as decisões (telas cheias, números permitidos) e tudo o que você inferiu sem eu confirmar.
+
+STORYBOARD.md:
+- Uma tabela no topo: cada cena com id (s1-..., s2-...), tempo global, duração, o que é falado, o que aparece no palco
+  e de qual cena-exemplo ela é adaptada. As cenas começam e terminam nos cortes ou nas fronteiras de frase.
+- TODA frase tem uma referência visual no palco, batendo na palavra.
+- Um bloco por cena (status, id, src, global_start, duration, rules, cues) e, depois, cada batida com geometria exata:
+  posição, tamanho, fonte, easing, estado de entrada e de saída. &quot;cues&quot; = cada palavra com o seu tempo LOCAL na cena
+  (palavra@segundos desde o início da cena), tirado de edit/words.json. O movimento começa ~0,10 s antes da palavra
+  para chegar no pico exatamente nela.
+- Cenas que passam uma para a outra: descreva o último quadro de uma e o primeiro da outra (handoff). Cenas que ficam
+  embaixo da câmera em tela cheia: HOLD (seguram até a câmera cobrir o palco).
+- Uma seção de regras universais (do PADRAO-DE-QUALIDADE.md): nada da cena na faixa da legenda (y 800–920), texto
+  importante dentro de x 70–1010 e y 950–1680, pop em dois canais (nunca blur num easing que passa do ponto), um
+  wrapper por responsabilidade, fromTo sempre, repetições finitas, nada aleatório, vídeo dentro de card com a caixa no
+  aspecto nativo.
+- NÚMEROS NA TELA: SÓ os que estão nos prints ou no roteiro. Nenhum dado inventado. Se houver conta, escreva a ressalva
+  na tela (ex.: &quot;cálculo ilustrativo&quot;).
+- HONESTIDADE: não coloque criadores ou perfis reais ao lado de dinheiro, de uma marca ou de uma interface de um jeito
+  que sugira algo que não é verdade. Marque com CONFIRMAR tudo o que for inventado ou não confirmado (comentaristas de
+  um mock, o @ do CTA, parcerias).
+- O CTA é &quot;comenta [PALAVRA-DO-CTA]&quot; e o meu @ é [SEU-@].
+
+Me mostre a tabela e a lista do que está marcado como CONFIRMAR. Espere a minha aprovação antes de construir qualquer cena.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer:</strong> lê <code>edit/words.json</code>, <code>edit/edl.json</code>, o <code>DESIGN.md</code>, os prints e as cenas-exemplo, e
+escreve os dois arquivos. Não roda comandos pesados.</p>
+<p><strong>Como conferir</strong>
+- Leia a tabela do storyboard como se fosse o vídeo: cada frase tem um visual? O visual ajuda a entender a frase?
+- Confira cada número que vai aparecer na tela contra o seu print.
+- Resolva a lista CONFIRMAR agora (troque o que for inventado, confirme o seu @).</p>
+<p>Exemplo de batidas reais do nosso storyboard (cena s4, resumida):</p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>cues: aí@0.06 ... existe@0.86 ... launchpoint@2.08 | que@2.70 só@2.80 aceita@2.90 vídeos@3.34 ... IA@4.08 | ... higgsfield@6.70
+- 0.00  card da página já em cena, desfocado (blur 18px, opac .55) → fica nítido em &quot;existe&quot; (0.76–1.10)
+- 1.98  pílula &quot;Launchpoint&quot; (logo 56px + Geist 700 44px) estoura sobre a borda do card + brilho lima
+- 3.24  anel lima em &quot;AI Videos ONLY&quot;; 3.98 a pílula pisca lima em &quot;IA&quot;
+- 6.60  anel lima + etiqueta &quot;#1 · quem mais paga&quot;; 6.90–7.70 SEGURA (a câmera cobre o palco)
+</code></pre></div>
+<p><strong>Armadilhas</strong>
+- Storyboard vago = cenas genéricas. Se uma batida diz "aparece um card bonito", peça posição, tamanho e palavra.
+- Tempo global × local: o storyboard usa o tempo <strong>local</strong> da cena (segundos desde o início dela). Exemplo: uma palavra
+  dita aos 18,60 s do vídeo, numa cena que começa em 11,90 s, tem cue local 6,70.
+- No nosso vídeo, um revisor chegou a pôr vídeos de criadores reais dentro de uma interface de uma empresa, o que
+  insinuava que o conteúdo deles era de lá. A regra de honestidade existe por isso.</p>
+<hr />
+<h2 id="passo-6-câmera-indexhtml-e-snapshot-de-calibração" class="step"><span class="n">Passo 6</span><span class="t">Câmera, index.html e snapshot de calibração</span></h2>
+<p><strong>Objetivo:</strong> montar a composição principal (câmera, cenas provisórias, legendas) e conferir o enquadramento em
+quadros reais antes de criar o motion.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Storyboard aprovado. Agora a câmera e a montagem principal: meu-reel/index.html, gerado por edit/build_index.py.
+
+1. Configure no build_index.py: SCENES (id, início e duração de cada cena, iguais ao STORYBOARD.md), as janelas de
+   tela cheia (FULLS no take cortado, FULL no takes brutos; abrir e fechar em 0,36 s power3.inOut), PUNCH (punch-ins de
+   1,05× em palavras-chave, voltando ao normal no corte seguinte) e a cor (grade leve &quot;skin-soft&quot;). Os efeitos sonoros
+   das cenas ainda não existem (o edit/sfx_from_review.json chega no passo 7); por enquanto o script segue só com os
+   sons da câmera e avisa.
+2. Crie um arquivo provisório compositions/&lt;id&gt;.html para cada cena do storyboard, seguindo o contrato de
+   sub-composição do DESIGN.md (pode ser vazio), só para o index carregar.
+3. Rode python3 edit/build_index.py e depois npx --yes hyperframes@0.8.141 lint.
+4. Snapshot de calibração. Escolha tempos: 1 s; logo depois de 2 cortes (um enquadramento A e um B); a abertura e o meio
+   de cada tela cheia; e um bloco de legenda de cada modo (broll, paper, full). Rode:
+   npx --yes hyperframes@0.8.141 snapshot --at &lt;tempos separados por vírgula&gt; --no-end -o snapshots/cam-check --describe false
+   Olhe os PNGs e confira: olhos na mesma altura em todos os cortes (≈ y 320 do painel da câmera), topo da cabeça não
+   cortado no A, o vídeo cobrindo o painel inteiro, a tela cheia sem bordas, a legenda legível em cada modo.
+5. Me mostre os snapshots e o que você ajustou.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>python3 edit/build_index.py       # index.html: papel + brilho, cenas, câmera em camadas, legendas, SFX
+npx --yes hyperframes@0.8.141 lint
+npx --yes hyperframes@0.8.141 snapshot --at 1.0,6.0,19.45,19.9,24.5,58.6 --no-end -o snapshots/cam-check --describe false
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Abra os PNGs em <code>meu-reel/snapshots/cam-check/</code>. Os seus olhos estão na mesma altura em todos? O corte de A para B
+  parece uma troca de câmera intencional?
+- Na tela cheia, a legenda está branca e embaixo; na tela dividida, escura sobre o papel.</p>
+<p><strong>Armadilhas</strong>
+- No take cortado, a câmera é montada em 5 camadas (recorte, tela cheia, punch-in, "respiração" lenta, enquadramento
+  por peça), cada uma com uma só função. Se o Claude quiser animar tudo numa camada só, as animações brigam entre si.
+- No take cortado, o <code>build_index.py</code> confere se o vídeo cobre o painel inteiro em todas as peças e para com erro se
+  não cobrir. Quase sempre é a medida do rosto daquele trecho: refaça o item 5 do passo 3 para ele.</p>
+<hr />
+<h2 id="passo-7-as-cenas-com-workflow-multiagente" class="step"><span class="n">Passo 7</span><span class="t">As cenas, com workflow multiagente</span></h2>
+<p><strong>Objetivo:</strong> construir todas as cenas de motion em paralelo e revisá-las com um segundo agente que procura erros em
+quadros reais.</p>
+<blockquote>
+<p><strong>Atenção ao custo.</strong> Esta é a etapa que mais consome uso do plano. No nosso reel: 10 agentes, 647 chamadas de
+ferramenta, 905 snapshots, ~42 minutos. Para controlar o gasto: rode só alguns grupos de cada vez ("rode só os grupos
+1 e 2 agora"), ou use o plano B no fim desta seção, em que você acompanha e pode parar a cada cena.</p>
+<p>O workflow só roda quando <strong>você pede explicitamente</strong>: por isso o prompt diz "use um workflow". <strong>Não escreva
+"ultracode"</strong>: essa palavra liga o modo de workflows para a sessão inteira, e aí até os passos 8 a 10 virariam
+workflows (e o gasto dispara).</p>
+<p>O prompt usa o script do kit: <code>starter/template-reel/edit/workflow-cenas.js</code>, que na sua pasta de trabalho está em
+<code>template-reel/edit/workflow-cenas.js</code>. Ele traz os prompts dos construtores e dos revisores que usamos e <strong>não é
+editado</strong>: o Claude só monta os "args" (os caminhos e os grupos de cenas do seu storyboard) e roda.</p>
+</blockquote>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Use um workflow para construir e revisar as cenas deste reel (só nesta etapa).
+
+1. Copie template-reel/edit/workflow-cenas.js para meu-reel/edit/workflow-cenas.js SEM editar: tudo o que muda entra
+   como args.
+2. Monte os grupos a partir do meu STORYBOARD.md: 2 ou 3 cenas por grupo, e cenas que passam uma para a outra
+   (handoff) ficam no mesmo grupo. Cada cena é {&quot;id&quot;, &quot;start&quot;, &quot;dur&quot;, &quot;adapt&quot;, &quot;rec&quot;}: id igual ao storyboard e ao
+   SCENES do build_index.py; start = início global em s; dur = duração em s; adapt = a cena-exemplo que ela adapta,
+   relativa a template-reel/ (ex.: &quot;scenes-exemplo/s3-calc.html&quot;); rec = a seção do RECEITAS-DE-MOTION.md (ex.:
+   &quot;s3-calc&quot;), opcional.
+3. Rode o Workflow com scriptPath = &lt;caminho absoluto&gt;/meu-reel/edit/workflow-cenas.js e args (objeto JSON, não
+   texto) =
+   {&quot;project&quot;: &quot;&lt;caminho absoluto de meu-reel&gt;&quot;,
+    &quot;kit&quot;: &quot;&lt;caminho absoluto desta pasta de trabalho&gt;&quot;,
+    &quot;reference&quot;: &quot;&lt;caminho absoluto de materiais/referencia/[ARQUIVO-DA-REFERENCIA].mp4&gt;&quot;,
+    &quot;groups&quot;: [[{&quot;id&quot;: &quot;...&quot;, &quot;start&quot;: 0, &quot;dur&quot;: 0, &quot;adapt&quot;: &quot;...&quot;, &quot;rec&quot;: &quot;...&quot;}, ...], ...]}
+   O script já usa npx --yes hyperframes@0.8.141 (arg &quot;hyperframes&quot;, opcional).
+
+O script já faz isto (não reescreva; só confira no resultado):
+- Pipeline &quot;construir → revisar&quot; por grupo, sem barreira (o grupo que termina de construir já começa a ser revisado).
+- CONSTRUTORES: leem, nesta ordem, DESIGN.md → o seu bloco do STORYBOARD.md → as seções de motion e de armadilhas
+  técnicas do PADRAO-DE-QUALIDADE.md → a cena-exemplo que adaptam e as receitas dela. Adaptam código provado (os
+  helpers, a estrutura de wrappers, os anéis e brilhos), não inventam do zero. Escrevem SÓ compositions/&lt;id&gt;.html, sem
+  áudio. Verificam com lint e 12 a 20 snapshots por cena (no pico de cada batida, nos holds, na saída, no primeiro e no
+  último quadro). Devolvem: resumo da cena, efeitos sonoros sugeridos (tempo GLOBAL, arquivo de assets/sfx/, volume) e
+  notas de transição.
+- REVISORES ADVERSARIAIS (outro agente, contexto limpo, um por grupo): partem do princípio de que HÁ bugs. Snapshots a
+  cada 0,15–0,25 s da cena inteira, mais um em cada palavra-chave, mais seeks &quot;a frio&quot; (snapshots isolados no meio dos
+  pops, onde o blur travado aparece). Conferem: (a) cada batida no tempo da palavra; (b) nada da cena na emenda
+  800–920 e texto importante na área segura; (c) anéis e contornos abraçando o alvo; (d) blur preso, elemento
+  meio-transparente por engano, piscada no início ou no fim; (e) hold morto &gt; 1 s; (f) saídas antes do fim da cena
+  (e HOLD segurando de verdade); (g) texto estourando a caixa, tamanho mínimo 24 px, contraste; (h) vídeos certos,
+  enquadrados e sincronizados; (i) cara de template barato perto da referência; (j) storyboard completo; (k) honestidade
+  de conteúdo: nenhum texto, @, nome, número ou asset sobrando das cenas-exemplo. Corrigem direto no arquivo, provam a
+  correção com novos snapshots, rodam lint e devolvem: encontrado / corrigido / pendente e a lista FINAL de efeitos
+  sonoros (tempo global).
+- Regras para todos: cada um usa a sua própria pasta de snapshots; ninguém roda animation-map nem deixa processo rodando.
+
+Antes de rodar, me mostre os args, quantos agentes vão rodar (2 por grupo) e quais grupos, e espere o meu OK.
+
+Depois do workflow:
+1. Junte os efeitos sonoros dos revisores: python3 edit/tools/collect_sfx.py &lt;journal.jsonl do workflow&gt;
+   → edit/sfx_from_review.json (o build_index.py dos dois pipelines lê esse arquivo). Se algum som empilhar com outro
+   na mesma batida, tire-o com DROP no build_index.py.
+2. Rode python3 edit/build_index.py e npx --yes hyperframes@0.8.141 check.
+3. Me mostre o relatório de cada revisor (encontrado / corrigido / pendente) e o resultado do check.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<p>Os args que o Claude monta (exemplo com 2 grupos; no nosso reel foram 5 grupos, 11 cenas e 10 agentes). O script
+<code>meu-reel/edit/workflow-cenas.js</code> fica como veio do kit:</p>
+<div class="cmd"><div class="bar"><span class="lbl">JSON</span><button type="button" class="copy">Copiar</button></div><pre><code>{
+  &quot;project&quot;: &quot;/Users/SEU-USUARIO/Documents/Reels/meu-reel&quot;,
+  &quot;kit&quot;: &quot;/Users/SEU-USUARIO/Documents/Reels&quot;,
+  &quot;reference&quot;: &quot;/Users/SEU-USUARIO/Documents/Reels/materiais/referencia/referencia.mp4&quot;,
+  &quot;groups&quot;: [
+    [ { &quot;id&quot;: &quot;s1-hook&quot;, &quot;start&quot;: 0, &quot;dur&quot;: 5.567, &quot;adapt&quot;: &quot;scenes-exemplo/s1-hook.html&quot;, &quot;rec&quot;: &quot;s1-hook&quot; },
+      { &quot;id&quot;: &quot;s2-dinheiro&quot;, &quot;start&quot;: 5.567, &quot;dur&quot;: 3.166, &quot;adapt&quot;: &quot;scenes-exemplo/s3-calc.html&quot;, &quot;rec&quot;: &quot;s3-calc&quot; } ],
+    [ { &quot;id&quot;: &quot;s3-cta&quot;, &quot;start&quot;: 8.733, &quot;dur&quot;: 6.0, &quot;adapt&quot;: &quot;scenes-exemplo/s8-cta.html&quot;, &quot;rec&quot;: &quot;s8-cta&quot; } ]
+  ]
+}
+</code></pre></div>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>npx --yes hyperframes@0.8.141 lint
+npx --yes hyperframes@0.8.141 snapshot --at 12.0,12.9,13.95,14.5 --no-end -o snapshots/build-s4 --describe false
+python3 edit/tools/collect_sfx.py &lt;journal.jsonl&gt;    # → edit/sfx_from_review.json
+python3 edit/build_index.py
+npx --yes hyperframes@0.8.141 check
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- Leia o relatório dos revisores. No nosso reel eles pegaram, por exemplo: um contador que empurrava o texto a cada
+  dígito, um "?" que aparecia por só 2 ou 3 quadros, uma pílula num azul diferente do print, um card parado (hold
+  morto), um card translúcido deixando a lista de trás aparecer.
+- Abra alguns snapshots dos revisores em <code>meu-reel/snapshots/review-*</code>.
+- Os itens "pendente" viram tarefa do passo 8.</p>
+<p><strong>Armadilhas</strong>
+- <strong>Blur com easing que passa do ponto</strong> (<code>back.out</code>): num seek o blur fica negativo e o elemento trava borrado. A
+  regra é pop em dois canais: opacidade e blur num tween, escala em outro.
+- <strong>Vídeo dentro de card</strong>: o render ignora <code>object-fit</code> dentro de caixas transformadas. A <code>&lt;video&gt;</code> precisa da caixa
+  no aspecto nativo, dentro de um wrapper com <code>overflow:hidden</code>.
+- Se o limite de uso do seu plano acabar no meio, espere renovar e peça "continue o workflow só com os grupos que
+  faltam".
+- Se a sua versão do Claude Code não tiver a ferramenta de workflow, o Claude vai avisar. Use o plano B abaixo.
+- Depois do workflow, se o Claude continuar abrindo workflows sozinho, escreva <em>"sem workflow daqui pra frente"</em> ou
+  abra uma sessão nova (veja a pergunta "Fechei o app no meio" nas <a href="#perguntas-frequentes">Perguntas frequentes</a>)
+  antes do passo 8.</p>
+<p><strong>Plano B (sem workflow: mais lento, mas você acompanha e pode parar a cada cena)</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Não use workflow. Construa as cenas uma por vez, na ordem do storyboard, seguindo as mesmas regras de
+template-reel/edit/workflow-cenas.js: para cada cena, primeiro construa (lendo DESIGN.md, o bloco do STORYBOARD.md, as
+seções de motion e armadilhas do PADRAO-DE-QUALIDADE.md, a cena-exemplo e as receitas dela, verificando com lint e
+snapshots); depois revise como se outra pessoa tivesse feito, com snapshots densos e seeks a frio, usando a lista de 11
+itens do revisor, de (a) a (k). Me mostre os snapshots de cada cena antes de passar para a próxima.
+</code></pre></div>
+<hr />
+<h2 id="passo-8-revisão-própria" class="step"><span class="n">Passo 8</span><span class="t">Revisão própria</span></h2>
+<p><strong>Objetivo:</strong> assistir ao vídeo inteiro como espectador, achar o que os agentes deixaram passar e corrigir.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Agora revise o vídeo inteiro como espectador, não como programador.
+1. Rode npx --yes hyperframes@0.8.141 check (lint + runtime + layout + motion + contraste) e corrija os erros.
+2. Render rascunho: npx --yes hyperframes@0.8.141 render -q draft -o renders/meu-reel-draft1.mp4
+3. Folhas de contato a 2 quadros por segundo só do palco, em blocos de 8 s, cobrindo o vídeo inteiro:
+   ffmpeg -ss &lt;início&gt; -t 8 -i renders/meu-reel-draft1.mp4 -vf &quot;fps=2,crop=1080:1180:0:740,scale=240:-1,tile=8x2:padding=3:color=white&quot; -frames:v 1 analise/folha_&lt;n&gt;.png
+   Olhe todas. Procure: hold morto (mais de ~1 s sem nada mexendo), metade do palco vazia, coisa fora de tempo, texto
+   na emenda da legenda, cena que não ilustra a frase falada.
+4. Conteúdo: algum número que não está nos prints ou no roteiro? Algum criador real ou marca associado a algo que não é
+   verdade? Algo inventado ainda sem confirmação?
+5. Áudio: meça o rascunho com ffmpeg -i renders/meu-reel-draft1.mp4 -af ebur128=peak=true -f null -
+   Alvo: −14 LUFS (±1) e pico em −1 dBFS ou menos. Efeitos sonoros: no máximo 2 por batida, no pico visual; a duração
+   de cada um não pode passar do tamanho do arquivo.
+6. Corrija e me mostre, para cada correção, a folha de contato do trecho antes e depois. No fim, rode o check de novo.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>npx --yes hyperframes@0.8.141 check
+npx --yes hyperframes@0.8.141 render -q draft -o renders/meu-reel-draft1.mp4
+ffmpeg -ss 0 -t 8 -i renders/meu-reel-draft1.mp4 -vf &quot;fps=2,crop=1080:1180:0:740,scale=240:-1,tile=8x2:padding=3:color=white&quot; -frames:v 1 analise/folha_0.png
+ffmpeg -i renders/meu-reel-draft1.mp4 -af ebur128=peak=true -f null -
+</code></pre></div>
+<p><strong>Como conferir</strong>
+- <strong>Assista ao rascunho no celular</strong>, em tela cheia, com som. É assim que o seu público vai ver.
+- Olhe as folhas antes/depois. No nosso reel, numa cena, o lado direito ficava vazio por ~1,5 s; a correção foram
+  "chips" esperando e acendendo cada um na sua palavra.</p>
+<p><strong>Armadilhas</strong>
+- Nosso rascunho mediu −15,0 LUFS (no limite). A correção foi renormalizar a voz no proxy para −14 e renderizar de novo.
+- Avisos de contraste num único quadro de transição (algo entrando em fade) podem ser aceitos. Avisos que se repetem, não.
+- Quatro efeitos sonoros empilhados na mesma batida viram barulho. Remova os excedentes.</p>
+<hr />
+<h2 id="passo-9-render-final-e-verificação" class="step"><span class="n">Passo 9</span><span class="t">Render final e verificação</span></h2>
+<p><strong>Objetivo:</strong> gerar o MP4 de entrega e conferir o arquivo final, não só o preview.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Render final e verificação do arquivo:
+1. npx --yes hyperframes@0.8.141 render -q delivery -f 30 --no-best-effort -o renders/meu-reel-v1.mp4
+2. Ficha do arquivo: ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,r_frame_rate,nb_frames,sample_rate -of default=nw=1 renders/meu-reel-v1.mp4
+   Me diga codec, resolução, fps, número de quadros, duração, áudio e tamanho.
+3. Volume: ffmpeg -i renders/meu-reel-v1.mp4 -af ebur128=peak=true -f null -
+   Alvo: integrado −14 LUFS (±1), pico em −1 dBFS ou menos. Se estiver fora, renormalize a voz no proxy e renderize de novo.
+4. Extraia uns 20 quadros-chave do MP4 final (incluindo o último, que não pode ser preto) e confira.
+5. Passe pelo checklist final do PADRAO-DE-QUALIDADE.md item por item e me diga o que passou e o que não passou.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>npx --yes hyperframes@0.8.141 render -q delivery -f 30 --no-best-effort -o renders/meu-reel-v1.mp4
+ffprobe -v error -show_entries format=duration,size:stream=codec_name,width,height,r_frame_rate,nb_frames,sample_rate -of default=nw=1 renders/meu-reel-v1.mp4
+ffmpeg -i renders/meu-reel-v1.mp4 -af ebur128=peak=true -f null -
+</code></pre></div>
+<p><strong>Como conferir:</strong> o nosso v1 deu <code>h264 1080x1920 30/1</code>, <code>aac 48000 Hz</code>, −14,0 LUFS integrado e pico de −1,1 dBFS. O
+seu deve dar 1080×1920, 30 fps, −14 LUFS (±1) e pico abaixo de −1 dBFS. Assista ao MP4 final inteiro, no celular.</p>
+<p><strong>Armadilhas</strong>
+- <code>--no-best-effort</code> faz o render <strong>falhar</strong> se alguma mídia não estiver pronta, em vez de sair com um quadro faltando.
+  Se falhar, leia o erro: geralmente é um arquivo com caminho errado.
+- O Instagram não publica um valor oficial de loudness; −14 LUFS é o alvo usual das redes sociais.</p>
+<hr />
+<h2 id="passo-10-ajustes-finos-no-studio-ou-no-app-hyperframes" class="step"><span class="n">Passo 10</span><span class="t">Ajustes finos no Studio ou no app HyperFrames</span></h2>
+<p><strong>Objetivo:</strong> mexer você mesmo, visualmente, em detalhes (tempo de um elemento, um texto, uma posição) e renderizar o v2.</p>
+<p><strong>O PROMPT</strong></p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Quero fazer ajustes finos visualmente.
+1. Abra o Studio do HyperFrames em segundo plano: npx --yes hyperframes@0.8.141 preview --background
+   e me passe o endereço (normalmente http://localhost:3002).
+2. Se eu quiser usar o app desktop do HyperFrames (com o chat do Framey): primeiro pare o preview
+   (npx --yes hyperframes@0.8.141 preview --stop) e depois rode npx --yes hyperframes@0.8.141 open . — só um editor
+   escrevendo nos arquivos por vez.
+3. Quando eu voltar do app para cá, rode npx --yes hyperframes@0.8.141 catch-up . antes de mudar qualquer coisa e me
+   diga o que mudou.
+4. Lembre: index.html e compositions/captions.html são GERADOS por edit/build_index.py e edit/build_captions.py. Se eu
+   mudar algo nesses dois arquivos no Studio ou no app, não rode esses scripts de novo sem antes levar a mudança para
+   dentro do script.
+5. Quando eu disser &quot;pode renderizar&quot;, gere renders/meu-reel-v2.mp4 com os mesmos parâmetros e verificações do passo final.
+</code></pre></div>
+<p><strong>O que o Claude vai fazer</strong></p>
+<div class="cmd"><div class="bar"><span class="lbl">Comandos</span><button type="button" class="copy">Copiar</button></div><pre><code>npx --yes hyperframes@0.8.141 preview --background    # Studio em http://localhost:3002
+npx --yes hyperframes@0.8.141 preview --stop
+npx --yes hyperframes@0.8.141 open .                  # abre no app desktop (chat com o Framey)
+npx --yes hyperframes@0.8.141 catch-up .              # ao voltar: o que mudou no app
+npx --yes hyperframes@0.8.141 render -q delivery -f 30 --no-best-effort -o renders/meu-reel-v2.mp4
+</code></pre></div>
+<p><strong>Como conferir:</strong> no Studio, arraste a agulha da timeline pelos pontos que você ajustou. Depois do v2, refaça as
+verificações do passo 9.</p>
+<p><strong>Armadilhas</strong>
+- O app desktop é baixado em hyperframes.dev/studio/download.
+- Ajustar à mão o <code>index.html</code> ou o <code>captions.html</code> e depois rodar <code>build_index.py</code> ou <code>build_captions.py</code> <strong>apaga</strong> o
+  ajuste. Peça ao Claude para colocar a mudança no script.</p>
+<hr />
+<h2 id="prompt-único-atalho">Prompt único (atalho)</h2>
+<p>Para quem já fez o processo uma vez e quer rodar tudo de uma vez. O Claude para nos pontos de conferência. Ainda vale
+fazer o "Antes de começar" e montar a pasta de trabalho primeiro. O atalho <strong>não</strong> usa workflow: na etapa das cenas
+ele para, e você cola o <a href="#passo-7-as-cenas-com-workflow-multiagente">Passo 7</a>.</p>
+<div class="prompt"><div class="bar"><span class="lbl">Prompt para colar no Claude Code</span><button type="button" class="copy">Copiar prompt</button></div><pre class="wrap"><code>Vamos editar um reel do começo ao fim, seguindo o PADRAO-DE-QUALIDADE.md desta pasta. Estou na minha pasta de trabalho:
+aqui tem PADRAO-DE-QUALIDADE.md, RECEITAS-DE-MOTION.md, template-reel/ (DESIGN.md, STORYBOARD-exemplo.md,
+BRIEF-exemplo.md, fontes, cenas-exemplo em scenes-exemplo/ e scenes-exemplo-2/, scripts em edit/takes-brutos/,
+edit/take-cortado/ e edit/tools/, e o modelo de workflow edit/workflow-cenas.js) e materiais/ (bruto/, referencia/,
+prints/, broll/, roteiro). Use sempre npx --yes hyperframes@0.8.141. Não edite nada fora de meu-reel/.
+
+Dados do vídeo: nomes próprios e siglas = [NOMES]; palavra do CTA = [PALAVRA-DO-CTA]; meu @ = [SEU-@].
+
+Etapas, nesta ordem (e PARE onde está escrito PARE):
+0. Leia o PADRAO-DE-QUALIDADE.md inteiro, o template-reel/DESIGN.md e o STORYBOARD-exemplo.md (sem a entrevista de
+   intenção da skill /hyperframes e sem trocar de fluxo: o processo é o do padrão). Crie o projeto com
+   init &quot;meu-reel&quot; --non-interactive --example=blank --skill=general-video e, logo depois, meu-reel/BRIEF.md só com o
+   cabeçalho do modelo em branco de template-reel/BRIEF-exemplo.md (workflow: general-video, flow: companion,
+   destination, aspect &quot;9:16&quot;, language pt-BR). Crie as pastas (media, edit/audio, edit/tools, assets/fonts,
+   assets/img, assets/broll, assets/sfx, reference, analise, ff, renders), copie as fontes de template-reel/fonts/, os
+   .mp3 de ~/.claude/skills/media-use/audio/assets/sfx/, template-reel/edit/tools/, e template-reel/DESIGN.md para
+   meu-reel/DESIGN.md.
+1. Referência: folhas de contato a 2 fps, quadros-chave medidos, trilha (ebur128 num trecho sem fala; eu confirmo
+   ouvindo). Reescreva meu-reel/DESIGN.md para ela, mantendo as regras técnicas do padrão. Se o FORMATO for diferente
+   do template, PARE e me liste o que teria de mudar nos scripts e no workflow.
+2. Bruto: ficha (ffprobe), folha de contato, transcrição com whisper-cli (ggml-large-v3-turbo-q5_0, -l pt, --prompt com
+   os nomes), loudness, silencedetect, scdet. Escolha o pipeline (takes-brutos ou take-cortado) e copie os 4 scripts
+   dele para meu-reel/edit/. PARE: me mostre a transcrição corrigida e a escolha do pipeline.
+3. Proxy 1440×2560, 30 fps, GOP 15, voz em −14 LUFS, cauda de 0,3 s; B-roll com GOP 12; prints em assets/img e tabela
+   de assets no DESIGN.md (takes brutos: um proxy por take, sem tpad/apad/-t). Alinhamento forçado (segments.json +
+   NUM fonético + align.py via uv; Mac Intel: torch 2.2.2). Cortes (cuts.py + pares antes/depois no take cortado;
+   ORDER/KEEP/TAIL e bordas ≤ −40 dB nos takes brutos). Olhos medidos com face.swift. No take cortado, TOTAL = duração
+   do vídeo original (ffprobe). build_edl.py, sem nenhum &quot;AVISO: ... EXEMPLO do kit&quot;. PARE: me mostre os cortes
+   aprovados e a lista de peças A/B.
+4. Legendas: primeiro DISPLAY (siglas e a palavra do CTA em maiúsculas) e SKIP (muletas) no build_edl.py, rodado de
+   novo; depois blocos à mão (1–3 palavras, ~18–22 caracteres, nunca terminar em palavra fraca), destaques lima ≈ 1 a
+   cada 3 s (HL_AT no take cortado; HL + HL_JANELA nos takes brutos), modos broll/paper/full, 1 ou 2 telas cheias em
+   frases de conversa direta (nos takes brutos o script aceita só uma). build_edl.py &amp;&amp; build_captions.py.
+5. BRIEF.md (complete; o cabeçalho já existe) e STORYBOARD.md no formato dos exemplos: toda frase com visual, cues por palavra em tempo local, geometria
+   exata, handoffs, HOLD sob as telas cheias, números SÓ dos prints/roteiro, honestidade com criadores e marcas reais,
+   CONFIRMAR em tudo o que for inventado. PARE: me mostre a tabela e a lista CONFIRMAR e espere a minha aprovação.
+6. build_index.py (cenas provisórias, telas cheias, punch-ins, cor) + lint + snapshot de calibração (olhos na mesma
+   altura, A/B, tela cheia, legenda em cada modo). Me mostre os snapshots.
+7. Cenas: PARE antes desta etapa e me peça a mensagem do workflow (o Passo 7 do PROMPTS.md). Não abra nenhum
+   workflow por conta própria. O Passo 7 já inclui o que vem depois (collect_sfx.py, build_index.py, check); quando
+   ele terminar, siga do item 8.
+8. Revisão própria: check, render draft, folhas de contato a 2 fps só do palco, conteúdo honesto, −14 LUFS, no máximo 2
+   efeitos sonoros por batida. Corrija e me mostre antes/depois.
+9. Render delivery -f 30 --no-best-effort, ffprobe, ebur128=peak=true, ~20 quadros do MP4 final (inclusive o último),
+   checklist final do padrão item por item. PARE: me entregue o caminho do MP4 e o resultado do checklist.
+</code></pre></div>
+<hr />
+<h2 id="checklist-de-qualidade">Checklist de qualidade</h2>
+<p>Use antes de publicar. Peça ao Claude: <em>"passe pelo checklist final do PADRAO-DE-QUALIDADE.md item por item"</em>.</p>
+<p><strong>Câmera e cortes</strong>
+- <input type="checkbox" class="chk" id="c7" aria-label="feito"> Nenhuma palavra comida nos cortes; nenhuma respiração longa; bordas de corte em −40 dB ou menos (takes brutos).
+- <input type="checkbox" class="chk" id="c8" aria-label="feito"> Enquadramento alterna A/B a cada corte; olhos na mesma altura em todos; topo da cabeça inteiro no A.</p>
+<p><strong>Legenda</strong>
+- <input type="checkbox" class="chk" id="c9" aria-label="feito"> Sempre uma linha, sem dois blocos ao mesmo tempo; nunca termina em palavra fraca.
+- <input type="checkbox" class="chk" id="c10" aria-label="feito"> Destaque lima mais ou menos a cada 3 s; legível sobre o B-roll e na tela cheia.</p>
+<p><strong>Cenas</strong>
+- <input type="checkbox" class="chk" id="c11" aria-label="feito"> Cada cena tem algo acontecendo <strong>na palavra</strong> que ela ilustra; nenhum hold morto maior que 1 s.
+- <input type="checkbox" class="chk" id="c12" aria-label="feito"> Nada da cena na faixa da legenda (y 800–920); nada importante abaixo de y 1700 (a interface do Reels cobre).
+- <input type="checkbox" class="chk" id="c13" aria-label="feito"> Nenhum elemento travado borrado (seek a frio nos pops); saídas terminam antes do fim da cena; passagens entre
+      cenas sem piscar.</p>
+<p><strong>Conteúdo</strong>
+- <input type="checkbox" class="chk" id="c14" aria-label="feito"> Números só os dos prints ou do roteiro; ressalva escrita onde houver conta.
+- <input type="checkbox" class="chk" id="c15" aria-label="feito"> Criadores e marcas reais sem associação que não é verdade; nada inventado sem você saber.
+- <input type="checkbox" class="chk" id="c16" aria-label="feito"> O @ do CTA e a palavra do CTA conferidos; #publi se for parceria paga.</p>
+<p><strong>Técnico</strong>
+- <input type="checkbox" class="chk" id="c17" aria-label="feito"> <code>check</code> sem erros (avisos só os transitórios que você aceitou conscientemente).
+- <input type="checkbox" class="chk" id="c18" aria-label="feito"> −14 LUFS (±1), pico em −1 dBFS ou menos; no máximo 2 efeitos sonoros por batida, no pico visual.
+- <input type="checkbox" class="chk" id="c19" aria-label="feito"> MP4 final conferido (ffprobe, ebur128, quadros extraídos, último quadro não preto) e assistido no celular.</p>
+<hr />
+<h2 id="perguntas-frequentes">Perguntas frequentes</h2>
+<p><strong>Funciona no Windows ou no Linux?</strong>
+O kit foi feito e testado só no Mac. ffmpeg, whisper.cpp, uv, Node e o HyperFrames existem em outros sistemas, mas o
+<code>face.swift</code> usa o Apple Vision, que é exclusivo do macOS. A alternativa: medir o rosto à mão. Peça ao Claude: <em>"extraia
+um quadro de cada trecho com uma grade desenhada por cima (linhas a cada 5% da altura e da largura) e meça a linha dos
+olhos e o centro do rosto em fração do quadro; use esses valores em EYES/FACE"</em>. Era assim que o template fazia antes do Vision.</p>
+<p><strong>Meu Mac é Intel. E agora?</strong>
+O passo 3 (alinhamento das palavras) usa o PyTorch 2.5.1, que só tem versão para Mac com chip Apple. Num Mac Intel, peça
+ao Claude: <em>"rode o align.py com --with torch==2.2.2 --with torchaudio==2.2.2 --with "numpy&lt;2" no lugar das versões do
+comando"</em>. O modelo de alinhamento (MMS_FA) existe desde o torchaudio 2.1, então deve funcionar, mas <strong>não testamos
+essa combinação</strong>. Confira as palavras com score baixo com mais cuidado.</p>
+<p><strong>E a música?</strong>
+O nosso reel saiu sem trilha (a referência tinha). Duas opções: adicionar uma trilha em alta direto no app do Instagram
+na hora de publicar, ou mixar um arquivo seu por baixo da voz. Para a segunda, peça ao Claude para usar a skill
+<code>/hyperframes-audio</code> e abrir espaço para a voz na música (o recurso que ela chama de "carve").</p>
+<p><strong>Quanto custa?</strong>
+O kit é gratuito e as ferramentas que ele usa são gratuitas, exceto o Claude Code, que precisa de um plano pago do Claude. O que
+mais pesa no uso do plano é o passo 7 (workflow com vários agentes). Para economizar: rode o workflow por partes ou use
+o plano B do passo 7. Não temos uma medida de tokens para te passar; o que medimos foi o tamanho do trabalho
+(10 agentes, 647 chamadas de ferramenta, ~42 min).</p>
+<p><strong>E se o meu vídeo já vier cortado?</strong>
+É o pipeline <strong>take-cortado</strong> (foi o nosso caso). A voz não é recortada de novo: a timeline fica igual ao seu arquivo, e
+cada corte seu vira uma troca de enquadramento A/B, que disfarça o pulo. O passo 2 detecta isso para você.</p>
+<p><strong>Como mudo o estilo?</strong>
+Troque a referência e refaça o passo 1. Cores, fontes e a linguagem de motion seguem o <code>DESIGN.md</code>. Mudar o
+<strong>formato</strong> (zonas da tela, posição da legenda, câmera sempre em tela cheia) exige pedir ao Claude para adaptar também
+<code>build_index.py</code>, <code>build_captions.py</code> e o bloco <code>COMMON</code> do <code>workflow-cenas.js</code>: o kit só foi testado no formato tela
+dividida. Se mudar a cor de destaque, ela também precisa mudar no <code>build_captions.py</code> (destaque da legenda) e no
+<code>build_index.py</code> (brilho do papel). O que <strong>não</strong> deve mudar são as regras técnicas do padrão (seek-safe, pop em dois
+canais, um wrapper por responsabilidade, números só dos prints). Elas são o que faz o render sair igual ao preview.</p>
+<p><strong>Preciso saber programar?</strong>
+Não. Você precisa saber o que quer ver, conferir as etapas e dizer ao Claude o que está errado ("o anel está
+desalinhado do botão aos 12 s", "esse card fica parado tempo demais"). Quanto mais específico, melhor o resultado.</p>
+<p><strong>Fechei o app no meio. E agora?</strong>
+Abra uma sessão nova na mesma pasta de trabalho e cole: <em>"Estamos editando o reel em meu-reel/. Leia o
+PADRAO-DE-QUALIDADE.md, o meu-reel/BRIEF.md, o meu-reel/DESIGN.md e o meu-reel/STORYBOARD.md (os que existirem), veja
+quais arquivos já foram gerados e me diga em que passo paramos."</em></p>
+<p><strong>Algo deu errado e eu não entendi.</strong>
+Cole: <em>"Pare. Me explique em português simples o que deu errado, o que você já tentou e quais são as opções. Não apague
+nada."</em></p>
+<p><strong>Posso usar uma versão mais nova do HyperFrames?</strong>
+Pode, mas este kit foi testado com a <strong>0.8.141</strong>. Para ver o que mudou: <code>npx hyperframes@latest upgrade --project . --check</code>
+dentro de <code>meu-reel/</code>. Se algo quebrar, volte para a 0.8.141. Atenção: as <strong>skills</strong> do HyperFrames sempre vêm na
+versão mais nova (o <code>init</code> confere no GitHub), mesmo com o comando fixado na 0.8.141. Se o Claude sugerir um comando
+ou uma flag que a 0.8.141 não aceita, peça para ele seguir os comandos do PROMPTS.md.</p>
+<p><strong>As cenas-exemplo aparecem com buracos quando eu abro.</strong>
+É normal. Elas apontam para arquivos (B-roll, prints) do nosso reel, que não vêm no kit. Elas servem como código para
+o Claude adaptar, não como cenas prontas para usar.</p>
+<hr />
+<h2 id="de-onde-vem-cada-coisa">De onde vem cada coisa</h2>
+<div class="tw"><table>
+<thead>
+<tr>
+<th>O quê</th>
+<th>Origem</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>HyperFrames</strong> (CLI 0.8.141, Studio, app desktop com o Framey)</td>
+<td>HeyGen, código aberto (Apache-2.0) · <a href="https://hyperframes.heygen.com" target="_blank" rel="noopener">hyperframes.heygen.com</a> · app: hyperframes.dev/studio/download</td>
+</tr>
+<tr>
+<td><strong>Claude Code</strong></td>
+<td>Anthropic · <a href="https://code.claude.com/docs" target="_blank" rel="noopener">code.claude.com/docs</a></td>
+</tr>
+<tr>
+<td><strong>GSAP 3.14</strong> (todas as animações)</td>
+<td><a href="https://gsap.com/docs/v3" target="_blank" rel="noopener">gsap.com</a>, carregado pelas composições via CDN</td>
+</tr>
+<tr>
+<td><strong>Geist e Geist Mono</strong> (fontes)</td>
+<td>Vercel · SIL Open Font License (texto da licença em <code>template-reel/fonts/OFL.txt</code>) · <a href="https://vercel.com/font" target="_blank" rel="noopener">vercel.com/font</a></td>
+</tr>
+<tr>
+<td><strong>Efeitos sonoros</strong></td>
+<td>Biblioteca da skill <code>media-use</code> do HyperFrames (<code>~/.claude/skills/media-use/audio/assets/sfx/</code>), sons do Pixabay sob a Pixabay Content License. <strong>Não vêm no kit</strong>: você os recebe ao instalar as skills.</td>
+</tr>
+<tr>
+<td><strong>whisper.cpp</strong> (transcrição) e o modelo <code>ggml-large-v3-turbo-q5_0.bin</code></td>
+<td><a href="https://github.com/ggml-org/whisper.cpp" target="_blank" rel="noopener">github.com/ggml-org/whisper.cpp</a> · modelo em huggingface.co/ggerganov/whisper.cpp</td>
+</tr>
+<tr>
+<td><strong>Alinhamento forçado</strong> (MMS_FA)</td>
+<td>torchaudio (PyTorch), rodando via <a href="https://docs.astral.sh/uv" target="_blank" rel="noopener">uv</a></td>
+</tr>
+<tr>
+<td><strong>FFmpeg / ffprobe</strong></td>
+<td><a href="https://ffmpeg.org" target="_blank" rel="noopener">ffmpeg.org</a> (filtros usados: scdet, silencedetect, ebur128, loudnorm, tpad)</td>
+</tr>
+<tr>
+<td><strong>Detecção do rosto</strong></td>
+<td>Apple Vision (<code>VNDetectFaceLandmarksRequest</code>), no <code>face.swift</code></td>
+</tr>
+<tr>
+<td><strong>Padrão, receitas, scripts e cenas-exemplo</strong></td>
+<td>Extraídos dos nossos reels (exemplo 1, reel PERSONAGEM, e exemplo 2, reel CLONE), cujo formato veio da análise quadro a quadro do reel "Comenta PERSONAGEM" (@higgsfield.ai)</td>
+</tr>
+</tbody>
+</table></div>
+      </section>
+      <footer>Os arquivos do kit (starter/) estão no <a href="kit-reel-ia.zip" download>download do .zip</a>. <a class="toplink" href="#leia-me">voltar ao começo</a></footer>
+    </main>
+  </div>
+</div>
+
+<script>
+(function () {
+  // copiar prompts e comandos
+  document.querySelectorAll("button.copy").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var pre = btn.closest(".prompt, .cmd").querySelector("pre");
+      var text = pre.innerText.replace(/\n$/, "");
+      var label = btn.textContent;
+      function done() { btn.textContent = "Copiado"; btn.classList.add("ok"); setTimeout(function () { btn.textContent = label; btn.classList.remove("ok"); }, 1600); }
+      function fallback() {
+        var r = document.createRange(); r.selectNodeContents(pre);
+        var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = "Selecionado: use Cmd+C";
+        setTimeout(function () { btn.textContent = label; }, 2400);
+      }
+      try { navigator.clipboard.writeText(text).then(done, fallback); } catch (e) { fallback(); }
+    });
+  });
+  // checklist: lembrado só neste navegador
+  document.querySelectorAll("input.chk").forEach(function (c) {
+    var k = "kit-editar:" + c.id;
+    try { c.checked = localStorage.getItem(k) === "1"; } catch (e) {}
+    c.addEventListener("change", function () { try { localStorage.setItem(k, c.checked ? "1" : "0"); } catch (e) {} });
+  });
+  // destaca na navegação o passo que está na tela
+  var links = Array.prototype.slice.call(document.querySelectorAll("nav.toc a"));
+  var map = {}; links.forEach(function (a) { map[a.getAttribute("href").slice(1)] = a; });
+  var heads = Object.keys(map).map(function (id) { return document.getElementById(id); }).filter(Boolean);
+  if ("IntersectionObserver" in window && heads.length) {
+    var obs = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (e.isIntersecting) { links.forEach(function (a) { a.classList.remove("on"); }); var a = map[e.target.id]; if (a) a.classList.add("on"); }
+      });
+    }, { rootMargin: "0px 0px -75% 0px" });
+    heads.forEach(function (h) { obs.observe(h); });
+  }
+})();
+</script>
+
+</body>
+</html>

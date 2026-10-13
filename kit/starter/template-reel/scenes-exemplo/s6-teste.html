@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s6-teste-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --lime:#D4FF3A; --limeInk:#141A00; --ok:#4B7A00; }
+    #s6-teste-root .abs { position: absolute; }
+    #s6-teste-root .row { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; align-items: center; }
+
+    /* ---------- app window ---------- */
+    #s6-teste-root #s6-teste-drift { left: 70px; top: 1010px; width: 940px; height: 700px; transform-origin: 50% 50%; }
+    #s6-teste-root #s6-teste-winbox { position: absolute; left: 0; top: 0; width: 940px; height: 700px; transform-origin: 50% 40%; }
+    /* camera push-in wrapper: origin = the composer while it is being typed into */
+    #s6-teste-root #s6-teste-push { position: absolute; left: 0; top: 0; width: 940px; height: 700px; transform-origin: 470px 500px; }
+    #s6-teste-root #s6-teste-win { position: absolute; left: 0; top: 0; width: 940px; height: 700px; border-radius: 34px; background: var(--card);
+      box-shadow: 0 34px 80px rgba(24, 24, 12, 0.16), 0 6px 18px rgba(24, 24, 12, 0.08), 0 0 0 1px rgba(17, 17, 19, 0.05); }
+    #s6-teste-root .hdr { position: absolute; left: 0; top: 0; width: 940px; height: 96px; display: flex; align-items: center; padding: 0 32px; gap: 14px; }
+    #s6-teste-root .dots { display: flex; gap: 9px; margin-right: 14px; }
+    #s6-teste-root .dots i { display: block; width: 15px; height: 15px; border-radius: 50%; }
+    #s6-teste-root .dots i:nth-child(1) { background: #F2655A; }
+    #s6-teste-root .dots i:nth-child(2) { background: #F5BF4F; }
+    #s6-teste-root .dots i:nth-child(3) { background: #61C554; }
+    #s6-teste-root #s6-teste-clogo { width: 46px; height: 46px; display: block; }
+    #s6-teste-root .ttl { font-size: 36px; font-weight: 600; letter-spacing: -0.02em; }
+    #s6-teste-root #s6-teste-mcp { font-family: "Geist Mono", monospace; font-size: 28px; font-weight: 500; letter-spacing: 0.04em;
+      color: var(--ink); background: #EFEFEA; border-radius: 999px; padding: 7px 18px; margin-left: 4px; opacity: 0; }
+    #s6-teste-root .hair { position: absolute; left: 0; top: 95px; width: 940px; height: 2px; background: #EEEEE8; }
+    #s6-teste-root .st { position: absolute; left: 0; top: 0; width: 940px; height: 700px; }
+
+    /* state A — connectors */
+    #s6-teste-root .lbl { position: absolute; left: 36px; top: 122px; font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500;
+      letter-spacing: 0.12em; color: var(--ink2); }
+    #s6-teste-root .crow { position: absolute; left: 28px; width: 884px; height: 116px; border-radius: 24px; background: #FAFAF7;
+      box-shadow: inset 0 0 0 2px #EEEEE8; display: flex; align-items: center; padding: 0 26px 0 22px; gap: 22px; }
+    #s6-teste-root .ico { position: relative; z-index: 1; width: 68px; height: 68px; border-radius: 18px; overflow: hidden; display: flex; align-items: center;
+      justify-content: center; flex: none; }
+    #s6-teste-root .ico.g { background: #EFEFEA; }
+    #s6-teste-root .ico.n { background: #FFFFFF; box-shadow: inset 0 0 0 2.5px #4A4A52; font-size: 40px; font-weight: 700; color: #3A3A40; }
+    #s6-teste-root .ico img { width: 68px; height: 68px; display: block; }
+    #s6-teste-root #s6-teste-hglow { position: absolute; left: -16px; top: -14px; width: 144px; height: 144px; border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(196, 246, 20, 0.95), rgba(212, 255, 58, 0.62) 50%, rgba(212, 255, 58, 0) 100%); opacity: 0; }
+    #s6-teste-root .ctx { flex: 1; }
+    #s6-teste-root .nm { font-size: 34px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+    #s6-teste-root .sub { position: relative; height: 32px; margin-top: 6px; }
+    #s6-teste-root .sub span { position: absolute; left: 0; top: 0; font-size: 25px; font-weight: 500; color: var(--ink2); white-space: nowrap; }
+    #s6-teste-root #s6-teste-hon { color: var(--ok); font-size: 26px; font-weight: 600; display: flex; align-items: center; gap: 10px; opacity: 0; }
+    #s6-teste-root #s6-teste-hon i { display: block; width: 12px; height: 12px; border-radius: 50%; background: #7DBB00;
+      box-shadow: 0 0 0 4px rgba(125, 187, 0, 0.22); }
+    #s6-teste-root .tg { position: relative; width: 88px; height: 50px; border-radius: 25px; background: #E2E2DC; flex: none; }
+    #s6-teste-root .knob { position: absolute; left: 4px; top: 4px; width: 42px; height: 42px; border-radius: 50%; background: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18), 0 0 0 0.5px rgba(0, 0, 0, 0.06); }
+    #s6-teste-root .add { position: absolute; left: 28px; top: 568px; width: 884px; height: 80px; border-radius: 24px; border: 2px dashed #D6D6CF;
+      display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 26px; font-weight: 500; color: var(--ink2); }
+    #s6-teste-root .add b { font-size: 34px; font-weight: 400; line-height: 1; }
+    #s6-teste-root #s6-teste-ring { position: absolute; left: 20px; top: 296px; width: 900px; height: 132px; border-radius: 32px;
+      border: 6px solid var(--lime); box-shadow: 0 0 0 10px rgba(212, 255, 58, 0.28), 0 10px 30px rgba(120, 160, 0, 0.25); opacity: 0; }
+
+    /* state B — chat */
+    #s6-teste-root #s6-teste-stB { opacity: 0; }
+    #s6-teste-root #s6-teste-greet { position: absolute; left: 0; top: 168px; width: 940px; display: flex; flex-direction: column; align-items: center; }
+    #s6-teste-root #s6-teste-greet svg { width: 64px; height: 64px; display: block; }
+    #s6-teste-root #s6-teste-greet div { margin-top: 18px; font-size: 46px; font-weight: 600; letter-spacing: -0.03em; }
+    #s6-teste-root #s6-teste-bub { position: absolute; left: 120px; top: 120px; width: 792px; height: 160px; border-radius: 28px 28px 10px 28px;
+      background: #EFEFEA; transform-origin: 100% 100%; opacity: 0; }
+    #s6-teste-root #s6-teste-resp { position: absolute; left: 28px; top: 300px; height: 40px; display: flex; align-items: center; gap: 12px; opacity: 0; }
+    #s6-teste-root #s6-teste-resp svg { width: 34px; height: 34px; display: block; }
+    #s6-teste-root #s6-teste-gen { font-family: "Geist Mono", monospace; font-size: 25px; font-weight: 500; letter-spacing: 0.01em;
+      color: transparent; -webkit-background-clip: text; background-clip: text; background-size: 300% 100%; background-position: 100% 50%;
+      background-image: linear-gradient(90deg, #3A3A40 0%, #3A3A40 42%, #8DB800 50%, #3A3A40 58%, #3A3A40 100%); }
+    #s6-teste-root .tile { position: absolute; top: 352px; width: 284px; height: 150px; border-radius: 20px; background: #F1F1EC; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; opacity: 0; }
+    #s6-teste-root .tile svg { width: 46px; height: 46px; display: block; }
+    #s6-teste-root .sheen { position: absolute; left: 0; top: 0; width: 160px; height: 150px;
+      background: linear-gradient(100deg, rgba(212, 255, 58, 0) 0%, rgba(212, 255, 58, 0.55) 50%, rgba(212, 255, 58, 0) 100%); transform: translateX(-180px); }
+
+    /* composer (drawn at its final 3-line size; growth = cap translate + body clip).
+       While typing it sits 72px higher (under the greeting, like a fresh chat), then docks on send. */
+    #s6-teste-root #s6-teste-cmp { position: absolute; left: 28px; top: 452px; width: 884px; height: 228px; }
+    #s6-teste-root #s6-teste-cbody { position: absolute; left: 0; top: 0; width: 884px; height: 228px; border-radius: 26px; background: #F6F6F2;
+      border: 2px solid var(--line); clip-path: inset(106px 0px 0px 0px); }
+    #s6-teste-root #s6-teste-ccap { position: absolute; left: 0; top: 0; width: 884px; height: 56px; border-radius: 26px 26px 0 0; background: #F6F6F2;
+      border: 2px solid var(--line); border-bottom: none; transform: translateY(80px); }
+    #s6-teste-root #s6-teste-ptwrap { position: absolute; left: 26px; top: 24px; width: 740px; transform: translateY(80px); }
+    #s6-teste-root #s6-teste-ptmove { width: 740px; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -0.01em;
+      white-space: pre-wrap; color: var(--ink); }
+    #s6-teste-root #s6-teste-caret { display: inline-block; width: 3px; height: 34px; margin-left: 2px; vertical-align: -7px; background: var(--ink);
+      border-radius: 2px; opacity: 0; }
+    #s6-teste-root #s6-teste-ph { position: absolute; left: 26px; top: 104px; font-size: 30px; font-weight: 500; letter-spacing: -0.01em;
+      color: var(--mute); opacity: 0; white-space: nowrap; }
+    #s6-teste-root .tools { position: absolute; left: 18px; top: 158px; width: 848px; height: 52px; display: flex; align-items: center; gap: 12px; }
+    #s6-teste-root .plus { width: 48px; height: 48px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--line); background: #FFFFFF;
+      display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 400; color: var(--ink2); line-height: 1; }
+    #s6-teste-root .chip { height: 48px; border-radius: 999px; background: #FFFFFF; box-shadow: inset 0 0 0 2px var(--line);
+      display: flex; align-items: center; gap: 10px; padding: 0 18px 0 8px; font-size: 24px; font-weight: 500; color: var(--ink2); }
+    #s6-teste-root .chip .hlogo { width: 32px; height: 32px; border-radius: 9px; display: block; background: url("assets/img/logo-higgsfield.png") center / cover no-repeat; }
+    #s6-teste-root .chip i { display: block; width: 10px; height: 10px; border-radius: 50%; background: #7DBB00; }
+    #s6-teste-root .sendw { margin-left: auto; position: relative; width: 52px; height: 52px; }
+    #s6-teste-root #s6-teste-burst { position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%;
+      box-shadow: 0 0 0 4px var(--lime); opacity: 0; }
+    #s6-teste-root #s6-teste-send { position: absolute; left: 0; top: 0; width: 52px; height: 52px; border-radius: 50%; background: var(--ink);
+      display: flex; align-items: center; justify-content: center; opacity: 0.3; }
+    #s6-teste-root #s6-teste-send svg { width: 26px; height: 26px; display: block; }
+
+    /* sticker on the window corner */
+    #s6-teste-root #s6-teste-sticker { position: absolute; left: 708px; top: -27px; height: 54px; padding: 0 22px 0 18px; border-radius: 999px;
+      background: var(--lime); color: var(--limeInk); display: flex; align-items: center; gap: 10px; font-family: "Geist Mono", monospace;
+      font-size: 26px; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; transform: rotate(4deg);
+      box-shadow: 0 10px 24px rgba(120, 160, 0, 0.28), 0 2px 6px rgba(60, 80, 0, 0.14); opacity: 0; }
+    #s6-teste-root #s6-teste-sticker i { display: block; width: 11px; height: 11px; border-radius: 50%; background: var(--limeInk); }
+
+    /* ---------- timer pill (final: centered x 540, y 965) ---------- */
+    #s6-teste-root #s6-teste-timerrow { top: 933px; height: 64px; }
+    #s6-teste-root #s6-teste-timer { height: 64px; padding: 0 28px 0 22px; border-radius: 999px; background: var(--lime); color: var(--limeInk);
+      display: flex; align-items: center; gap: 12px; font-family: "Geist Mono", monospace; font-size: 30px; font-weight: 600;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+      box-shadow: 0 12px 28px rgba(120, 160, 0, 0.28), 0 2px 6px rgba(60, 80, 0, 0.12); opacity: 0; }
+    #s6-teste-root #s6-teste-timer svg { width: 34px; height: 34px; display: block; overflow: visible; }
+
+    /* ---------- character sheet card (final: center 540,1390 · 900x509) ---------- */
+    #s6-teste-root #s6-teste-card { position: absolute; left: 90px; top: 1135.5px; width: 900px; height: 509px; border-radius: 34px; overflow: hidden;
+      background: #FFFFFF; box-shadow: 0 34px 80px rgba(24, 24, 12, 0.16), 0 6px 18px rgba(24, 24, 12, 0.08); opacity: 0; }
+    #s6-teste-root #s6-teste-card img { width: 900px; height: 509px; object-fit: cover; display: block; }
+    #s6-teste-root #s6-teste-flash { position: absolute; left: 0; top: 0; width: 900px; height: 509px; border-radius: inherit;
+      box-shadow: inset 0 0 0 8px var(--lime); opacity: 0; }
+    #s6-teste-root #s6-teste-pronto { position: absolute; left: 70px; top: 1080px; width: 172px; height: 60px; border-radius: 999px;
+      background: var(--lime); color: var(--limeInk); display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 30px; font-weight: 700; letter-spacing: -0.02em; transform: rotate(-4deg);
+      box-shadow: 0 10px 24px rgba(120, 160, 0, 0.30), 0 2px 6px rgba(60, 80, 0, 0.14); opacity: 0; }
+    #s6-teste-root #s6-teste-pronto svg { width: 26px; height: 26px; display: block; }
+    /* celebration sparkles: 5 x 34–46px, top-right corner cluster + "pronto" corner; all gone by 9.37 */
+    #s6-teste-root .spk { position: absolute; opacity: 0; }
+    #s6-teste-root .spk svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  </style>
+  <div data-hf-id="hf-1k6i" id="s6-teste-root" data-composition-id="s6-teste" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-s759" class="abs" id="s6-teste-drift">
+      <div data-hf-id="hf-9wi4" id="s6-teste-winbox">
+        <div data-hf-id="hf-mn9x" id="s6-teste-push">
+          <div data-hf-id="hf-ovy9" id="s6-teste-win">
+            <div data-hf-id="hf-tyyu" class="hdr">
+              <div data-hf-id="hf-zx1w" class="dots"><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i></div>
+              <img data-hf-id="hf-ytnu" id="s6-teste-clogo" src="assets/img/logo-claude.svg" alt="">
+              <div data-hf-id="hf-a0fa" class="ttl">Claude</div>
+              <div data-hf-id="hf-31yp" id="s6-teste-mcp">MCP</div>
+            </div>
+            <div data-hf-id="hf-hx7w" class="hair"></div>
+
+            <!-- state A: conectores -->
+            <div data-hf-id="hf-cye7" class="st" id="s6-teste-stA">
+              <div data-hf-id="hf-4pxp" class="lbl" id="s6-teste-lbl">CONECTORES</div>
+              <div data-hf-id="hf-tih9" class="crow" id="s6-teste-r1" style="top:172px">
+                <div data-hf-id="hf-ons0" class="ico g"><svg data-hf-id="hf-kbgi" viewBox="0 0 48 48" width="42" height="42"><path data-hf-id="hf-p5nj" d="M17.5 7h13l14 24h-13z" fill="#B4B4BA" /><path data-hf-id="hf-3p9y" d="M17.5 7 3.5 31l6.5 11 14-24z" fill="#8A8A92" /><path data-hf-id="hf-r4pk" d="M10 42h28l6.5-11h-28z" fill="#A0A0A7" /></svg></div>
+                <div data-hf-id="hf-8aq7" class="ctx"><div data-hf-id="hf-96zk" class="nm">Google Drive</div><div data-hf-id="hf-iqrq" class="sub"><span data-hf-id="hf-ccn1">arquivos e documentos</span></div></div>
+                <div data-hf-id="hf-tk6r" class="tg"><div data-hf-id="hf-0pvg" class="knob"></div></div>
+              </div>
+              <div data-hf-id="hf-nosr" class="crow" id="s6-teste-r2" style="top:304px">
+                <div data-hf-id="hf-9myo" id="s6-teste-hglow"></div>
+                <div data-hf-id="hf-5hk7" class="ico"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div>
+                <div data-hf-id="hf-9jlb" class="ctx"><div data-hf-id="hf-va2l" class="nm">Higgsfield</div><div data-hf-id="hf-n762" class="sub"><span data-hf-id="hf-w3q0" id="s6-teste-hoff">imagem e vídeo com IA</span><span data-hf-id="hf-tac7" id="s6-teste-hon"><i data-hf-id="hf-ylp6"></i>conectado</span></div></div>
+                <div data-hf-id="hf-af3m" class="tg" id="s6-teste-tg"><div data-hf-id="hf-m8n8" class="knob" id="s6-teste-knob"></div></div>
+              </div>
+              <div data-hf-id="hf-20om" class="crow" id="s6-teste-r3" style="top:436px">
+                <div data-hf-id="hf-2ocd" class="ico n">N</div>
+                <div data-hf-id="hf-95aa" class="ctx"><div data-hf-id="hf-1vum" class="nm">Notion</div><div data-hf-id="hf-nlh3" class="sub"><span data-hf-id="hf-m3hn">páginas e bases de dados</span></div></div>
+                <div data-hf-id="hf-2vo3" class="tg"><div data-hf-id="hf-860k" class="knob"></div></div>
+              </div>
+              <div data-hf-id="hf-jhvf" class="add" id="s6-teste-add"><b data-hf-id="hf-vih6">+</b>adicionar conector</div>
+              <div data-hf-id="hf-21w7" id="s6-teste-ring"></div>
+            </div>
+
+            <!-- state B: chat -->
+            <div data-hf-id="hf-4aic" class="st" id="s6-teste-stB">
+              <div data-hf-id="hf-jflo" id="s6-teste-greet"><svg data-hf-id="hf-ithg" viewBox="0 0 100 100" aria-hidden="true"><circle data-hf-id="hf-o1w7" cx="50" cy="50" r="12" fill="#D97757" /><path data-hf-id="hf-679e" fill="#D97757" stroke="#D97757" stroke-width="2.2" stroke-linejoin="round" d="M60.23 52.89 L95.98 48.09 L95.80 45.49 L59.72 45.71Z M56.86 58.12 L82.02 69.99 L83.32 67.73 L60.46 51.88Z M51.15 60.57 L67.99 89.85 L70.33 88.71 L57.62 57.41Z M47.11 60.23 L51.21 85.88 L53.80 85.70 L54.29 59.72Z M41.88 56.86 L25.87 89.19 L28.13 90.49 L48.12 60.46Z M39.43 51.15 L13.87 66.17 L15.01 68.51 L42.59 57.62Z M39.77 47.11 L7.69 51.66 L7.87 54.25 L40.28 54.29Z M43.14 41.88 L18.78 30.47 L17.48 32.73 L39.54 48.12Z M48.85 39.43 L31.41 8.91 L29.07 10.05 L42.38 42.59Z M52.89 39.77 L48.60 11.36 L46.01 11.54 L45.71 40.28Z M58.12 43.14 L71.83 14.80 L69.57 13.50 L51.88 39.54Z M60.57 48.85 L83.23 35.24 L82.09 32.90 L57.41 42.38Z" /></svg><div data-hf-id="hf-qdrg">o que vamos criar hoje?</div></div>
+              <div data-hf-id="hf-kwnk" id="s6-teste-bub"></div>
+              <div data-hf-id="hf-nk8z" id="s6-teste-resp"><svg data-hf-id="hf-koho" viewBox="0 0 100 100" aria-hidden="true"><circle data-hf-id="hf-l9qv" cx="50" cy="50" r="12" fill="#D97757" /><path data-hf-id="hf-6gme" fill="#D97757" stroke="#D97757" stroke-width="2.2" stroke-linejoin="round" d="M60.23 52.89 L95.98 48.09 L95.80 45.49 L59.72 45.71Z M56.86 58.12 L82.02 69.99 L83.32 67.73 L60.46 51.88Z M51.15 60.57 L67.99 89.85 L70.33 88.71 L57.62 57.41Z M47.11 60.23 L51.21 85.88 L53.80 85.70 L54.29 59.72Z M41.88 56.86 L25.87 89.19 L28.13 90.49 L48.12 60.46Z M39.43 51.15 L13.87 66.17 L15.01 68.51 L42.59 57.62Z M39.77 47.11 L7.69 51.66 L7.87 54.25 L40.28 54.29Z M43.14 41.88 L18.78 30.47 L17.48 32.73 L39.54 48.12Z M48.85 39.43 L31.41 8.91 L29.07 10.05 L42.38 42.59Z M52.89 39.77 L48.60 11.36 L46.01 11.54 L45.71 40.28Z M58.12 43.14 L71.83 14.80 L69.57 13.50 L51.88 39.54Z M60.57 48.85 L83.23 35.24 L82.09 32.90 L57.41 42.38Z" /></svg><span data-hf-id="hf-66lp" id="s6-teste-gen">gerando personagem…</span></div>
+              <div data-hf-id="hf-94kk" class="tile" id="s6-teste-t1" style="left:28px"><svg data-hf-id="hf-e7ft" viewBox="0 0 48 48"><rect data-hf-id="hf-ode2" x="6" y="9" width="36" height="30" rx="6" fill="none" stroke="#D3D3CC" stroke-width="3.5" /><circle data-hf-id="hf-y7o5" cx="17" cy="19" r="4" fill="#D3D3CC" /><path data-hf-id="hf-nmgb" d="M9 36l11-11 7 7 5-5 8 8" fill="none" stroke="#D3D3CC" stroke-width="3.5" stroke-linejoin="round" /></svg><div data-hf-id="hf-x5sz" class="sheen"></div></div>
+              <div data-hf-id="hf-6772" class="tile" id="s6-teste-t2" style="left:328px"><svg data-hf-id="hf-7bj1" viewBox="0 0 48 48"><rect data-hf-id="hf-kqdq" x="6" y="9" width="36" height="30" rx="6" fill="none" stroke="#D3D3CC" stroke-width="3.5" /><circle data-hf-id="hf-fi4p" cx="17" cy="19" r="4" fill="#D3D3CC" /><path data-hf-id="hf-rh3f" d="M9 36l11-11 7 7 5-5 8 8" fill="none" stroke="#D3D3CC" stroke-width="3.5" stroke-linejoin="round" /></svg><div data-hf-id="hf-4p7n" class="sheen"></div></div>
+              <div data-hf-id="hf-xoi8" class="tile" id="s6-teste-t3" style="left:628px"><svg data-hf-id="hf-8ig4" viewBox="0 0 48 48"><rect data-hf-id="hf-l4or" x="6" y="9" width="36" height="30" rx="6" fill="none" stroke="#D3D3CC" stroke-width="3.5" /><circle data-hf-id="hf-gp1s" cx="17" cy="19" r="4" fill="#D3D3CC" /><path data-hf-id="hf-r2se" d="M9 36l11-11 7 7 5-5 8 8" fill="none" stroke="#D3D3CC" stroke-width="3.5" stroke-linejoin="round" /></svg><div data-hf-id="hf-4awm" class="sheen"></div></div>
+              <div data-hf-id="hf-vzwn" id="s6-teste-cmp">
+                <div data-hf-id="hf-v5f8" id="s6-teste-cbody"></div>
+                <div data-hf-id="hf-8wmw" id="s6-teste-ccap"></div>
+                <div data-hf-id="hf-78y3" id="s6-teste-ph">Responder ao Claude…</div>
+                <div data-hf-id="hf-9kfp" id="s6-teste-ptwrap"><div data-hf-id="hf-lsii" id="s6-teste-ptmove"><span data-hf-id="hf-cli9" id="s6-teste-ptext"></span><span data-hf-id="hf-tfix" id="s6-teste-caret"></span></div></div>
+                <div data-hf-id="hf-kwbd" class="tools">
+                  <div data-hf-id="hf-94up" class="plus">+</div>
+                  <div data-hf-id="hf-tujs" class="chip"><b data-hf-id="hf-5fje" class="hlogo"></b>higgsfield<i data-hf-id="hf-0l8b"></i></div>
+                  <div data-hf-id="hf-vrjt" class="sendw"><div data-hf-id="hf-z26t" id="s6-teste-burst"></div><div data-hf-id="hf-f8y7" id="s6-teste-send"><svg data-hf-id="hf-neyx" viewBox="0 0 26 26"><path data-hf-id="hf-m4ue" d="M13 21V6M6.5 12 13 5.5 19.5 12" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /></svg></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div data-hf-id="hf-cxpf" id="s6-teste-sticker"><i data-hf-id="hf-0zjc"></i>teste real</div>
+        </div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-weut" class="row" id="s6-teste-timerrow">
+      <div data-hf-id="hf-ruco" id="s6-teste-timer"><svg data-hf-id="hf-054f" viewBox="0 0 34 34"><rect data-hf-id="hf-gb5x" x="13" y="1.5" width="8" height="4" rx="1.5" fill="#141A00" /><circle data-hf-id="hf-urug" cx="17" cy="19.5" r="11.5" fill="none" stroke="#141A00" stroke-width="3" /><line data-hf-id="hf-9qz1" id="s6-teste-hand" x1="17" y1="19.5" x2="17" y2="12" stroke="#141A00" stroke-width="3" stroke-linecap="round" /></svg><span data-hf-id="hf-samt" id="s6-teste-tval">00:00</span></div>
+    </div>
+
+    <div data-hf-id="hf-ovzj" id="s6-teste-card"><img data-hf-id="hf-jwgi" id="s6-teste-cimg" src="assets/img/personagem-sheet.jpg" alt=""><div data-hf-id="hf-4ss9" id="s6-teste-flash"></div></div>
+    <div data-hf-id="hf-znft" id="s6-teste-pronto"><svg data-hf-id="hf-pr3x" viewBox="0 0 26 26"><path data-hf-id="hf-n9k3" d="M5 13.5l5.2 5.2L21 7.8" fill="none" stroke="#141A00" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" /></svg>pronto</div>
+
+    <!-- sparkles (boxes positioned by center; travel outward as they fade) -->
+    <div data-hf-id="hf-1t87" class="spk" id="s6-teste-sp1" style="left:935px;top:1067px;width:46px;height:46px"><svg data-hf-id="hf-ulu9" viewBox="0 0 24 24"><path data-hf-id="hf-02k8" d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="#D4FF3A" stroke="#6E8F00" stroke-width="0.9" /></svg></div>
+    <div data-hf-id="hf-oe5e" class="spk" id="s6-teste-sp2" style="left:867px;top:1045px;width:34px;height:34px"><svg data-hf-id="hf-1tol" viewBox="0 0 24 24"><path data-hf-id="hf-83bk" d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="#D4FF3A" stroke="#6E8F00" stroke-width="0.9" /></svg></div>
+    <div data-hf-id="hf-g6ds" class="spk" id="s6-teste-sp3" style="left:955px;top:1130px;width:38px;height:38px"><svg data-hf-id="hf-30lo" viewBox="0 0 24 24"><path data-hf-id="hf-6weh" d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="#D4FF3A" stroke="#6E8F00" stroke-width="0.9" /></svg></div>
+    <div data-hf-id="hf-i3k0" class="spk" id="s6-teste-sp4" style="left:252px;top:1050px;width:42px;height:42px"><svg data-hf-id="hf-2man" viewBox="0 0 24 24"><path data-hf-id="hf-7api" d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="#D4FF3A" stroke="#6E8F00" stroke-width="0.9" /></svg></div>
+    <div data-hf-id="hf-qfnm" class="spk" id="s6-teste-sp5" style="left:91px;top:1027px;width:34px;height:34px"><svg data-hf-id="hf-3t7q" viewBox="0 0 24 24"><path data-hf-id="hf-63sf" d="M12 0C13 8 16 11 24 12 16 13 13 16 12 24 11 16 8 13 0 12 8 11 11 8 12 0Z" fill="#D4FF3A" stroke="#6E8F00" stroke-width="0.9" /></svg></div>
+  </div>
+  <script>
+    (function () {
+      const R = document.getElementById("s6-teste-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6, rotation: o.r0 ?? 0 },
+        { opacity: 1, scale: 1, rotation: o.r1 ?? 0, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2)", immediateRender: false }, t);
+      const two = (n) => (n < 10 ? "0" : "") + n;
+
+      // ================= window enters at once (settled by "então" 0.31) · state A (conectores) =================
+      IN("#s6-teste-winbox", 0.04, { y: 120, d: 0.5 });
+      IN("#s6-teste-lbl", 0.22, { y: 16, s: 1, b: 6, d: 0.4 });
+      IN("#s6-teste-r1", 0.26, { y: 26, s: 0.98, b: 8, d: 0.45 });
+      IN("#s6-teste-r2", 0.34, { y: 26, s: 0.98, b: 8, d: 0.45 });
+      IN("#s6-teste-r3", 0.42, { y: 26, s: 0.98, b: 8, d: 0.45 });
+      IN("#s6-teste-add", 0.5, { y: 26, s: 0.98, b: 8, d: 0.45 });
+
+      // ---- drift (alive while holding) ----
+      // y: slow sink; at 7.56 the timer pill lands above and nudges the window down (y = 28 exactly at 8.62)
+      tl.fromTo("#s6-teste-drift", { y: 0 }, { y: 6, duration: 6.75, ease: "none" }, 0.75);
+      tl.fromTo("#s6-teste-drift", { y: 6 }, { y: 24, duration: 0.42, ease: "power3.out", immediateRender: false }, 7.56);
+      tl.fromTo("#s6-teste-drift", { y: 24 }, { y: 28, duration: 0.64, ease: "none", immediateRender: false }, 7.98);
+      // scale: connectors hold breathes in 3.5%; resets under the A->B blur crossfade (so the typing
+      // push-in starts from 1.0); after the send, a slow 1.2% drift to the hand-off (1.012 at 8.62)
+      tl.fromTo("#s6-teste-drift", { scale: 1 }, { scale: 1.035, duration: 3.95, ease: "sine.inOut", immediateRender: false }, 0.75);
+      tl.fromTo("#s6-teste-drift", { scale: 1.035 }, { scale: 1, duration: 0.4, ease: "power2.inOut", immediateRender: false }, 4.7);
+      tl.fromTo("#s6-teste-drift", { scale: 1 }, { scale: 1.012, duration: 1.0, ease: "none", immediateRender: false }, 7.62);
+
+      // 1.37 "testar" — sticker
+      POP("#s6-teste-sticker", 1.3, { from: 0.4, r0: -10, r1: 4, d: 0.45 });
+
+      // 2.41 "MCP" — header pill punches in LIME, overshoots to 1.18, springs back, then cools to grey
+      tl.fromTo("#s6-teste-mcp", { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "power1.out", immediateRender: false }, 2.3);
+      tl.fromTo("#s6-teste-mcp", { scale: 0.5 }, { scale: 1.18, duration: 0.16, ease: "power2.out", immediateRender: false }, 2.3);
+      tl.to("#s6-teste-mcp", { scale: 1, duration: 0.32, ease: "back.out(2.2)" }, 2.46);
+      tl.fromTo("#s6-teste-mcp", { backgroundColor: "#D4FF3A" }, { backgroundColor: "#EFEFEA", duration: 0.3, ease: "power1.inOut" }, 2.62);
+
+      // 3.38 "claude" — the spark turns, and a soft lime pre-glow leads the eye to the Higgsfield row
+      tl.fromTo("#s6-teste-clogo", { rotation: 0 }, { rotation: 120, duration: 0.7, ease: "power2.inOut" }, 3.26);
+      tl.fromTo("#s6-teste-clogo", { scale: 1 }, { scale: 1.18, duration: 0.25, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, 3.28);
+      tl.fromTo("#s6-teste-hglow", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, ease: "power2.out" }, 3.3);
+
+      // 3.97 "higgsfield" — control-target-sync: ring + knob + track + status on ONE beat
+      tl.addLabel("hf", 3.86);
+      tl.fromTo("#s6-teste-knob", { x: 0 }, { x: 38, duration: 0.28, ease: "power2.inOut" }, "hf");
+      tl.fromTo("#s6-teste-tg", { backgroundColor: "#E2E2DC" }, { backgroundColor: "#D4FF3A", duration: 0.28, ease: "power2.inOut" }, "hf");
+      tl.fromTo("#s6-teste-ring", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1.02, duration: 0.36, ease: "back.out(2)" }, "hf");
+      // status swap with no overlap: old label gone by hf+0.12, new one starts at hf+0.14
+      tl.to("#s6-teste-hoff", { opacity: 0, y: -10, duration: 0.12, ease: "power2.in" }, "hf");
+      tl.fromTo("#s6-teste-hon", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, "hf+=0.14");
+      tl.fromTo("#s6-teste-r2", { scale: 1 }, { scale: 1.02, duration: 0.36, ease: "back.out(2)", immediateRender: false }, "hf");
+      tl.to("#s6-teste-hglow", { opacity: 0.55, duration: 0.5, ease: "power2.inOut" }, "hf+=0.3");
+      tl.to(["#s6-teste-r1", "#s6-teste-r3", "#s6-teste-add"], { opacity: 0.42, filter: "blur(1.5px)", duration: 0.4, ease: "power2.out" }, "hf");
+
+      // ================= 4.80 "e detalhei" — state B (chat) =================
+      tl.to("#s6-teste-stA", { opacity: 0, y: -24, filter: "blur(10px)", duration: 0.26, ease: "power2.in" }, 4.7);
+      tl.fromTo("#s6-teste-stB", { opacity: 0, y: 30, filter: "blur(12px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out", immediateRender: false }, 4.88);
+      tl.fromTo("#s6-teste-caret", { opacity: 0 }, { opacity: 1, duration: 0.01, ease: "none", immediateRender: false }, 4.88);
+      tl.fromTo("#s6-teste-send", { opacity: 0.3 }, { opacity: 1, duration: 0.2, ease: "power1.out", immediateRender: false }, 4.96);
+      // depth of field: the greeting steps back so the composer is the focus
+      tl.fromTo("#s6-teste-greet", { opacity: 1, filter: "blur(0px)" }, { opacity: 0.5, filter: "blur(2px)", duration: 0.6, ease: "sine.inOut", immediateRender: false }, 5.0);
+      // camera push-in on the composer for the whole typing beat (composer stays inside x 70–1010)
+      tl.fromTo("#s6-teste-push", { scale: 1, y: 0 }, { scale: 1.065, y: -16, duration: 2.2, ease: "sine.inOut" }, 5.0);
+      // composer sits under the greeting while typing (docks to the bottom on send, below)
+      tl.fromTo("#s6-teste-cmp", { y: -72 }, { y: 0, duration: 0.3, ease: "power3.inOut" }, 7.42);
+
+      // typing 4.92 -> 7.30 with authored line breaks (wrap TIME and wrap POSITION share one fact)
+      const LINES = ["cria meu personagem: cabelo lilás na altura", "do ombro, bigode preto grosso, óculos redondos", "de metal, polo de tricô vinho e calça listrada"];
+      const FULL = LINES.join("\n");
+      const T0 = 4.92, TD = 2.38;
+      const ptext = q("#s6-teste-ptext");
+      const ty = { n: 0 };
+      let lastK = -1;
+      tl.fromTo(ty, { n: 0 }, { n: FULL.length, duration: TD, ease: "none", immediateRender: false,
+        onUpdate: () => { const k = Math.round(ty.n); if (k !== lastK) { lastK = k; ptext.textContent = FULL.slice(0, k); } } }, T0);
+
+      // composer grows upward one line at a time (cap + text translate, body clip — never height)
+      const wrapAt = (m) => T0 + ((m - 0.5) / FULL.length) * TD;
+      const G1 = wrapAt(LINES[0].length + 1), G2 = wrapAt(LINES[0].length + LINES[1].length + 2);
+      const step = (t, h0, h1) => {
+        tl.fromTo(["#s6-teste-ccap", "#s6-teste-ptwrap"], { y: h0 }, { y: h1, duration: 0.18, ease: "power3.out", immediateRender: false }, t);
+        tl.fromTo("#s6-teste-cbody", { clipPath: `inset(${h0 + 26}px 0px 0px 0px)` },
+          { clipPath: `inset(${h1 + 26}px 0px 0px 0px)`, duration: 0.18, ease: "power3.out", immediateRender: false }, t);
+      };
+      step(G1, 80, 40);
+      step(G2, 40, 0);
+
+      // ================= 7.36 send (press-release-spring) =================
+      tl.to("#s6-teste-caret", { opacity: 0, duration: 0.01, ease: "none" }, 7.34);
+      tl.to("#s6-teste-send", { scale: 0.86, duration: 0.08, ease: "power1.in" }, 7.3);
+      tl.to("#s6-teste-send", { scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 7.38);
+      tl.fromTo("#s6-teste-burst", { opacity: 0.9, scale: 1 }, { opacity: 0, scale: 2.4, duration: 0.5, ease: "power2.out", immediateRender: false }, 7.38);
+      tl.to("#s6-teste-send", { opacity: 0.3, duration: 0.25, ease: "power1.out" }, 7.62);
+      // camera eases back out as the text flies into the bubble
+      tl.to("#s6-teste-push", { scale: 1, y: 0, duration: 0.3, ease: "power3.inOut" }, 7.32);
+
+      // prompt flies up into the user bubble (same width + same breaks = same wrapping)
+      tl.to("#s6-teste-greet", { opacity: 0, y: -30, filter: "blur(10px)", duration: 0.24, ease: "power2.in" }, 7.32);
+      tl.to("#s6-teste-ptmove", { x: 92, y: -336, duration: 0.32, ease: "power3.inOut" }, 7.38);
+      tl.fromTo("#s6-teste-bub", { opacity: 0, scale: 0.94, y: 24 }, { opacity: 1, scale: 1, y: 0, duration: 0.26, ease: "power3.out", immediateRender: false }, 7.52);
+      // composer collapses back to one empty line (and docks, above)
+      tl.fromTo("#s6-teste-ccap", { y: 0 }, { y: 80, duration: 0.3, ease: "power3.inOut", immediateRender: false }, 7.42);
+      tl.fromTo("#s6-teste-cbody", { clipPath: "inset(26px 0px 0px 0px)" }, { clipPath: "inset(106px 0px 0px 0px)", duration: 0.3, ease: "power3.inOut", immediateRender: false }, 7.42);
+      tl.fromTo("#s6-teste-ph", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "power1.out", immediateRender: false }, 7.7);
+
+      // ================= 7.63 "em menos de 5 minutos" — agent theater + timer =================
+      IN("#s6-teste-resp", 7.58, { y: 14, s: 1, b: 8, d: 0.35 });
+      ["#s6-teste-t1", "#s6-teste-t2", "#s6-teste-t3"].forEach((id, i) => IN(id, 7.64 + i * 0.06, { y: 22, s: 0.92, b: 8, d: 0.4 }));
+      tl.fromTo("#s6-teste-gen", { backgroundPosition: "100% 50%" }, { backgroundPosition: "0% 50%", duration: 0.5, ease: "none", repeat: 1, immediateRender: false }, 7.66);
+      qa(".sheen").forEach((el, i) => {
+        tl.fromTo(el, { x: -180 }, { x: 300, duration: 0.42, ease: "none", repeat: 1, immediateRender: false }, 7.76 + i * 0.07);
+      });
+
+      POP("#s6-teste-timer", 7.58, { from: 0.55, d: 0.42, e: "back.out(1.8)" });
+      const tv = q("#s6-teste-tval");
+      const clk = { s: 0 };
+      let lastS = -1;
+      tl.fromTo(clk, { s: 0 }, { s: 287, duration: 0.9, ease: "power2.out", immediateRender: false,
+        onUpdate: () => { const s = Math.round(clk.s); if (s !== lastS) { lastS = s; tv.textContent = two(Math.floor(s / 60)) + ":" + two(s % 60); } } }, 7.65);
+      tl.fromTo("#s6-teste-hand", { rotation: 0 }, { rotation: 1800, svgOrigin: "17 19.5", duration: 0.9, ease: "power2.out", immediateRender: false }, 7.65);
+      tl.fromTo("#s6-teste-timer", { scale: 1 }, { scale: 1.07, duration: 0.12, ease: "power2.out", yoyo: true, repeat: 1, immediateRender: false }, 8.53);
+
+      // ================= 8.65 "eu tinha ele pronto" — sheet card grows out of the middle tile =================
+      // window starts blurring away first, so the card never prints over sharp chat UI
+      OUT("#s6-teste-winbox", 8.56, { d: 0.25, s: 1.03 });
+      // middle tile center at hand-off (8.62): drift center 1360 + drift y 28 + 77 * drift scale 1.012
+      // = 1465.9 -> start y +75.9 vs the final card center 1390; start scale = tile width 284 * 1.012 / 900
+      const C0 = 8.62, CD = 0.48, DS = 1.012, CS = (284 * DS) / 900, CY = 1360 + 28 + 77 * DS - 1390;
+      tl.fromTo("#s6-teste-card", { scale: CS, y: CY, borderRadius: 20 / CS }, { scale: 1, y: 0, borderRadius: 34, duration: CD, ease: "power3.out" }, C0);
+      tl.fromTo("#s6-teste-card", { opacity: 0 }, { opacity: 1, duration: 0.05, ease: "none", immediateRender: false }, C0);
+      tl.fromTo("#s6-teste-cimg", { filter: "blur(12px)" }, { filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, C0);
+      tl.fromTo("#s6-teste-flash", { opacity: 0 }, { opacity: 1, duration: 0.14, ease: "power1.out", immediateRender: false }, C0 + 0.06);
+      tl.to("#s6-teste-flash", { opacity: 0, duration: 0.36, ease: "power2.inOut" }, C0 + 0.36);
+
+      // sparkle burst: pop in, fly outward 30–60px while fading; every one is gone by 9.37 (final frame clean for s7)
+      const SPK = [
+        ["#s6-teste-sp1", 8.86, 30, -44],
+        ["#s6-teste-sp2", 8.89, -8, -48],
+        ["#s6-teste-sp3", 8.92, 14, 42],
+        ["#s6-teste-sp4", 8.99, 36, -40],
+        ["#s6-teste-sp5", 9.02, -18, -46],
+      ];
+      SPK.forEach(([id, t, dx, dy]) => {
+        tl.fromTo(id, { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.14, ease: "power2.out", immediateRender: false }, t);
+        tl.fromTo(id, { x: 0, y: 0, rotation: -30 }, { x: dx, y: dy, rotation: 30, duration: 0.35, ease: "power2.out", immediateRender: false }, t);
+        tl.to(id, { opacity: 0, scale: 0.5, duration: 0.21, ease: "power2.in" }, t + 0.14);
+      });
+      // 9.11 "pronto"
+      POP("#s6-teste-pronto", 9.02, { from: 0.5, r0: -14, r1: -4, d: 0.4 });
+      // NO exit: card + "pronto" + timer hold to 9.50 (s7 starts from an identical copy)
+
+      window.__timelines["s6-teste"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

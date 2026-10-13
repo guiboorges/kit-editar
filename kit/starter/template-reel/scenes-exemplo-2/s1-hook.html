@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+
+    #s1-hook-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00; --plum:#6B2A6B; --red:#FF4A3D; --blue:#3D4EF2; }
+
+    /* ── B-roll stage (full-bleed 780 → 1920): broll [exit] > punch [impact] > shot [drift] > video (native 9:16 box) ── */
+    #s1-hook-root .broll { position: absolute; left: 0; top: 780px; width: 1080px; height: 1140px; overflow: hidden;
+      background: #0c0c0e; transform-origin: 50% 40%; will-change: transform, opacity, filter; }
+    #s1-hook-root .punch { position: absolute; inset: 0; transform-origin: 50% 42%; will-change: transform; }
+    #s1-hook-root .shot { position: absolute; inset: 0; transform-origin: 50% 40%; will-change: transform; }
+    /* 720x1280 sources → native-aspect 1080x1920 boxes; the top offset picks the band shown on the stage */
+    #s1-hook-root .shot video { position: absolute; left: 0; width: 1080px; height: 1920px; display: block; }
+    #s1-hook-root #s1-hook-v1 { top: -351px; }   /* criador1 on the street: head ≈ y 970, face clear of the seam */
+    #s1-hook-root #s1-hook-v2 { top: -560px; }   /* criador2 in the car: burned caption (src y 280–340) pushed above the stage */
+    #s1-hook-root #s1-hook-v3 { top: -520px; }   /* criador1 at the dinner table: head ≈ y 1050, chandelier off-frame */
+    #s1-hook-root #s1-hook-shot2, #s1-hook-root #s1-hook-shot3 { opacity: 0; }
+    /* caption scrim under the seam: white captions must read over bright plates (sky / windshield / light wall) */
+    #s1-hook-root .grad-top { position: absolute; left: 0; top: 0; width: 1080px; height: 260px;
+      background: linear-gradient(180deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.32) 45%, rgba(0,0,0,0) 100%); }
+    #s1-hook-root .grad-top2 { position: absolute; left: 0; top: 0; width: 1080px; height: 300px; opacity: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,.30) 0%, rgba(0,0,0,.20) 40%, rgba(0,0,0,0) 100%); }
+    #s1-hook-root .grad-bot { position: absolute; left: 0; top: 640px; width: 1080px; height: 500px;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.24) 45%, rgba(0,0,0,.52) 100%); }
+    #s1-hook-root .flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+
+    /* ── "100% IA" glass tag (right 70, top 970) ── */
+    #s1-hook-root .tag { position: absolute; right: 70px; top: 970px; display: flex; align-items: center; gap: 14px;
+      height: 60px; padding: 0 24px 0 20px; border-radius: 999px; background: rgba(12,12,14,.62);
+      border: 1.5px solid rgba(255,255,255,.14); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 14px 34px rgba(0,0,0,.28); transform-origin: 100% 50%; opacity: 0; will-change: transform, opacity, filter; }
+    #s1-hook-root .tag-dot { position: relative; width: 16px; height: 16px; flex: 0 0 16px; }
+    #s1-hook-root .tag-dot i { position: absolute; inset: 0; border-radius: 50%; background: var(--lime); }
+    #s1-hook-root .tag-dot .halo { background: rgba(212,255,58,.55); opacity: 0; }
+    #s1-hook-root .tag-txt { font-family: "Geist Mono", monospace; font-weight: 500; font-size: 28px; letter-spacing: .06em;
+      color: #fff; line-height: 1; white-space: nowrap; }
+
+    /* ── attribution chips (stacked in one cell, swapped hard on each cut) ── */
+    #s1-hook-root .chip-stack { position: absolute; left: 0; width: 1080px; top: 1554px; height: 72px; display: grid;
+      justify-items: center; align-items: center; }
+    #s1-hook-root .chip { grid-area: 1 / 1; display: flex; align-items: center; gap: 16px; height: 72px;
+      padding: 0 30px 0 10px; border-radius: 999px; background: rgba(12,12,14,.62);
+      border: 1.5px solid rgba(255,255,255,.12); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 18px 40px rgba(0,0,0,.30); color: #fff; white-space: nowrap; opacity: 0; will-change: transform, opacity, filter; }
+    #s1-hook-root .ava { position: relative; width: 52px; height: 52px; flex: 0 0 52px; border-radius: 50%; overflow: hidden;
+      box-shadow: 0 0 0 2px rgba(255,255,255,.9); background: #222; }
+    #s1-hook-root .ava img { position: absolute; display: block; }
+    #s1-hook-root .ava .a-criador1 { width: 83.2px; height: 83.2px; left: -30.2px; top: -15.6px; }
+    #s1-hook-root .ava .a-criador2 { width: 86.7px; height: 86.7px; left: -16.25px; top: -11.9px; }
+    #s1-hook-root .chip-txt { font-size: 28px; line-height: 1; letter-spacing: -0.01em; }
+    #s1-hook-root .chip-txt b { font-weight: 600; }
+    #s1-hook-root .chip-txt span { font-weight: 500; color: rgba(255,255,255,.80); }
+
+    /* ── stamps (lime block, uppercase, rotated) ── */
+    #s1-hook-root .stamp-pos { position: absolute; left: 0; width: 1080px; height: 0; display: flex;
+      justify-content: center; align-items: center; }
+    #s1-hook-root #s1-hook-st1pos { top: 1330px; }
+    #s1-hook-root #s1-hook-st2pos { top: 1360px; }
+    #s1-hook-root .stamp-punch { position: relative; flex: 0 0 auto; will-change: transform; }
+    #s1-hook-root .stamp { position: relative; padding: 18px 36px 16px; border-radius: 18px; background: var(--lime);
+      color: var(--limeInk); font-weight: 800; line-height: 1; letter-spacing: -0.02em; text-transform: uppercase;
+      white-space: nowrap; box-shadow: 0 30px 70px rgba(0,0,0,.40), 0 8px 18px rgba(0,0,0,.26); opacity: 0;
+      will-change: transform, opacity, filter; }
+    #s1-hook-root #s1-hook-stamp1 { font-size: 72px; }
+    #s1-hook-root #s1-hook-stamp2 { font-size: 84px; padding: 22px 40px 18px; }
+    #s1-hook-root .stamp-echo { position: absolute; inset: -4px; border-radius: 22px; border: 5px solid var(--lime); opacity: 0;
+      will-change: transform, opacity; }
+
+    /* ── "na internet": three small glass platform pills under stamp 1 (y≈1460) ── */
+    #s1-hook-root .plats { position: absolute; left: 0; width: 1080px; top: 1434px; height: 52px; display: flex;
+      justify-content: center; align-items: center; gap: 14px; }
+    #s1-hook-root .plat { flex: 0 0 auto; height: 52px; display: flex; align-items: center; gap: 10px; padding: 0 22px 0 18px;
+      border-radius: 999px; background: rgba(12,12,14,.58); border: 1.5px solid rgba(255,255,255,.16);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 12px 28px rgba(0,0,0,.26);
+      color: #fff; font-family: "Geist Mono", monospace; font-weight: 500; font-size: 24px; letter-spacing: .04em; line-height: 1;
+      white-space: nowrap; opacity: 0; will-change: transform, opacity, filter; }
+    #s1-hook-root .plat svg { width: 22px; height: 22px; flex: 0 0 22px; display: block; }
+
+    /* ── big glass "?" disc (centre 850,1230): qx [exit] > qp [spring + punch] > qd [fade/blur + wobble] ── */
+    #s1-hook-root .qx { position: absolute; left: 780px; top: 1160px; width: 140px; height: 140px; will-change: transform, opacity, filter; }
+    #s1-hook-root .qp { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+    #s1-hook-root .qd { position: absolute; inset: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      background: rgba(12,12,14,.55); border: 2px solid rgba(255,255,255,.22); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 24px 54px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.18); color: #fff; font-weight: 800; font-size: 96px;
+      line-height: 1; letter-spacing: -0.02em; opacity: 0; will-change: transform, opacity, filter; }
+    #s1-hook-root .qd span { display: block; transform: translateY(-3px); }
+  </style>
+
+  <div data-hf-id="hf-9bsw" id="s1-hook-root" data-composition-id="s1-hook" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-3jtz" class="broll" id="s1-hook-broll">
+      <div data-hf-id="hf-wqwl" class="punch" id="s1-hook-punch">
+        <div data-hf-id="hf-55g8" class="shot" id="s1-hook-shot1">
+          <video data-hf-id="hf-5wj0" id="s1-hook-v1" src="assets/broll/criador1-rua.mp4" muted playsinline preload="auto" data-start="0" data-duration="1.7" data-media-start="7.0" data-hf-media-start-basis="local"></video>
+        </div>
+        <div data-hf-id="hf-dtc3" class="shot" id="s1-hook-shot2">
+          <video data-hf-id="hf-rqj6" id="s1-hook-v2" src="assets/broll/criador2-carro.mp4" muted playsinline preload="auto" data-start="1.7" data-duration="1.32" data-media-start="3.0" data-hf-media-start-basis="local"></video>
+        </div>
+        <div data-hf-id="hf-9v82" class="shot" id="s1-hook-shot3">
+          <video data-hf-id="hf-05z5" id="s1-hook-v3" src="assets/broll/criador1-mesa.mp4" muted playsinline preload="auto" data-start="3.02" data-duration="2.547" data-media-start="5.0" data-hf-media-start-basis="local"></video>
+        </div>
+      </div>
+      <div data-hf-id="hf-2u0q" class="grad-top"></div>
+      <div data-hf-id="hf-58c3" class="grad-top2" id="s1-hook-scrim2"></div>
+      <div data-hf-id="hf-p7q4" class="grad-bot"></div>
+      <div data-hf-id="hf-3m7l" class="flash" id="s1-hook-flash"></div>
+    </div>
+
+    <div data-hf-id="hf-gyt9" class="tag" id="s1-hook-tag">
+      <div data-hf-id="hf-oi7i" class="tag-dot"><i data-hf-id="hf-k2zv" class="halo" id="s1-hook-halo"></i><i data-hf-id="hf-wt6k"></i></div>
+      <div data-hf-id="hf-ou15" class="tag-txt">100% IA</div>
+    </div>
+
+    <div data-hf-id="hf-j385" class="chip-stack">
+      <div data-hf-id="hf-wa9c" class="chip" id="s1-hook-chip1">
+        <div data-hf-id="hf-fvz2" class="ava"><img data-hf-id="hf-yqxw" class="a-criador1" src="assets/img/avatar-criador-1.png" alt=""></div>
+        <div data-hf-id="hf-jpnx" class="chip-txt"><b data-hf-id="hf-277g">@criador_1</b><span data-hf-id="hf-ypzj"> · 120 mil seguidores</span></div>
+      </div>
+      <div data-hf-id="hf-4y57" class="chip" id="s1-hook-chip2">
+        <div data-hf-id="hf-c5mq" class="ava"><img data-hf-id="hf-m8rk" class="a-criador2" src="assets/img/avatar-criador-2.png" alt=""></div>
+        <div data-hf-id="hf-m1k1" class="chip-txt"><b data-hf-id="hf-hvjq">@criador_2</b><span data-hf-id="hf-1e19"> · 95 mil seguidores</span></div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-l8wt" class="plats" id="s1-hook-plats">
+      <div data-hf-id="hf-hq7a" class="plat" id="s1-hook-p1"><svg data-hf-id="hf-azyc" viewBox="0 0 22 22" aria-hidden="true"><rect data-hf-id="hf-2pr8" x="2.5" y="2.5" width="17" height="17" rx="5" fill="none" stroke="#fff" stroke-width="2.2" /><path data-hf-id="hf-mm7q" d="M9 7.6 L15 11 L9 14.4 Z" fill="#D4FF3A" /></svg>reels</div>
+      <div data-hf-id="hf-ugn0" class="plat" id="s1-hook-p2"><svg data-hf-id="hf-4qm4" viewBox="0 0 22 22" aria-hidden="true"><path data-hf-id="hf-8v7c" d="M12.5 3 V14 A3.6 3.6 0 1 1 8.9 10.4" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" /><path data-hf-id="hf-aqy5" d="M12.5 3 C13.2 5.6 15 7 18 7.2" fill="none" stroke="#D4FF3A" stroke-width="2.4" stroke-linecap="round" /></svg>tiktok</div>
+      <div data-hf-id="hf-eqz0" class="plat" id="s1-hook-p3"><svg data-hf-id="hf-3jp1" viewBox="0 0 22 22" aria-hidden="true"><rect data-hf-id="hf-y3up" x="1.5" y="4.5" width="19" height="13" rx="4.5" fill="none" stroke="#fff" stroke-width="2.2" /><path data-hf-id="hf-ju0t" d="M9.2 8.2 L14 11 L9.2 13.8 Z" fill="#D4FF3A" /></svg>youtube</div>
+    </div>
+
+    <div data-hf-id="hf-9brj" class="stamp-pos" id="s1-hook-st1pos">
+      <div data-hf-id="hf-0652" class="stamp-punch">
+        <div data-hf-id="hf-36eq" class="stamp" id="s1-hook-stamp1">ele não existe<div data-hf-id="hf-u8xe" class="stamp-echo" id="s1-hook-echo1"></div></div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-3ddj" class="qx" id="s1-hook-qx"><div data-hf-id="hf-2pmf" class="qp" id="s1-hook-qp"><div data-hf-id="hf-dwxz" class="qd" id="s1-hook-qd"><span data-hf-id="hf-d0e2">?</span></div></div></div>
+
+    <div data-hf-id="hf-aase" class="stamp-pos" id="s1-hook-st2pos">
+      <div data-hf-id="hf-c4vu" class="stamp-punch" id="s1-hook-st2punch">
+        <div data-hf-id="hf-wqu5" class="stamp" id="s1-hook-stamp2">por quê?<div data-hf-id="hf-qatd" class="stamp-echo" id="s1-hook-echo2"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s1-hook-root");
+      const q = (s) => R.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+
+      // ── cue grid (scene-local word starts) — every beat derives from here ──
+      const CUT1 = 1.70;   // hard cut criador1 → criador2, just before "personagem" (1.74)
+      const ST1 = 1.67;    // stamp "ELE NÃO EXISTE" slam: lands WITH the cut, peaks on "personagem"
+      const NET = 2.12;    // "na internet" (2.20 / 2.26) → platform pills (trio settled by ~2.37)
+      const CUT2 = 3.02;   // hard cut criador2 → criador1 at the table, just before "e você se pergunta"
+      const PERG = 3.24;   // "pergunta" (3.38) → "?" disc (full size 3.41, spring peak 3.52)
+      const ST2 = 4.24;    // "por que" (4.30) → stamp "POR QUÊ?"
+      const FAZ = 5.02;    // "fazendo" (5.10) → stamp micro-punch
+      const EXIT = 5.28;   // blur-out; everything ends ≤ 5.52 (< 5.567 − 1 frame)
+      const XD = 0.22;
+
+      const OUT = (el, t, o = {}) => tl.to(el, Object.assign({ opacity: 0, scale: o.s ?? 1.04, filter: `blur(${o.b ?? 14}px)`,
+        duration: o.d ?? XD, ease: "power2.in" }, o.y !== undefined ? { y: o.y } : {}), t);
+
+      const broll = q("#s1-hook-broll"), punch = q("#s1-hook-punch");
+      const shot1 = q("#s1-hook-shot1"), shot2 = q("#s1-hook-shot2"), shot3 = q("#s1-hook-shot3");
+      const flash = q("#s1-hook-flash");
+
+      // ── B-roll: punchy open (full + moving at frame 0) + per-shot drifts + hard cuts ──
+      tl.fromTo(punch, { scale: 1.09 }, { scale: 1, duration: 0.42, ease: "expo.out" }, 0);
+      tl.fromTo(shot1, { scale: 1.06 }, { scale: 1.0, duration: CUT1, ease: "none" }, 0);
+      tl.set(shot1, { opacity: 0 }, CUT1);
+      tl.set(shot2, { opacity: 1 }, CUT1);
+      tl.fromTo(shot2, { scale: 1.0 }, { scale: 1.05, duration: CUT2 - CUT1, ease: "none" }, CUT1);
+      tl.set(shot2, { opacity: 0 }, CUT2);
+      tl.set(shot3, { opacity: 1 }, CUT2);
+      tl.fromTo(shot3, { scale: 1.0 }, { scale: 1.06, duration: 5.52 - CUT2, ease: "none" }, CUT2);
+      // brighter plates from the first cut on (windshield, light wall) → extra caption scrim
+      tl.set("#s1-hook-scrim2", { opacity: 1 }, CUT1);
+      // 2-frame white flash on both hard cuts
+      // (sets, not 0.001s tweens: CUT1 = 1.700 is exactly frame 51 and must already show the new shot + flash)
+      tl.set(flash, { opacity: 0.55 }, CUT1);
+      tl.to(flash, { opacity: 0, duration: 0.12, ease: "power1.out" }, CUT1 + 0.001);
+      tl.set(flash, { opacity: 0.5 }, CUT2);
+      tl.to(flash, { opacity: 0, duration: 0.12, ease: "power1.out" }, CUT2 + 0.001);
+      // impact punches on the two stamps (from-state = rest → seek-safe)
+      tl.fromTo(punch, { scale: 1 }, { scale: 1.045, duration: 0.05, ease: "power2.out", immediateRender: false }, CUT1 - 0.01);
+      tl.to(punch, { scale: 1, duration: 0.42, ease: "power3.out" }, CUT1 + 0.04);
+      tl.fromTo(punch, { scale: 1 }, { scale: 1.045, duration: 0.05, ease: "power2.out", immediateRender: false }, ST2 + 0.01);
+      tl.to(punch, { scale: 1, duration: 0.42, ease: "power3.out" }, ST2 + 0.06);
+
+      // ── "100% IA" tag: expo pop from its right edge (blur on a non-overshooting ease) + finite live-dot halo ──
+      tl.fromTo("#s1-hook-tag", { opacity: 0, scale: 0.55, x: 16, filter: "blur(8px)" },
+        { opacity: 1, scale: 1, x: 0, filter: "blur(0px)", duration: 0.45, ease: "expo.out" }, 0.18);
+      tl.fromTo("#s1-hook-halo", { scale: 1, opacity: 0.8 },
+        { scale: 2.6, opacity: 0, duration: 0.8, ease: "power2.out", repeat: 5 }, 0.5);
+      tl.fromTo("#s1-hook-tag", { y: 0 }, { y: -8, duration: EXIT - 0.63, ease: "none", immediateRender: false }, 0.63);
+
+      // ── attribution chips: rise in, drift, hard swap on each cut ──
+      tl.fromTo("#s1-hook-chip1", { opacity: 0, y: 30, scale: 0.96, filter: "blur(12px)" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out" }, 0.35);
+      tl.to("#s1-hook-chip1", { y: -6, duration: CUT1 - 0.8, ease: "none" }, 0.8);
+      tl.set("#s1-hook-chip1", { opacity: 0 }, CUT1);
+      tl.fromTo("#s1-hook-chip2", { opacity: 0, y: 24, filter: "blur(8px)" },
+        { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.25, ease: "power3.out" }, CUT1);
+      tl.to("#s1-hook-chip2", { y: -6, duration: CUT2 - (CUT1 + 0.25), ease: "none" }, CUT1 + 0.25);
+      tl.set("#s1-hook-chip2", { opacity: 0 }, CUT2);
+      // shot 3 is criador1 again → the same chip comes back (one node, no duplicate media)
+      tl.fromTo("#s1-hook-chip1", { opacity: 0, y: 24, scale: 1, filter: "blur(8px)" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "power3.out", immediateRender: false }, CUT2);
+      tl.to("#s1-hook-chip1", { y: -8, duration: EXIT - (CUT2 + 0.25), ease: "none" }, CUT2 + 0.25);
+
+      // ── STAMP 1 "ELE NÃO EXISTE" on "personagem": slam lands on the cut (expo.out → blur never negative) ──
+      tl.fromTo("#s1-hook-stamp1", { opacity: 0, scale: 1.7, rotation: -4, filter: "blur(8px)" },
+        { opacity: 1, scale: 1, rotation: -4, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, ST1);
+      tl.to("#s1-hook-stamp1", { scale: 1.03, duration: CUT2 - (ST1 + 0.22), ease: "none" }, ST1 + 0.22);
+      tl.set("#s1-hook-stamp1", { opacity: 0 }, CUT2);
+      tl.fromTo("#s1-hook-echo1", { opacity: 0, scale: 1 }, { opacity: 0.95, scale: 1, duration: 0.001 }, ST1 + 0.1);
+      tl.to("#s1-hook-echo1", { opacity: 0, scale: 1.32, duration: 0.42, ease: "power2.out" }, ST1 + 0.101);
+
+      // ── "na internet": reels / tiktok / youtube glass pills, two-channel spring pops; gone on the cut ──
+      ["#s1-hook-p1", "#s1-hook-p2", "#s1-hook-p3"].forEach((p, i) => {
+        const t = NET + i * 0.08;
+        tl.fromTo(p, { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, t);
+        tl.fromTo(p, { scale: 0.5, y: 10 }, { scale: 1, y: 0, duration: 0.4, ease: "back.out(2.2)", immediateRender: false }, t);
+        tl.to(p, { y: -6, duration: CUT2 - (t + 0.4), ease: "none" }, t + 0.4);
+        tl.set(p, { opacity: 0 }, CUT2);
+      });
+
+      // ── "?" disc on "pergunta": opacity/blur on power2.out, scale+rotation spring on its own wrapper ──
+      tl.fromTo("#s1-hook-qd", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.18, ease: "power2.out" }, PERG);
+      tl.fromTo("#s1-hook-qp", { scale: 0.4, rotation: -14 }, { scale: 1, rotation: 8, duration: 0.5, ease: "back.out(2)" }, PERG);
+      // gentle wobble (finite) on the face layer
+      tl.fromTo("#s1-hook-qd", { rotation: 0 }, { rotation: 5, duration: 0.4, ease: "sine.inOut", yoyo: true, repeat: 3, immediateRender: false }, PERG + 0.5);
+      // punch on "por que" (same beat as stamp 2)
+      tl.fromTo("#s1-hook-qp", { scale: 1 }, { scale: 1.15, duration: 0.07, ease: "power2.out", immediateRender: false }, ST2 + 0.02);
+      tl.to("#s1-hook-qp", { scale: 1, duration: 0.36, ease: "power3.out" }, ST2 + 0.09);
+
+      // ── STAMP 2 "POR QUÊ?" on "por que": same slam recipe + echo ring; micro-punch on "fazendo isso" ──
+      tl.fromTo("#s1-hook-stamp2", { opacity: 0, scale: 1.7, rotation: 3, filter: "blur(8px)" },
+        { opacity: 1, scale: 1, rotation: 3, filter: "blur(0px)", duration: 0.22, ease: "expo.out" }, ST2);
+      tl.to("#s1-hook-stamp2", { scale: 1.03, duration: EXIT - (ST2 + 0.22), ease: "none" }, ST2 + 0.22);
+      tl.fromTo("#s1-hook-echo2", { opacity: 0, scale: 1 }, { opacity: 0.95, scale: 1, duration: 0.001 }, ST2 + 0.1);
+      tl.to("#s1-hook-echo2", { opacity: 0, scale: 1.3, duration: 0.42, ease: "power2.out" }, ST2 + 0.101);
+      tl.fromTo("#s1-hook-st2punch", { scale: 1 }, { scale: 1.06, duration: 0.08, ease: "power2.out", immediateRender: false }, FAZ);
+      tl.to("#s1-hook-st2punch", { scale: 1, duration: 0.22, ease: "power2.inOut" }, FAZ + 0.08);
+
+      // ── EXIT: overlays blur out, the B-roll fades so the paper shows for s2 (ends 5.52 < 5.567 − 1 frame) ──
+      OUT("#s1-hook-tag", EXIT);
+      OUT("#s1-hook-chip1", EXIT, { y: -8 });
+      OUT("#s1-hook-qx", EXIT + 0.01);
+      OUT("#s1-hook-st2pos", EXIT + 0.02, { d: 0.2 });
+      tl.fromTo(broll, { opacity: 1, scale: 1, filter: "blur(0px)" },
+        { opacity: 0, scale: 1.03, filter: "blur(10px)", duration: 0.2, ease: "power2.in", immediateRender: false }, 5.32);
+
+      window.__timelines["s1-hook"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

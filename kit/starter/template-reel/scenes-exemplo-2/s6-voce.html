@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s6-voce-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00; --red:#FF4A3D; }
+
+    /* ---------- "tá, tá, tá" speech bubbles (static anchor carries position + rest tilt; GSAP animates children only) ---------- */
+    #s6-voce-root .banc { position: absolute; width: 0; height: 0; }
+    #s6-voce-root .bx { position: absolute; left: 0; top: 0; transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s6-voce-root .bc { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); }   /* static centring, never animated */
+    #s6-voce-root .bp { position: relative; transform-origin: 50% 100%; opacity: 0; will-change: transform, opacity, filter; }
+    #s6-voce-root .bub { position: relative; height: 120px; padding: 0 50px; border-radius: 999px; background: var(--ui);
+      display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 70px; font-weight: 700;
+      letter-spacing: -0.03em; line-height: 1; white-space: nowrap;
+      box-shadow: 0 30px 60px rgba(10,10,0,.26), 0 6px 16px rgba(10,10,0,.16), inset 0 0 0 2px rgba(255,255,255,.07); }
+    #s6-voce-root .tail { position: absolute; top: 106px; width: 41px; height: 36px; display: block; }
+    #s6-voce-root .tail.l { left: 36px; }
+    #s6-voce-root .tail.r { right: 36px; transform: scaleX(-1); }
+
+    /* ---------- creator video cards (260x462, 2-up row centred at x 540 -> slide left to open a 3rd slot) ---------- */
+    #s6-voce-root .cpos { position: absolute; top: 1099px; width: 260px; height: 462px; }
+    #s6-voce-root #s6-voce-Lpos { left: 250px; }   /* centre (380,1330) */
+    #s6-voce-root #s6-voce-Rpos { left: 570px; }   /* centre (700,1330) */
+    #s6-voce-root .cin, #s6-voce-root .cflt { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s6-voce-root .cin { opacity: 0; will-change: transform, opacity, filter; }
+    #s6-voce-root .card { position: absolute; left: 0; top: 0; width: 260px; height: 462px; border-radius: 28px; overflow: hidden;
+      background: #0C0C0E; box-shadow: 0 34px 80px rgba(24,24,12,.20), 0 6px 18px rgba(24,24,12,.10); }
+    #s6-voce-root .ckb { position: absolute; left: 0; top: 0; width: 260px; height: 462px; }
+    /* criador1: wide enough to read the dinner table (chandelier, dancer, burger table) */
+    #s6-voce-root #s6-voce-Lkb { transform-origin: 50% 58%; }
+    /* criador2: anchored on the left edge so the driver's face (source x 5-36%) is never pushed out of the card */
+    #s6-voce-root #s6-voce-Rkb { transform-origin: 0% 40%; }
+    /* 720x1280 B-roll in its native-aspect box (260x462.22): object-fit is not trusted in render inside transformed wrappers */
+    #s6-voce-root .vid { position: absolute; left: 0; top: -0.11px; width: 260px; height: 462.22px; object-fit: fill; display: block; }
+    #s6-voce-root .scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 140px;
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.42)); }
+    #s6-voce-root .bord { position: absolute; inset: 0; border-radius: 28px; box-shadow: inset 0 0 0 6px #FFFFFF; }
+    #s6-voce-root .hrow { position: absolute; left: 0; right: 0; bottom: 20px; height: 42px; display: flex; justify-content: center; }
+    #s6-voce-root .handle { height: 42px; padding: 0 12px; border-radius: 999px; background: rgba(12,12,14,.62);
+      border: 1.5px solid rgba(255,255,255,.14); display: flex; align-items: center; color: #FFFFFF;
+      font-size: 22px; font-weight: 500; letter-spacing: -0.02em; line-height: 1; white-space: nowrap; }
+
+    /* "+ $" earning pills on each card's top-right corner (position+tilt / punch / pop on separate wrappers) */
+    #s6-voce-root .ppos { position: absolute; left: 174px; top: -28px; width: 104px; height: 60px; transform: rotate(6deg); }
+    #s6-voce-root .ppunch, #s6-voce-root .ppop { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s6-voce-root .ppop { opacity: 0; }
+    #s6-voce-root .pill { position: absolute; inset: 0; border-radius: 999px; background: var(--lime); color: var(--limeInk);
+      display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 34px; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+      box-shadow: 0 12px 26px rgba(120,160,0,.34), 0 2px 6px rgba(60,80,0,.16); white-space: nowrap; }
+    #s6-voce-root .burst { position: absolute; left: 52px; top: 30px; width: 0; height: 0; }
+    #s6-voce-root .pt { position: absolute; left: 0; top: 0; opacity: 0; filter: drop-shadow(0 0 6px rgba(212,255,58,.7)) drop-shadow(0 2px 3px rgba(70,100,0,.30)); }
+    #s6-voce-root .pt svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+    /* ---------- "você?" dashed slot (third slot, centre (850,1330)) ---------- */
+    #s6-voce-root #s6-voce-Spos { position: absolute; left: 720px; top: 1099px; width: 260px; height: 462px; }
+    #s6-voce-root #s6-voce-Sin { opacity: 0; will-change: transform, opacity, filter; }
+    #s6-voce-root #s6-voce-Sin, #s6-voce-root #s6-voce-Sflt, #s6-voce-root #s6-voce-Spunch { position: absolute; inset: 0; transform-origin: 50% 50%; }
+    #s6-voce-root .slot { position: absolute; left: 0; top: 0; width: 260px; height: 462px; display: block; overflow: visible; }
+    #s6-voce-root .sil { position: absolute; left: 0; top: 54px; width: 260px; height: 250px; transform-origin: 130px 150px; }
+    #s6-voce-root .sil svg { position: absolute; left: 0; top: 0; width: 260px; height: 250px; display: block; overflow: visible; }
+    #s6-voce-root #s6-voce-silLime { opacity: 0; filter: drop-shadow(0 0 16px rgba(212,255,58,.95)) drop-shadow(0 6px 18px rgba(120,160,0,.35)); }
+    #s6-voce-root .slab { position: absolute; left: 0; top: 330px; width: 260px; height: 60px; text-align: center; font-size: 48px; font-weight: 700;
+      letter-spacing: -0.035em; line-height: 60px; color: var(--ink); white-space: nowrap; }
+    #s6-voce-root .ring { position: absolute; left: -10px; top: -10px; width: 280px; height: 482px; border-radius: 38px; border: 6px solid var(--lime);
+      box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); transform-origin: 50% 50%; opacity: 0; }
+    #s6-voce-root .echo { position: absolute; left: -10px; top: -10px; width: 280px; height: 482px; border-radius: 38px; border: 4px solid var(--lime);
+      transform-origin: 50% 50%; opacity: 0; }
+  </style>
+
+  <div data-hf-id="hf-qgxg" id="s6-voce-root" data-composition-id="s6-voce" data-width="1080" data-height="1920">
+
+    <!-- ===== "tá, tá, tá" bubbles ===== -->
+    <div data-hf-id="hf-dd01" class="banc" style="left:400px;top:1180px;transform:rotate(-6deg)">
+      <div data-hf-id="hf-t73r" class="bx" id="s6-voce-b1x"><div data-hf-id="hf-9ldh" class="bc"><div data-hf-id="hf-3shz" class="bp" id="s6-voce-b1p">
+        <div data-hf-id="hf-070s" class="bub">tá</div>
+        <svg data-hf-id="hf-sie7" class="tail l" viewBox="0 0 34 30" aria-hidden="true"><path data-hf-id="hf-rv9j" d="M3 0 H31 C27 10 17 22 1 29 C8 19 9 9 3 0 Z" fill="#141416" /></svg>
+      </div></div></div>
+    </div>
+    <div data-hf-id="hf-ovrx" class="banc" style="left:620px;top:1260px;transform:rotate(4deg)">
+      <div data-hf-id="hf-d06q" class="bx" id="s6-voce-b2x"><div data-hf-id="hf-irhl" class="bc"><div data-hf-id="hf-nlky" class="bp" id="s6-voce-b2p">
+        <div data-hf-id="hf-wq78" class="bub">tá</div>
+        <svg data-hf-id="hf-g9ql" class="tail r" viewBox="0 0 34 30" aria-hidden="true"><path data-hf-id="hf-ywbr" d="M3 0 H31 C27 10 17 22 1 29 C8 19 9 9 3 0 Z" fill="#141416" /></svg>
+      </div></div></div>
+    </div>
+    <div data-hf-id="hf-lo27" class="banc" style="left:470px;top:1350px;transform:rotate(-2deg)">
+      <div data-hf-id="hf-i01p" class="bx" id="s6-voce-b3x"><div data-hf-id="hf-jyeo" class="bc"><div data-hf-id="hf-7in1" class="bp" id="s6-voce-b3p">
+        <div data-hf-id="hf-vja5" class="bub">tá</div>
+        <svg data-hf-id="hf-kpzz" class="tail l" viewBox="0 0 34 30" aria-hidden="true"><path data-hf-id="hf-yi0q" d="M3 0 H31 C27 10 17 22 1 29 C8 19 9 9 3 0 Z" fill="#141416" /></svg>
+      </div></div></div>
+    </div>
+
+    <!-- ===== creator card LEFT: @criador_1 ===== -->
+    <div data-hf-id="hf-k0mh" class="cpos" id="s6-voce-Lpos"><div data-hf-id="hf-89uj" class="cin" id="s6-voce-Lin"><div data-hf-id="hf-fmdh" class="cflt" id="s6-voce-Lflt">
+      <div data-hf-id="hf-vn2y" class="card">
+        <div data-hf-id="hf-ih9n" class="ckb" id="s6-voce-Lkb">
+          <video data-hf-id="hf-h00o" id="s6-voce-vL" class="vid" src="assets/broll/criador1-mesa.mp4" muted playsinline data-start="1.10" data-duration="3.70" data-media-start="6.0" data-hf-media-start-basis="local"></video>
+        </div>
+        <div data-hf-id="hf-261e" class="scrim"></div>
+        <div data-hf-id="hf-xhto" class="hrow"><div data-hf-id="hf-jz2j" class="handle">@criador_1</div></div>
+        <div data-hf-id="hf-c99r" class="bord"></div>
+      </div>
+      <div data-hf-id="hf-odxi" class="ppos"><div data-hf-id="hf-mnd0" class="ppunch" id="s6-voce-Lpunch"><div data-hf-id="hf-e0ou" class="ppop" id="s6-voce-Lpill"><div data-hf-id="hf-yooq" class="pill">+ $</div></div></div>
+        <div data-hf-id="hf-33x4" class="burst" id="s6-voce-Lburst"></div></div>
+    </div></div></div>
+
+    <!-- ===== creator card RIGHT: @criador_2 ===== -->
+    <div data-hf-id="hf-h6d7" class="cpos" id="s6-voce-Rpos"><div data-hf-id="hf-2xll" class="cin" id="s6-voce-Rin"><div data-hf-id="hf-5laz" class="cflt" id="s6-voce-Rflt">
+      <div data-hf-id="hf-i08u" class="card">
+        <div data-hf-id="hf-61rl" class="ckb" id="s6-voce-Rkb">
+          <video data-hf-id="hf-e2vk" id="s6-voce-vR" class="vid" src="assets/broll/criador2-carro.mp4" muted playsinline data-start="1.10" data-duration="3.70" data-media-start="11.5" data-hf-media-start-basis="local"></video>
+        </div>
+        <div data-hf-id="hf-9weu" class="scrim"></div>
+        <div data-hf-id="hf-zlro" class="hrow"><div data-hf-id="hf-hnhr" class="handle">@criador_2</div></div>
+        <div data-hf-id="hf-s6j3" class="bord"></div>
+      </div>
+      <div data-hf-id="hf-ikcq" class="ppos"><div data-hf-id="hf-yj1y" class="ppunch" id="s6-voce-Rpunch"><div data-hf-id="hf-an74" class="ppop" id="s6-voce-Rpill"><div data-hf-id="hf-vsbi" class="pill">+ $</div></div></div>
+        <div data-hf-id="hf-5fei" class="burst" id="s6-voce-Rburst"></div></div>
+    </div></div></div>
+
+    <!-- ===== third slot: "você?" ===== -->
+    <div data-hf-id="hf-6pos" id="s6-voce-Spos"><div data-hf-id="hf-rfj7" id="s6-voce-Sin"><div data-hf-id="hf-xcgw" id="s6-voce-Sflt"><div data-hf-id="hf-ju5i" id="s6-voce-Spunch">
+      <svg data-hf-id="hf-u9pn" class="slot" viewBox="0 0 260 462" aria-hidden="true">
+        <rect data-hf-id="hf-ernk" x="3" y="3" width="254" height="456" rx="25" fill="rgba(212,255,58,.16)" />
+        <rect data-hf-id="hf-cbcf" id="s6-voce-dash" x="3" y="3" width="254" height="456" rx="25" fill="none" stroke="#B4DC14" stroke-width="4.5" stroke-dasharray="17 12" stroke-linecap="round" />
+      </svg>
+      <div data-hf-id="hf-j1sg" class="sil" id="s6-voce-sil">
+        <svg data-hf-id="hf-gww5" viewBox="0 0 260 250" aria-hidden="true">
+          <circle data-hf-id="hf-7l9j" cx="130" cy="92" r="50" fill="#CFCFC7" />
+          <path data-hf-id="hf-wd7w" d="M40 250 C44 186 84 160 130 160 C176 160 216 186 220 250 Z" fill="#CFCFC7" />
+        </svg>
+        <svg data-hf-id="hf-1oyk" id="s6-voce-silLime" viewBox="0 0 260 250" aria-hidden="true">
+          <defs data-hf-id="hf-mh0t"><lineargradient data-hf-id="hf-c3uz" id="s6-voce-silg" x1="0" y1="0" x2="0" y2="1">
+            <stop data-hf-id="hf-g4k1" offset="0" stop-color="#E9FF8C" /><stop data-hf-id="hf-bia0" offset="1" stop-color="#C4EE22" /></lineargradient></defs>
+          <circle data-hf-id="hf-lgoe" cx="130" cy="92" r="50" fill="url(#s6-voce-silg)" />
+          <path data-hf-id="hf-9dv9" d="M40 250 C44 186 84 160 130 160 C176 160 216 186 220 250 Z" fill="url(#s6-voce-silg)" />
+        </svg>
+      </div>
+      <div data-hf-id="hf-jepz" class="slab">você?</div>
+      <div data-hf-id="hf-qqup" class="echo" id="s6-voce-echo1"></div>
+      <div data-hf-id="hf-uoyq" class="echo" id="s6-voce-echo2"></div>
+      <div data-hf-id="hf-i1m4" class="ring" id="s6-voce-ring"></div>
+    </div></div></div></div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s6-voce-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      // two-channel pop: opacity+blur on power2.out, scale on back.out (blur never overshoots)
+      const POP2 = (el, t, o = {}) => {
+        tl.fromTo(el, { opacity: 0, filter: `blur(${o.b ?? 8}px)` }, { opacity: 1, filter: "blur(0px)", duration: o.fd ?? 0.16, ease: "power2.out" }, t);
+        tl.fromTo(el, { scale: o.from ?? 0.5, y: o.y ?? 0 }, { scale: 1, y: 0, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2.5)", immediateRender: false }, t);
+      };
+
+      /* ---------------- cue grid (scene-local word starts) ---------------- */
+      const TA1 = 0.07, TA2 = 0.27, TA3 = 0.43, MAS = 0.65;
+      const AI = 1.05, SAO = 1.57, GANH = 2.53, DIN = 2.85;
+      const E = 3.35, VOCE = 3.75, TAMB = 4.07, PODE = 4.29;
+      const EXIT = 4.50;   // exits end 4.76 < 4.80 - 1 frame
+
+      /* ---------------- 1. "tá, tá, tá" — one bubble per word, then flicked away on "mas" ---------------- */
+      const bx = ["#s6-voce-b1x", "#s6-voce-b2x", "#s6-voce-b3x"].map(q);
+      const bp = ["#s6-voce-b1p", "#s6-voce-b2p", "#s6-voce-b3p"].map(q);
+      [TA1 - 0.05, TA2 - 0.05, TA3 - 0.05].forEach((t, i) => {
+        tl.fromTo(bp[i], { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.16, ease: "power2.out" }, t);
+        tl.fromTo(bp[i], { scale: 0.45, y: 24 }, { scale: 1, y: 0, duration: 0.42, ease: "back.out(2.5)" }, t);
+        // tiny lift while waiting for the flick (alive)
+        tl.fromTo(bx[i], { y: 0 }, { y: -8, duration: MAS - 0.03 - t, ease: "none", immediateRender: false }, t);
+      });
+      // "mas": flicked off to the right (stagger 0.04)
+      bx.forEach((el, i) => tl.to(el, { x: 260, rotation: 20, opacity: 0, filter: "blur(14px)", duration: 0.24, ease: "power2.in" }, MAS - 0.03 + i * 0.04));
+
+      /* ---------------- 2. "são pessoas fazendo" — two creator video cards rise into a row ---------------- */
+      const Lpos = q("#s6-voce-Lpos"), Rpos = q("#s6-voce-Rpos"), Lin = q("#s6-voce-Lin"), Rin = q("#s6-voce-Rin");
+      // they start rising out of a deep blur during "até aí" (no empty stage after the flick) and are sharp on "são pessoas"
+      const LIN = AI + 0.07, RIN = AI + 0.17;   // ~95% landed by SAO
+      IN(Lin, LIN, { y: 110, s: 0.92, b: 20, d: 0.6 });
+      IN(Rin, RIN, { y: 110, s: 0.92, b: 20, d: 0.6 });
+      // slow push on the footage (wrapper only; the <video> box never animates)
+      tl.fromTo("#s6-voce-Lkb", { scale: 1.08 }, { scale: 1.15, duration: 4.78 - LIN, ease: "none" }, LIN);
+      tl.fromTo("#s6-voce-Rkb", { scale: 1.14 }, { scale: 1.21, duration: 4.78 - RIN, ease: "none" }, RIN);
+
+      /* ---------------- 3. "ganhando dinheiro" — "+ $" pills pop on each card + coin sparkle; punch on "dinheiro" ---------------- */
+      const PL = GANH - 0.08, PR = GANH + 0.04;   // stagger 0.12
+      POP2("#s6-voce-Lpill", PL, { from: 0.4, d: 0.42, e: "back.out(2.4)" });
+      POP2("#s6-voce-Rpill", PR, { from: 0.4, d: 0.42, e: "back.out(2.4)" });
+      [["#s6-voce-Lpunch", 0], ["#s6-voce-Rpunch", 0.05]].forEach(([el, d]) => {
+        tl.fromTo(el, { scale: 1 }, { scale: 1.2, duration: 0.1, ease: "power2.out", immediateRender: false }, DIN - 0.06 + d);
+        tl.to(el, { scale: 1, duration: 0.36, ease: "back.out(2)" }, DIN + 0.04 + d);
+      });
+
+      // deterministic coin sparkle (seeded, one proxy per pill, writes transforms in onUpdate)
+      const prand = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const P4 = "M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z";
+      const STAR = '<svg viewBox="0 0 24 24"><path d="' + P4 + '" fill="#D4FF3A"/><path d="' + P4 + '" fill="#FFFFFF" transform="translate(12 12) scale(.42) translate(-12 -12)"/></svg>';
+      const burst = (sel, seed, t0) => {
+        const field = q(sel), parts = [], N = 6;
+        const SIZE = [24, 18, 28, 20, 26, 18], SPEED = [210, 180, 240, 190, 230, 170];
+        for (let i = 0; i < N; i++) {
+          const el = document.createElement("div");
+          el.className = "pt"; const s = SIZE[i];
+          el.style.width = s + "px"; el.style.height = s + "px"; el.style.marginLeft = (-s / 2) + "px"; el.style.marginTop = (-s / 2) + "px";
+          el.innerHTML = STAR; field.appendChild(el);
+          const a = (-160 + (140 * i) / (N - 1) + (prand(seed + i * 7) - 0.5) * 10) * Math.PI / 180;
+          parts.push({ el, vx: Math.cos(a) * SPEED[i], vy: Math.sin(a) * SPEED[i], spin: (prand(seed + i * 13) * 2 - 1) * 140 });
+        }
+        const FL = 0.55, d = { T: 0 }; let lastK = -1;
+        tl.fromTo(d, { T: 0 }, { T: 1, duration: FL, ease: "none", immediateRender: false, onUpdate: () => {
+          const k = Math.round(d.T * 1000); if (k === lastK) return; lastK = k;
+          const t = d.T * FL, drag = 1 - 0.45 * d.T;
+          const fade = d.T < 0.45 ? 1 : Math.max(0, (1 - d.T) / 0.55);
+          const sc = d.T < 0.18 ? 0.3 + 0.7 * (d.T / 0.18) : 1 - 0.5 * (d.T - 0.18);
+          parts.forEach((p) => {
+            const x = p.vx * t * drag, y = p.vy * t * drag + 0.5 * 90 * t * t;
+            p.el.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${(p.spin * t).toFixed(1)}deg) scale(${sc.toFixed(3)})`;
+            p.el.style.opacity = String(d.T === 0 || d.T === 1 ? 0 : fade);
+          });
+        } }, t0);
+      };
+      burst("#s6-voce-Lburst", 3, PL + 0.08);
+      burst("#s6-voce-Rburst", 41, PR + 0.08);
+
+      /* ---------------- holding: phase-opposed float on the two creator cards ---------------- */
+      const Lf = q("#s6-voce-Lflt"), Rf = q("#s6-voce-Rflt");
+      const F0 = RIN + 0.55, F1 = 4.78, PER = 2.4, AMP = 6;
+      const ph = { p: 0 }; let lastY = null;
+      tl.fromTo(ph, { p: 0 }, { p: (F1 - F0) / PER * Math.PI * 2, duration: F1 - F0, ease: "none", immediateRender: false, onUpdate: () => {
+        const env = Math.min(1, ph.p / 1.2);
+        const s = (Math.sin(ph.p) * AMP * env).toFixed(2);
+        if (s === lastY) return; lastY = s;
+        Lf.style.transform = `translateY(${s}px)`;
+        Rf.style.transform = `translateY(${(-s).toFixed(2)}px)`;
+      } }, F0);
+
+      /* ---------------- 4. "e como é que você" — cards slide left, the dashed "você?" slot takes the 3rd place ---------------- */
+      tl.to(Lpos, { x: -150, duration: 0.45, ease: "power2.inOut" }, E - 0.05);
+      tl.to(Rpos, { x: -160, duration: 0.45, ease: "power2.inOut" }, E - 0.05);
+      IN("#s6-voce-Sin", E + 0.10, { y: 80, d: 0.5 });
+      // marching dashes keep the empty slot alive
+      tl.fromTo("#s6-voce-dash", { strokeDashoffset: 0 }, { strokeDashoffset: -58, duration: 4.78 - (E + 0.10), ease: "none" }, E + 0.10);
+      tl.fromTo("#s6-voce-Sflt", { y: 0 }, { y: -10, duration: 4.78 - (E + 0.60), ease: "none" }, E + 0.60);
+
+      // "você": lime ring pops + 2 finite echo pulses + slot punch
+      tl.fromTo("#s6-voce-ring", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.38, ease: "back.out(2)", immediateRender: false }, VOCE - 0.05);
+      tl.fromTo("#s6-voce-Spunch", { scale: 1 }, { scale: 1.06, duration: 0.14, ease: "power2.out", immediateRender: false }, VOCE - 0.03);
+      tl.to("#s6-voce-Spunch", { scale: 1, duration: 0.4, ease: "back.out(2)" }, VOCE + 0.12);
+      // pulses: instant set + expand (seek-safe; invisible before their beat under any seek order)
+      tl.fromTo("#s6-voce-echo1", { opacity: 0, scale: 1 }, { opacity: 0.9, scale: 1, duration: 0.01, ease: "none", immediateRender: false }, VOCE + 0.06);
+      tl.to("#s6-voce-echo1", { opacity: 0, scale: 1.14, duration: 0.6, ease: "power2.out" }, VOCE + 0.07);
+      tl.fromTo("#s6-voce-echo2", { opacity: 0, scale: 1 }, { opacity: 0.7, scale: 1, duration: 0.01, ease: "none", immediateRender: false }, TAMB);
+      tl.to("#s6-voce-echo2", { opacity: 0, scale: 1.12, duration: 0.42, ease: "power2.out" }, TAMB + 0.01);
+
+      /* ---------------- 5. "pode fazer isso" — the silhouette fills with a soft lime glow (anticipation) ---------------- */
+      tl.fromTo("#s6-voce-silLime", { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power2.out", immediateRender: false }, PODE - 0.09);
+      tl.fromTo("#s6-voce-sil", { scale: 1 }, { scale: 1.06, duration: 0.3, ease: "power2.out", immediateRender: false }, PODE - 0.09);
+
+      /* ---------------- EXIT (staggered blur-out, last one ends 4.76 < 4.80 - 1 frame) ---------------- */
+      OUT(Lin, EXIT, { d: 0.22 });
+      OUT(Rin, EXIT + 0.02, { d: 0.22 });
+      OUT("#s6-voce-Sin", EXIT + 0.04, { d: 0.22 });
+
+      window.__timelines["s6-voce"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

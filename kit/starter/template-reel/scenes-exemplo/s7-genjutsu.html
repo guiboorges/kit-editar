@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s7-genjutsu-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --lime:#D4FF3A; --limeInk:#141A00; }
+    #s7-genjutsu-root .full { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+    /* anchors: a static, centered placement box; GSAP only ever animates the child */
+    #s7-genjutsu-root .anc { position: absolute; transform: translate(-50%, -50%); }
+
+    /* ---------- carried over from s6 (frame 0 = s6's last frame: same boxes, same CSS) ---------- */
+    #s7-genjutsu-root #s7-genjutsu-timerrow { position: absolute; left: 0; top: 933px; width: 1080px; height: 64px; display: flex; justify-content: center; align-items: center; }
+    #s7-genjutsu-root #s7-genjutsu-timer { height: 64px; padding: 0 28px 0 22px; border-radius: 999px; background: var(--lime); color: var(--limeInk);
+      display: flex; align-items: center; gap: 12px; font-family: "Geist Mono", monospace; font-size: 30px; font-weight: 600;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.02em; white-space: nowrap;
+      box-shadow: 0 12px 28px rgba(120, 160, 0, 0.28), 0 2px 6px rgba(60, 80, 0, 0.12); }
+    #s7-genjutsu-root #s7-genjutsu-timer svg { width: 34px; height: 34px; display: block; overflow: visible; }
+    #s7-genjutsu-root #s7-genjutsu-pronto { position: absolute; left: 70px; top: 1080px; width: 172px; height: 60px; border-radius: 999px; transform: rotate(-4deg);
+      background: var(--lime); color: var(--limeInk); display: flex; align-items: center; justify-content: center; gap: 8px;
+      font-size: 30px; font-weight: 700; letter-spacing: -0.02em;
+      box-shadow: 0 10px 24px rgba(120, 160, 0, 0.30), 0 2px 6px rgba(60, 80, 0, 0.14); }
+    #s7-genjutsu-root #s7-genjutsu-pronto svg { width: 26px; height: 26px; display: block; }
+
+    /* exact replica of s6's held sheet card — shown only until the morph starts (0.10), then the morph card takes over */
+    #s7-genjutsu-root #s7-genjutsu-sheet0 { position: absolute; left: 90px; top: 1135.5px; width: 900px; height: 509px; border-radius: 34px; overflow: hidden;
+      background: #FFFFFF; box-shadow: 0 34px 80px rgba(24, 24, 12, 0.16), 0 6px 18px rgba(24, 24, 12, 0.08); }
+    #s7-genjutsu-root #s7-genjutsu-sheet0 img { width: 900px; height: 509px; object-fit: cover; display: block; filter: blur(0px); }
+
+    /* ---------- RESULTADO: morph card (layout = final slot 570..970 x 1040..1680) ---------- */
+    #s7-genjutsu-root #s7-genjutsu-Rtilt { transform-origin: 770px 1360px; }
+    #s7-genjutsu-root #s7-genjutsu-Rshadow { opacity: 0; filter: drop-shadow(0 34px 40px rgba(24,24,12,.16)) drop-shadow(0 6px 9px rgba(24,24,12,.08)); }
+    #s7-genjutsu-root #s7-genjutsu-morph { position: absolute; left: 570px; top: 1040px; width: 400px; height: 640px; overflow: hidden;
+      background: var(--card); transform-origin: 50% 50%; }
+    #s7-genjutsu-root #s7-genjutsu-sheetimg { position: absolute; left: 0; top: 206.89px; width: 400px; height: 226.22px; display: block; transform-origin: 0 0;
+      background: #fff url("assets/img/personagem-sheet.jpg") center / 100% 100% no-repeat; }
+    #s7-genjutsu-root #s7-genjutsu-resalign { position: absolute; left: 0; top: 0; width: 400px; height: 640px; transform-origin: 0 0; opacity: 0; }
+    #s7-genjutsu-root #s7-genjutsu-reskb { position: absolute; inset: 0; transform-origin: 52% 30%; }
+    /* media boxes — swap the <img id="s7-resultado"> for the Genjutsu <video id="s7-resultado" class="media" …> (same box) */
+    #s7-genjutsu-root .media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; display: block; }
+    /* Genjutsu result (720x1280) — fades in over the retrato, then pulls back from the face to head-and-shoulders */
+    #s7-genjutsu-root #s7-genjutsu-gjin { position: absolute; inset: 0; opacity: 0; }
+    #s7-genjutsu-root #s7-genjutsu-gjkb { position: absolute; left: 0; top: 0; width: 400px; height: 640px; transform-origin: 0 0; }
+    #s7-genjutsu-root .ring { position: absolute; left: 562px; top: 1032px; width: 416px; height: 656px; border: 6px solid var(--lime); border-radius: 38px;
+      box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); opacity: 0; }
+
+    /* ---------- ORIGINAL card (110..510 x 1040..1680) ---------- */
+    #s7-genjutsu-root #s7-genjutsu-Lin { transform-origin: 310px 1360px; opacity: 0; }
+    #s7-genjutsu-root #s7-genjutsu-Lcard { position: absolute; left: 110px; top: 1040px; width: 400px; height: 640px; border-radius: 30px; overflow: hidden;
+      background: var(--ui); box-shadow: 0 34px 80px rgba(24,24,12,.16), 0 6px 18px rgba(24,24,12,.08); }
+    #s7-genjutsu-root #s7-genjutsu-Lkb { position: absolute; inset: 0; transform-origin: 0 0; }
+    /* both synced videos are 9:16 (1440x2560 / 720x1280): give them their native box (400x711, centred) instead of relying on object-fit */
+    #s7-genjutsu-root #s7-original, #s7-genjutsu-root #s7-resultado { left: 0; top: -35.56px; width: 400px; height: 711.11px; object-fit: fill; }
+
+    /* ---------- label row (static, aligned; y 988) ---------- */
+    #s7-genjutsu-root .lab { height: 50px; padding: 0 22px; border-radius: 999px; display: flex; align-items: center;
+      font-family: "Geist Mono", monospace; font-size: 26px; font-weight: 500; letter-spacing: .06em; white-space: nowrap; opacity: 0; }
+    #s7-genjutsu-root #s7-genjutsu-labO { background: var(--card); color: var(--ink2); box-shadow: 0 0 0 2px var(--line), 0 8px 20px rgba(24,24,12,.08); }
+    #s7-genjutsu-root #s7-genjutsu-labR { background: var(--lime); color: var(--limeInk); font-weight: 600; box-shadow: 0 10px 24px rgba(120,160,0,.25); }
+    #s7-genjutsu-root #s7-genjutsu-gen { height: 52px; padding: 0 20px 0 9px; border-radius: 999px; background: var(--ui);
+      display: flex; align-items: center; gap: 10px; opacity: 0; white-space: nowrap;
+      box-shadow: 0 12px 26px rgba(10,10,0,.22), 0 0 0 2px rgba(255,255,255,.06) inset; }
+    /* squiggle-only tile: the app icon is clipped to its squiggle (source 30..202 x 24..170) so the tiny wordmark never shows */
+    #s7-genjutsu-root #s7-genjutsu-gen .tile { position: relative; flex: none; width: 34px; height: 34px; border-radius: 10px; overflow: hidden; background: #CDFE36; }
+    #s7-genjutsu-root #s7-genjutsu-gen .tile img { position: absolute; left: -3.88px; top: -0.46px; width: 40.32px; height: 40.32px; display: block;
+      clip-path: inset(4.32px 3.96px 9.72px 5.4px); }
+    #s7-genjutsu-root #s7-genjutsu-gen span { font-size: 26px; font-weight: 600; letter-spacing: -0.01em; color: #fff; }
+
+    /* ---------- sparkle burst (origin = just inside RESULTADO's top-right corner, behind the card) ---------- */
+    #s7-genjutsu-root #s7-genjutsu-burst { position: absolute; left: 952px; top: 1058px; width: 0; height: 0; }
+    #s7-genjutsu-root .pt { position: absolute; left: 0; top: 0; opacity: 0; }
+    #s7-genjutsu-root .pt svg { display: block; width: 100%; height: 100%; overflow: visible; }
+    #s7-genjutsu-root .pt.lime { filter: drop-shadow(0 0 8px rgba(212,255,58,.65)) drop-shadow(0 2px 3px rgba(70,100,0,.30)); }
+  </style>
+
+  <div data-hf-id="hf-5i2w" id="s7-genjutsu-root" data-composition-id="s7-genjutsu" data-width="1080" data-height="1920">
+
+    <!-- ORIGINAL (enters on "esse sou eu") -->
+    <div data-hf-id="hf-pmew" class="full" id="s7-genjutsu-Lexit">
+      <div data-hf-id="hf-tjdq" class="full" id="s7-genjutsu-Lfloat">
+        <div data-hf-id="hf-bzph" class="full" id="s7-genjutsu-Lin">
+          <div data-hf-id="hf-lqq6" id="s7-genjutsu-Lcard">
+            <div data-hf-id="hf-mgxo" id="s7-genjutsu-Lkb" data-layout-allow-overflow="">
+              <video data-hf-id="hf-r2mh" id="s7-original" class="media" src="media/t4-prova.mp4" muted playsinline data-start="0.92" data-duration="3.28" data-media-start="13.02" data-hf-media-start-basis="local"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTADO (the s6 sheet card morphs into it) -->
+    <div data-hf-id="hf-oxza" class="full" id="s7-genjutsu-Rexit">
+      <div data-hf-id="hf-90v4" class="full" id="s7-genjutsu-Rfloat">
+        <div data-hf-id="hf-2cob" class="full" id="s7-genjutsu-Rtilt">
+          <div data-hf-id="hf-mmqi" id="s7-genjutsu-burst"></div>
+          <div data-hf-id="hf-9igu" class="full" id="s7-genjutsu-Rshadow">
+            <div data-hf-id="hf-77pm" id="s7-genjutsu-morph">
+              <div data-hf-id="hf-e4xa" id="s7-genjutsu-sheetimg"></div>
+              <div data-hf-id="hf-v7al" id="s7-genjutsu-resalign">
+                <div data-hf-id="hf-hsf2" id="s7-genjutsu-reskb" data-layout-allow-overflow="">
+                  <img data-hf-id="hf-r85n" id="s7-genjutsu-retrato" class="media" src="assets/img/personagem-retrato.jpg" alt="">
+                </div>
+                <div id="s7-genjutsu-gjin">
+                  <div id="s7-genjutsu-gjkb" data-layout-allow-overflow="">
+                    <video id="s7-resultado" class="media" src="assets/broll/genjutsu.mp4" muted playsinline data-start="0.8" data-duration="3.4" data-media-start="0.94" data-hf-media-start-basis="local"></video>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div data-hf-id="hf-lain" class="ring" id="s7-genjutsu-ring"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- frame-0 replica of s6's card (swapped for the morph card at 0.10) -->
+    <div data-hf-id="hf-7z57" id="s7-genjutsu-sheet0"><img data-hf-id="hf-0pjc" src="assets/img/personagem-sheet.jpg" alt=""></div>
+
+    <!-- label row: ORIGINAL · Genjutsu · RESULTADO — Genjutsu anchored at the midpoint of the two labels (401 | 671) so both gaps are equal (~44px) -->
+    <div data-hf-id="hf-5f4o" class="full" id="s7-genjutsu-labels" data-layout-allow-overflow="">
+      <div data-hf-id="hf-k5ly" class="anc" style="left:310px;top:988px"><div data-hf-id="hf-0281" class="lab" id="s7-genjutsu-labO">ORIGINAL</div></div>
+      <div data-hf-id="hf-lq0w" class="anc" style="left:536px;top:988px"><div data-hf-id="hf-jjfq" id="s7-genjutsu-gen"><div data-hf-id="hf-f6ek" class="tile"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div><span data-hf-id="hf-4zwc">Genjutsu</span></div></div>
+      <div data-hf-id="hf-hsvg" class="anc" style="left:770px;top:988px"><div data-hf-id="hf-ko98" class="lab" id="s7-genjutsu-labR">RESULTADO</div></div>
+    </div>
+
+    <!-- s6 carry-overs (identical markup to s6's final state) -->
+    <div data-hf-id="hf-keg5" id="s7-genjutsu-timerrow">
+      <div data-hf-id="hf-cziz" id="s7-genjutsu-timer"><svg data-hf-id="hf-054f" viewBox="0 0 34 34"><rect data-hf-id="hf-gb5x" x="13" y="1.5" width="8" height="4" rx="1.5" fill="#141A00" /><circle data-hf-id="hf-urug" cx="17" cy="19.5" r="11.5" fill="none" stroke="#141A00" stroke-width="3" /><line data-hf-id="hf-o13w" x1="17" y1="19.5" x2="17" y2="12" stroke="#141A00" stroke-width="3" stroke-linecap="round" /></svg><span data-hf-id="hf-9uz8">04:47</span></div>
+    </div>
+    <div data-hf-id="hf-xgrs" id="s7-genjutsu-pronto"><svg data-hf-id="hf-neyx" viewBox="0 0 26 26"><path data-hf-id="hf-n9k3" d="M5 13.5l5.2 5.2L21 7.8" fill="none" stroke="#141A00" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" /></svg>pronto</div>
+
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s7-genjutsu-root");
+      const q = (s) => R.querySelector(s);
+      const tl = gsap.timeline({ paused: true });
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6, y: o.y ?? 0 },
+        { opacity: 1, scale: 1, y: 0, duration: o.d ?? 0.4, ease: o.e ?? "back.out(1.7)", immediateRender: false }, t);
+
+      /* ---------------- geometry ---------------- */
+      // sheet card (s6 hold): center (540,1390) 900x509 r34  ->  RESULTADO slot: center (770,1360) 400x640 r30
+      const S0 = 900 / 400;                  // 2.25
+      const CLIP_V = (640 - 509 / S0) / 2;   // 206.89 — vertical inset that makes the 400x640 box read as 900x509 at S0
+      const SH_S = 640 / (509 / S0);         // 2.8288 — the sheet grows until its face-half fills the portrait
+      const SH_X = -95;                      // keeps the sheet's face centered in the portrait slot
+      const M0 = 0.10, MD = 0.56, MEASE = "power3.inOut";
+
+      /* ---------------- 0.05 s6 carry-overs leave ---------------- */
+      OUT("#s7-genjutsu-timer", 0.05, { d: 0.24, s: 0.92, b: 12 });
+      OUT("#s7-genjutsu-pronto", 0.07, { d: 0.22, s: 0.9, b: 12 });
+
+      /* ---------------- 0.10 MORPH: sheet card -> portrait RESULTADO (card-morph-anchor) ---------------- */
+      // hand-off: the pixel-identical replica holds frames 0..0.10, the morph card (same pose at p=0) takes over on the first moving frame
+      tl.set("#s7-genjutsu-Rshadow", { opacity: 1 }, M0);
+      tl.set("#s7-genjutsu-sheet0", { opacity: 0 }, M0);
+      // shape: uniform scale + paint-only clip (aspect change) on ONE tween; the drop-shadow parent follows the clipped shape
+      tl.fromTo("#s7-genjutsu-morph",
+        { x: 540 - 770 + 230, y: 1390 - 1360, scale: S0, clipPath: `inset(${CLIP_V}px 0px ${CLIP_V}px 0px round ${34 / S0}px)` },
+        { x: 0, y: 0, scale: 1, clipPath: "inset(0px 0px 0px 0px round 30px)", duration: MD, ease: MEASE, force3D: false }, M0);
+      // content: the sheet zooms into its own face while the frame narrows
+      tl.fromTo("#s7-genjutsu-sheetimg", { x: 0, y: 0, scale: 1 },
+        { x: SH_X, y: -CLIP_V, scale: SH_S, duration: MD, ease: MEASE, force3D: false }, M0);
+      // the portrait rides the matching (linear-in-p) path so its face stays locked on the sheet's face during the crossfade:
+      // x_rel(p) = -SH_X*kS*(1-p), y_rel(p) = CLIP_V*(1-p), s_rel(p) = kS + (1-kS)*p   (origin 0 0, same ease)
+      const kS = 1 / SH_S;
+      tl.fromTo("#s7-genjutsu-resalign", { x: -SH_X * kS, y: CLIP_V, scale: kS },
+        { x: 0, y: 0, scale: 1, duration: MD, ease: MEASE, force3D: false }, M0);
+      // crossfade only once the shapes have converged (p > ~0.93) so no portrait edge ever shows inside the card
+      tl.fromTo("#s7-genjutsu-resalign", { opacity: 0 }, { opacity: 1, duration: 0.26, ease: "power1.inOut", immediateRender: false }, 0.58);
+      tl.set("#s7-genjutsu-sheetimg", { opacity: 0 }, 0.86);
+
+      // the morph lands CENTRED (x 540) under the Genjutsu pill; the whole RESULTADO stack then slides to its right slot as ORIGINAL enters.
+      // (Rexit, not Rfloat: Rfloat's transform is owned by the float onUpdate. Ring + burst live inside, so they follow.)
+      tl.fromTo("#s7-genjutsu-Rexit", { x: -230 }, { x: 0, duration: 0.5, ease: "power3.inOut", immediateRender: true }, 0.72);
+
+      /* ---------------- 0.52 Genjutsu pill ("ver") ---------------- */
+      POP("#s7-genjutsu-gen", 0.52, { y: 10, d: 0.42 });
+
+      /* ---------------- RESULTADO settles into a book-open tilt; slow Ken Burns on its media ---------------- */
+      tl.fromTo("#s7-genjutsu-Rtilt", { rotationY: 0, transformPerspective: 1400 },
+        { rotationY: -5, transformPerspective: 1400, duration: 0.7, ease: "sine.inOut", immediateRender: false, force3D: false }, M0 + MD - 0.05);
+      tl.fromTo("#s7-genjutsu-reskb", { scale: 1 }, { scale: 1.08, duration: 3.95 - (M0 + MD), ease: "none", immediateRender: false, force3D: false }, M0 + MD);
+
+      /* ---------------- 0.80 the character comes alive: retrato -> Genjutsu video, pull-back reveal ---------------- */
+      // Genjutsu face ≈ (0.458w, 0.55h) -> card px (183, 355) at scale 1. Start matched to the retrato's face (≈266px wide at (200,250)),
+      // pull back to head-and-shoulders (≈140px face, same size as ORIGINAL's) so both gestures read side by side.
+      const GF = { x: 183, y: 355 };
+      const gpose = (s, tx, ty) => ({ x: tx - GF.x * s, y: ty - GF.y * s, scale: s });
+      tl.fromTo("#s7-genjutsu-gjin", { opacity: 0 }, { opacity: 1, duration: 0.24, ease: "power1.inOut", immediateRender: false }, 0.8);
+      tl.fromTo("#s7-genjutsu-gjkb", gpose(3.0, 200, 250), Object.assign(gpose(1.58, 200, 225), { duration: 0.95, ease: "power3.inOut", immediateRender: true, force3D: false }), 0.8);
+      tl.to("#s7-genjutsu-gjkb", Object.assign(gpose(1.64, 200, 225), { duration: 3.95 - 1.75, ease: "none", force3D: false }), 1.75);
+
+      /* ---------------- 0.92 ORIGINAL enters from the left wing ("esse sou eu"), riding the RESULTADO push ---------------- */
+      tl.fromTo("#s7-genjutsu-Lin",
+        { opacity: 0, x: -150, rotationY: 24, scale: 0.9, transformPerspective: 1400, filter: "blur(16px)" },
+        { opacity: 1, x: 0, rotationY: 5, scale: 1, transformPerspective: 1400, filter: "blur(0px)", duration: 0.55, ease: "power3.out", immediateRender: false, force3D: false }, 0.92);
+      // framing: head-and-shoulders like the RESULTADO portrait. Face (source ≈ 0.47w, 0.58h -> card px 188, 377 at scale 1)
+      // is placed at (200, 232) = upper third, ~205px wide, then a slow push keeps it pinned there. Source 1440 wide is still downscaled.
+      // t4-prova @13s: face ≈ (0.45w, 0.55h) -> card px (180, 355) at scale 1; head-and-shoulders so the gestures read
+      const LF = { x: 180, y: 355 }, LT = { x: 200, y: 225 };
+      const LS0 = 1.32, LS1 = 1.38;
+      tl.fromTo("#s7-genjutsu-Lkb",
+        { x: LT.x - LF.x * LS0, y: LT.y - LF.y * LS0, scale: LS0 },
+        { x: LT.x - LF.x * LS1, y: LT.y - LF.y * LS1, scale: LS1, duration: 3.95 - 0.92, ease: "none", force3D: false }, 0.92);
+      POP("#s7-genjutsu-labO", 1.04, { y: 12, d: 0.38 });
+
+      /* ---------------- 1.95 RESULTADO label ("esse aqui é o personagem") ---------------- */
+      POP("#s7-genjutsu-labR", 1.95, { y: 12, d: 0.4, e: "back.out(1.8)" });
+
+      /* ---------------- 2.64 ring + punch + sparkle burst (peaks on "personagem" 2.72) ---------------- */
+      tl.fromTo("#s7-genjutsu-ring", { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(1.8)", immediateRender: false }, 2.64);
+      tl.fromTo("#s7-genjutsu-Rtilt", { scale: 1 }, { scale: 1.035, duration: 0.3, ease: "power2.out", immediateRender: false, force3D: false }, 2.64);
+      tl.to("#s7-genjutsu-Rtilt", { scale: 1.02, duration: 0.6, ease: "power2.inOut", force3D: false }, 2.94);
+
+      // deterministic sparkle burst (particle-burst): 8 glowing 4-point stars, no outlines, no dots.
+      // Fan -118deg..-18deg (an up-right spray) out of RESULTADO's top-right corner (up / right, away from the RESULTADO label which ends at x 869);
+      // per-star speeds are pre-solved so every star stays inside x 1056, above-band y >= 926, and the leftmost right of x 880.
+      const prand = (n) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+      const field = q("#s7-genjutsu-burst");
+      const P4 = "M12 .5Q13.1 10.9 23.5 12 13.1 13.1 12 23.5 10.9 13.1 .5 12 10.9 10.9 12 .5Z";
+      const STAR = (core) => '<svg viewBox="0 0 24 24"><path d="' + P4 + '" fill="#D4FF3A"/>' +
+        (core ? '<path d="' + P4 + '" fill="#FFFFFF" transform="translate(12 12) scale(.42) translate(-12 -12)"/>' : "") + "</svg>";
+      const parts = [];
+      const N = 8;
+      const SPEED = [330, 280, 360, 300, 380, 300, 290, 260];
+      const SIZE = [40, 28, 46, 26, 42, 30, 34, 26];
+      for (let i = 0; i < N; i++) {
+        const el = document.createElement("div");
+        el.className = "pt lime";
+        const size = SIZE[i];
+        el.style.width = size + "px"; el.style.height = size + "px";
+        el.style.marginLeft = (-size / 2) + "px"; el.style.marginTop = (-size / 2) + "px";
+        el.innerHTML = STAR(true);                                     // lime star with a white glint core
+        field.appendChild(el);
+        const a = (-118 + (100 * i) / (N - 1) + (prand(i * 5 + 2) - 0.5) * 6) * Math.PI / 180;
+        const sp = SPEED[i];
+        parts.push({ el, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, spin: (prand(i * 11 + 4) * 2 - 1) * 160 });
+      }
+      const FL = 0.6, G = 80, BURST = 2.68;                          // light gravity: sparkles hang on radial lines (not confetti)
+      const drive = { T: 0 };
+      tl.fromTo(drive, { T: 0 }, { T: 1, duration: FL, ease: "none", immediateRender: false, onUpdate: () => {
+        const t = drive.T * FL;
+        const drag = 1 - 0.45 * drive.T;                                // air drag: they burst, then hang
+        const fade = drive.T < 0.5 ? 1 : Math.max(0, (1 - drive.T) / 0.5);
+        const sc = drive.T < 0.18 ? 0.25 + 0.75 * (drive.T / 0.18) : 1 - 0.45 * (drive.T - 0.18);
+        parts.forEach((p) => {
+          const x = p.vx * t * drag, y = p.vy * t * drag + 0.5 * G * t * t;
+          p.el.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${(p.spin * t).toFixed(1)}deg) scale(${sc.toFixed(3)})`;
+          p.el.style.opacity = String(drive.T === 0 ? 0 : fade);
+        });
+      } }, BURST);
+
+      /* ---------------- holding: opposing gentle float (sine-wave-loop, phase-opposed) ---------------- */
+      const Lf = q("#s7-genjutsu-Lfloat"), Rf = q("#s7-genjutsu-Rfloat");
+      const F0 = M0 + MD, F1 = 4.17, PER = 2.6, AMP = 6;
+      const ph = { p: 0 };
+      tl.fromTo(ph, { p: 0 }, { p: (F1 - F0) / PER * Math.PI * 2, duration: F1 - F0, ease: "none", immediateRender: false, onUpdate: () => {
+        const env = Math.min(1, ph.p / 1.2);                         // amplitude eases in over the first ~0.5s
+        const s = Math.sin(ph.p) * AMP * env;
+        Rf.style.transform = `translateY(${(-s).toFixed(2)}px)`;
+        Lf.style.transform = `translateY(${s.toFixed(2)}px)`;
+      } }, F0);
+      // the label row drifts up together (one slow collective breath)
+      tl.fromTo("#s7-genjutsu-labels", { y: 0 }, { y: -6, duration: 3.92 - 0.6, ease: "sine.inOut", immediateRender: false }, 0.6);
+
+      /* ---------------- 3.92 EXIT (all end by 4.15 < 4.166) ---------------- */
+      OUT(["#s7-genjutsu-gen", "#s7-genjutsu-labO", "#s7-genjutsu-labR"], 3.92, { d: 0.2 });
+      OUT("#s7-genjutsu-Lexit", 3.94, { d: 0.2 });
+      OUT("#s7-genjutsu-Rexit", 3.95, { d: 0.2 });
+
+      window.__timelines["s7-genjutsu"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

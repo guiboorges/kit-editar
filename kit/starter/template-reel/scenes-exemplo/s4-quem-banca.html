@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s4-quem-banca-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF; --ui:#141416; --ui2:#1E1E22;
+      --lime:#D4FF3A; --limeInk:#141A00; --red:#FF4A3D; }
+
+    /* ---------- platform pill (Launchpoint · Explorar) ---------- */
+    #s4-quem-banca-root .lp { position: absolute; left: 0; top: 1122px; width: 1080px; height: 76px; display: flex; justify-content: center; }
+    #s4-quem-banca-root .lp .pill { flex: 0 0 auto; display: flex; align-items: center; gap: 16px; height: 76px; padding: 0 12px 0 10px;
+      border-radius: 999px; background: var(--card); white-space: nowrap; transform-origin: 50% 100%; will-change: transform, opacity, filter;
+      box-shadow: 0 24px 56px rgba(24,24,12,.14), 0 5px 14px rgba(24,24,12,.07); }
+    #s4-quem-banca-root .lp .logo { position: relative; width: 56px; height: 56px; flex: 0 0 56px; border-radius: 15px; overflow: hidden; background: #7B45E6; }
+    #s4-quem-banca-root .lp .logo img { position: absolute; left: -2px; top: -2px; width: 60px; height: 60px; display: block; }
+    #s4-quem-banca-root .lp .nm { font-size: 36px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; color: var(--ink); }
+    #s4-quem-banca-root .lp .tab { height: 48px; padding: 0 18px; border-radius: 999px; background: #EFEFEA; display: flex; align-items: center;
+      font-family: "Geist Mono", monospace; font-size: 24px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink2); }
+
+    /* ---------- search bar (940x136, centre y 1304) ---------- */
+    #s4-quem-banca-root .search { position: absolute; left: 70px; top: 1236px; width: 940px; height: 136px; border-radius: 999px;
+      background: var(--card); display: flex; align-items: center; padding: 0 22px 0 44px; gap: 26px;
+      box-shadow: 0 34px 80px rgba(24,24,12,.16), 0 6px 18px rgba(24,24,12,.08), inset 0 0 0 2px rgba(17,17,19,.05);
+      transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s4-quem-banca-root .search .mag { width: 54px; height: 54px; flex: none; }
+    #s4-quem-banca-root .search .field { flex: 1; min-width: 0; display: flex; align-items: center; height: 64px; font-size: 44px; font-weight: 500;
+      letter-spacing: -0.015em; color: var(--ink); white-space: pre; }
+    #s4-quem-banca-root .search .typed { white-space: pre; }
+    #s4-quem-banca-root .search .caret { display: inline-block; width: 4px; height: 54px; margin-left: 4px; border-radius: 2px; background: var(--ink); }
+    #s4-quem-banca-root .search .go { width: 92px; height: 92px; flex: none; border-radius: 50%; background: var(--lime);
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 18px rgba(120,160,0,.30); transform-origin: 50% 50%; }
+    #s4-quem-banca-root .search .go svg { width: 42px; height: 42px; }
+
+    /* ---------- kinetic headline (single line, 104px; x is re-centred as each word lands) ---------- */
+    #s4-quem-banca-root .hl { position: absolute; left: 40px; top: 1244px; width: 1000px; height: 112px; text-align: center; font-weight: 700;
+      font-size: 104px; letter-spacing: -0.035em; line-height: 112px; white-space: nowrap; transform-origin: 50% 50%; will-change: transform, opacity, filter; }
+    #s4-quem-banca-root .w { display: inline-block; position: relative; will-change: transform, opacity, filter; }
+    #s4-quem-banca-root #s4-quem-banca-w2 { margin: 0 16px; }
+    #s4-quem-banca-root .w .t { position: relative; z-index: 1; }
+    #s4-quem-banca-root .w .bg { position: absolute; z-index: 0; left: -16px; right: -16px; top: 10px; bottom: 4px; border-radius: 18px;
+      background: var(--lime); transform-origin: 0 50%; transform: scaleX(0); }
+    #s4-quem-banca-root .w.on .t { color: var(--limeInk); }
+
+    /* ---------- ranking world ---------- */
+    #s4-quem-banca-root .world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 540px 1342px; }
+    #s4-quem-banca-root .grid { position: absolute; left: 70px; top: 1090px; width: 940px; height: 505px; border-radius: 30px; overflow: hidden;
+      background: var(--ui); transform-origin: 50% 50%; will-change: transform, opacity, filter;
+      box-shadow: 0 34px 80px rgba(10,10,0,.28), 0 6px 18px rgba(10,10,0,.14); }
+    #s4-quem-banca-root .grid img { position: absolute; left: 0; top: 0; width: 940px; height: 504.8px; display: block; }
+    /* paint out the warm screenshot rim (image rows 0-5 + the glow that bleeds into the margins / column gap) */
+    #s4-quem-banca-root .grid .fix { position: absolute; left: 0; top: 0; width: 940px; height: 40px;
+      background:
+        linear-gradient(#141417, #141417) 0 0 / 940px 5.3px no-repeat,
+        linear-gradient(#141417 0%, #141417 30%, rgba(20,20,23,0) 100%) 456.5px 0 / 26px 30px no-repeat,
+        linear-gradient(#141417, rgba(20,20,23,0)) 0 0 / 5px 34px no-repeat,
+        linear-gradient(#141417, rgba(20,20,23,0)) 935px 0 / 5px 34px no-repeat; }
+    /* the emptied slot left behind when the Higgsfield row is pulled out (row 1, left column) */
+    #s4-quem-banca-root .grid .hole { position: absolute; left: 5.35px; top: 5.35px; width: 454.84px; height: 82.94px; border-radius: 12.5px;
+      background: #141417; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.07), inset 0 6px 14px rgba(0,0,0,.35); }
+    #s4-quem-banca-root .grid::after { content: ""; position: absolute; inset: 0; border-radius: 30px; box-shadow: inset 0 0 0 2px rgba(255,255,255,.07); }
+
+    /* crisp Higgsfield row: natural 860x157 (= grid row 510x93 img px x 1.6863), lands at centre (540,1330) */
+    #s4-quem-banca-root .row { position: absolute; left: 110px; top: 1251.5px; width: 860px; height: 157px; transform-origin: 50% 50%;
+      will-change: transform, opacity; }
+    #s4-quem-banca-root .row .sh { position: absolute; inset: 0; border-radius: 22px;
+      box-shadow: 0 54px 110px rgba(8,8,0,.42), 0 18px 36px rgba(8,8,0,.30); }
+    #s4-quem-banca-root .row .rc { position: absolute; inset: 0; border-radius: 22px; background: var(--ui2); display: flex; align-items: center;
+      padding: 0 28px 0 28px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.09), inset 0 1px 0 rgba(255,255,255,.10); }
+    #s4-quem-banca-root .row .logo { position: relative; width: 88px; height: 88px; flex: none; border-radius: 20px; overflow: hidden; }
+    #s4-quem-banca-root .row .logo img { position: absolute; left: -4px; top: -4px; width: 96px; height: 96px; display: block; }
+    #s4-quem-banca-root .row .txt { margin-left: 24px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+    #s4-quem-banca-root .row .name { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 44px; height: 44px; color: #FFFFFF; white-space: nowrap;
+      transform-origin: 0 36px; }
+    #s4-quem-banca-root .row .sub { font-size: 26px; font-weight: 500; letter-spacing: -0.01em; line-height: 30px; height: 30px; color: #9A9AA2; white-space: nowrap;
+      transform-origin: 0 24px; }
+    #s4-quem-banca-root .row .price { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+    #s4-quem-banca-root .row .amt { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 36px; height: 36px; color: #FFFFFF; white-space: nowrap;
+      font-variant-numeric: tabular-nums; transform-origin: 100% 28px; }
+    #s4-quem-banca-root .row .per { font-size: 24px; font-weight: 500; line-height: 28px; height: 28px; color: #9A9AA2; white-space: nowrap;
+      transform-origin: 100% 22px; }
+    #s4-quem-banca-root .row .ring { position: absolute; left: -12px; top: -12px; right: -12px; bottom: -12px; border-radius: 34px;
+      border: 6px solid var(--lime); box-shadow: 0 0 0 10px rgba(212,255,58,.28), 0 10px 30px rgba(120,160,0,.25); transform-origin: 50% 50%; }
+    #s4-quem-banca-root .row .tag { position: absolute; right: 26px; top: -40px; padding: 11px 22px; border-radius: 999px;
+      background: var(--lime); color: var(--limeInk); font-family: "Geist Mono", monospace; font-size: 26px; font-weight: 500;
+      letter-spacing: 0.02em; line-height: 30px; white-space: nowrap; transform-origin: 100% 100%;
+      box-shadow: 0 10px 24px rgba(60,80,0,.28), 0 0 0 2.5px rgba(20,26,0,.92); }
+  </style>
+
+  <div data-hf-id="hf-j9nc" id="s4-quem-banca-root" data-composition-id="s4-quem-banca" data-width="1080" data-height="1920">
+
+    <!-- platform context + search -->
+    <div data-hf-id="hf-oj6s" class="lp">
+      <div data-hf-id="hf-gc3k" class="pill" id="s4-quem-banca-lp">
+        <div data-hf-id="hf-e319" class="logo"><img data-hf-id="hf-nixo" src="assets/img/logo-launchpoint.png" alt=""></div>
+        <span data-hf-id="hf-xiz9" class="nm">Launchpoint</span>
+        <span data-hf-id="hf-r0oh" class="tab">Explorar</span>
+      </div>
+    </div>
+    <div data-hf-id="hf-4485" class="search" id="s4-quem-banca-search">
+      <svg data-hf-id="hf-m05y" class="mag" viewBox="0 0 48 48" aria-hidden="true">
+        <circle data-hf-id="hf-5acq" cx="21" cy="21" r="13.5" fill="none" stroke="#3A3A40" stroke-width="4.5" />
+        <path data-hf-id="hf-ji04" d="M31 31 L41 41" stroke="#3A3A40" stroke-width="4.5" stroke-linecap="round" />
+      </svg>
+      <div data-hf-id="hf-0ztw" class="field"><span data-hf-id="hf-22s6" class="typed" id="s4-quem-banca-typed"></span><span data-hf-id="hf-77to" class="caret" id="s4-quem-banca-caret"></span></div>
+      <div data-hf-id="hf-1iqd" class="go" id="s4-quem-banca-go">
+        <svg data-hf-id="hf-uely" viewBox="0 0 36 36" aria-hidden="true"><path data-hf-id="hf-57v7" d="M8 18 H27 M19 9.5 L27.5 18 L19 26.5" fill="none" stroke="#141A00" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      </div>
+    </div>
+
+    <!-- kinetic headline -->
+    <div data-hf-id="hf-fj9t" class="hl" id="s4-quem-banca-hl"><span data-hf-id="hf-tvo5" class="w" id="s4-quem-banca-w1"><span data-hf-id="hf-4r4r" class="t">quem</span></span> <span data-hf-id="hf-wihh" class="w on" id="s4-quem-banca-w2"><span data-hf-id="hf-tqee" class="bg" id="s4-quem-banca-blk"></span><span data-hf-id="hf-9vhs" class="t">banca</span></span> <span data-hf-id="hf-1rw7" class="w" id="s4-quem-banca-w3"><span data-hf-id="hf-7ccy" class="t">isso?</span></span></div>
+
+    <!-- ranking -->
+    <div data-hf-id="hf-qoo7" class="world" id="s4-quem-banca-world">
+      <div data-hf-id="hf-5uwl" class="grid" id="s4-quem-banca-grid"><img data-hf-id="hf-bbla" src="assets/img/lp-grid.png" alt=""><div data-hf-id="hf-w8dl" class="hole" id="s4-quem-banca-hole"></div><div data-hf-id="hf-fmpd" class="fix"></div></div>
+      <div data-hf-id="hf-y3mv" class="row" id="s4-quem-banca-row">
+        <div data-hf-id="hf-71wl" class="sh" id="s4-quem-banca-sh"></div>
+        <div data-hf-id="hf-0gud" class="rc" id="s4-quem-banca-rc">
+          <div data-hf-id="hf-rugh" class="logo"><img data-hf-id="hf-s54r" src="assets/img/logo-higgsfield.png" alt=""></div>
+          <div data-hf-id="hf-kvio" class="txt"><div data-hf-id="hf-8al7" class="name" id="s4-quem-banca-name">Higgsfield AI</div><div data-hf-id="hf-6ip1" class="sub" id="s4-quem-banca-sub">Best pay · Publicações ilimitadas</div></div>
+          <div data-hf-id="hf-4k5b" class="price"><div data-hf-id="hf-kxxi" class="amt" id="s4-quem-banca-amt">US$ 78–US$ 10.075</div><div data-hf-id="hf-c3kn" class="per" id="s4-quem-banca-per">per video</div></div>
+        </div>
+        <div data-hf-id="hf-6rft" class="ring" id="s4-quem-banca-ring"></div>
+        <div data-hf-id="hf-yodf" class="tag" id="s4-quem-banca-tag">#1 · quem mais paga</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s4-quem-banca-root");
+      const q = (s) => R.querySelector(s), qa = (s) => Array.from(R.querySelectorAll(s));
+      const tl = gsap.timeline({ paused: true });
+      const IN = (el, t, o = {}) => tl.fromTo(el,
+        { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+        { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+      const OUT = (el, t, o = {}) => tl.to(el,
+        { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+      const POP = (el, t, o = {}) => tl.fromTo(el, { opacity: 0, scale: o.from ?? 0.6 },
+        { opacity: 1, scale: 1, duration: o.d ?? 0.4, ease: o.e ?? "back.out(2)" }, t);
+
+      const lp = q("#s4-quem-banca-lp"), search = q("#s4-quem-banca-search"), typed = q("#s4-quem-banca-typed"), go = q("#s4-quem-banca-go");
+      const hl = q("#s4-quem-banca-hl"), w1 = q("#s4-quem-banca-w1"), w2 = q("#s4-quem-banca-w2"), w3 = q("#s4-quem-banca-w3");
+      const blk = q("#s4-quem-banca-blk");
+      const world = q("#s4-quem-banca-world"), grid = q("#s4-quem-banca-grid");
+      const row = q("#s4-quem-banca-row"), sh = q("#s4-quem-banca-sh"), rc = q("#s4-quem-banca-rc");
+      const ring = q("#s4-quem-banca-ring"), tag = q("#s4-quem-banca-tag"), hole = q("#s4-quem-banca-hole");
+      const nm = q("#s4-quem-banca-name"), sb = q("#s4-quem-banca-sub"), amt = q("#s4-quem-banca-amt"), per = q("#s4-quem-banca-per");
+
+      /* ---- 1. "eu fui verificar": Launchpoint > Explorar, search bar + discrete typing ---- */
+      IN(search, 0.08, { y: 60, d: 0.5 });
+      tl.fromTo(lp, { opacity: 0, y: 26, scale: 0.7, filter: "blur(8px)" },
+        { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.45, ease: "power3.out" }, 0.12);
+      tl.fromTo(search, { scale: 1 }, { scale: 1.02, duration: 0.7, ease: "none", immediateRender: false }, 0.6);
+      tl.fromTo(lp, { y: 0 }, { y: -8, duration: 0.7, ease: "none", immediateRender: false }, 0.6);
+      const PHRASE = "quem paga esses criadores?";
+      const KEYS = [0.30, 0.34, 0.38, 0.42, 0.49, 0.53, 0.56, 0.60, 0.64, 0.71, 0.74, 0.78, 0.81, 0.84, 0.87,
+                    0.94, 0.97, 1.00, 1.03, 1.06, 1.08, 1.11, 1.13, 1.15, 1.17, 1.20];
+      const SEQ = [{ t: 0, text: "" }].concat(KEYS.map((t, i) => ({ t, text: PHRASE.slice(0, i + 1) })));
+      const textAt = (time) => { for (let i = SEQ.length - 1; i >= 0; i--) if (time >= SEQ[i].t) return SEQ[i].text; return ""; };
+      const drv = { t: 0 }; let shown = null;
+      tl.fromTo(drv, { t: 0 }, { t: 1.5, duration: 1.5, ease: "none",
+        onUpdate: () => { const s = textAt(drv.t); if (s !== shown) { shown = s; typed.textContent = s; } } }, 0);
+      // enter press on the lime go button
+      tl.to(go, { scale: 0.84, duration: 0.07, ease: "power2.in" }, 1.18);
+      tl.to(go, { scale: 1, duration: 0.24, ease: "back.out(3)" }, 1.25);
+      // bar + platform pill lift away (gone before "quem" reads)
+      tl.to(lp, { opacity: 0, y: -100, scale: 0.92, filter: "blur(14px)", duration: 0.22, ease: "power2.in" }, 1.27);
+      tl.to(search, { opacity: 0, y: -90, scale: 0.96, filter: "blur(16px)", duration: 0.22, ease: "power2.in" }, 1.30);
+
+      /* ---- 2. kinetic headline: quem / banca / isso? — the line re-centres as each word lands ---- */
+      // measured at 104px Geist 700 (visible extent incl. the lime block): offsets that centre what is on screen
+      const X_QUEM = 307.5, X_BANCA = 134.1, X_ALL = 0;
+      gsap.set(hl, { x: X_QUEM });
+      tl.fromTo(w1, { opacity: 0, y: 40, filter: "blur(14px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, 1.43);
+      tl.fromTo(w2, { opacity: 0, y: 40, scale: 1.18, filter: "blur(14px)" }, { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, 1.78);
+      tl.to(hl, { x: X_BANCA, duration: 0.3, ease: "power3.out" }, 1.78);
+      tl.fromTo(blk, { scaleX: 0 }, { scaleX: 1, duration: 0.28, ease: "power3.out" }, 1.87);
+      tl.fromTo(w3, { opacity: 0, y: 40, rotation: 4, filter: "blur(14px)" }, { opacity: 1, y: 0, rotation: 0, filter: "blur(0px)", duration: 0.32, ease: "power3.out" }, 2.04);
+      tl.to(hl, { x: X_ALL, duration: 0.3, ease: "power3.out" }, 2.04);
+      tl.fromTo(hl, { scale: 1 }, { scale: 1.03, duration: 0.32, ease: "none", immediateRender: false }, 2.08);
+      // shrink into the resting title at y≈1000 (keeps the lime block), breathe, then step back when the row lifts
+      tl.to(hl, { scale: 0.54, y: -300, duration: 0.4, ease: "power3.inOut" }, 2.40);
+      tl.to(hl, { scale: 0.545, duration: 0.55, ease: "none" }, 2.80);
+      tl.to(hl, { scale: 0.5, opacity: 0.55, duration: 0.45, ease: "power2.inOut" }, 3.35);
+      tl.to(hl, { scale: 0.505, duration: 0.79, ease: "none" }, 3.80);
+
+      /* ---- 3. ranking card ---- */
+      IN(grid, 2.56, { y: 130, d: 0.55 });
+      tl.fromTo(world, { scale: 1 }, { scale: 1.02, duration: 2.04, ease: "none" }, 2.56);
+
+      /* ---- 4. "paga": focus pull + the Higgsfield row lifts out of its slot ---- */
+      // slot measured in lp-grid.png: row card x 6..516, y 6..99 (img px) at 0.89184 inside the card (70,1090)
+      // -> screen x 75.35..530.19, y 1095.35..1178.29 -> centre (302.77, 1136.82), width 454.84
+      const S0 = 454.84 / 860;
+      tl.fromTo(row, { x: 302.77 - 540, y: 1136.82 - 1330, scale: S0 }, { x: 0, y: 0, scale: 1.08, duration: 0.45, ease: "power3.out" }, 3.35);
+      // hard cut (no cross-fade): the crisp row replaces the print on the frame the lift starts
+      tl.fromTo(row, { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none" }, 3.345);
+      tl.fromTo(hole, { opacity: 0 }, { opacity: 1, duration: 0.001, ease: "none" }, 3.345);
+      // at S0 the row's type matches the print's proportions, then grows to its legible size during the lift
+      tl.fromTo(nm,  { x: 2.6,  y: -4.4,  scale: 0.653 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 3.35);
+      tl.fromTo(sb,  { x: 3.0,  y: -10.6, scale: 0.823 }, { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 3.35);
+      tl.fromTo(amt, { x: -0.7, y: 0.3,   scale: 0.85 },  { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 3.35);
+      tl.fromTo(per, { x: 0.3,  y: -5.6,  scale: 0.89 },  { x: 0, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 3.35);
+      tl.fromTo(rc, { backgroundColor: "rgb(20,20,23)" }, { backgroundColor: "rgb(30,30,34)", duration: 0.45, ease: "power2.out" }, 3.35);
+      tl.fromTo(sh, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 3.38);
+      tl.to(grid, { filter: "blur(5px)", opacity: 0.4, scale: 0.97, duration: 0.5, ease: "power2.inOut" }, 3.35);
+      tl.to(row, { scale: 1.095, duration: 0.4, ease: "none" }, 3.80);
+
+      /* ---- 5. "isso": #1 tag; "higgsfield": lime ring + scale punch ---- */
+      tl.fromTo(tag, { opacity: 0, scale: 0.5, rotation: -8 }, { opacity: 1, scale: 1, rotation: 3, duration: 0.38, ease: "back.out(2)" }, 3.74);
+      POP(ring, 4.20, { from: 0.9, d: 0.36 });
+      tl.to(row, { scale: 1.12, duration: 0.12, ease: "power2.out" }, 4.22);
+      tl.to(row, { scale: 1.10, duration: 0.2, ease: "power2.inOut" }, 4.34);
+
+      /* ---- exit (ends 4.85 < 4.90 - 1 frame) ---- */
+      OUT(hl, 4.59, { s: 0.52, y: -312 });
+      OUT(world, 4.59);
+
+      window.__timelines["s4-quem-banca"] = tl;
+    })();
+  </script>
+</template>
+</body></html>

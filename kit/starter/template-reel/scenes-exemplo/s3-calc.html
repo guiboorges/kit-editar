@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s3-calc-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --lime:#D4FF3A; --limeInk:#141A00; }
+    #s3-calc-root .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+    #s3-calc-root #s3-calc-drift { transform-origin: 540px 1340px; }
+    #s3-calc-root .row { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; align-items: baseline;
+      white-space: nowrap; }
+    #s3-calc-root .ib { display: inline-block; }
+    #s3-calc-root #s3-calc-herorow, #s3-calc-root #s3-calc-mx, #s3-calc-root #s3-calc-mu, #s3-calc-root #s3-calc-mc,
+    #s3-calc-root #s3-calc-hv { opacity: 0; }
+
+    /* beat 1 — "US$ 1 / a cada 1.000 views" (US$ 1 sits exactly where the hero count will land) */
+    #s3-calc-root #s3-calc-a1row { top: 1042px; height: 176px; }
+    #s3-calc-root #s3-calc-a1 { font-size: 176px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: var(--ink); }
+    #s3-calc-root #s3-calc-a2row { top: 1244px; height: 60px; }
+    #s3-calc-root #s3-calc-a2row .t { font-size: 56px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: var(--ink2); }
+    #s3-calc-root #s3-calc-vw { margin-left: 0.26em; color: var(--mute); }
+    #s3-calc-root #s3-calc-w2 { margin-left: 14px; }
+
+    /* beat 2 — hero count + multiplier line (reference panel 3 rhythm) */
+    #s3-calc-root #s3-calc-herorow { top: 1052px; height: 156px; }
+    #s3-calc-root #s3-calc-num { font-size: 156px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; color: var(--ink);
+      font-variant-numeric: tabular-nums; text-align: right; transform-origin: 100% 60%; }
+    #s3-calc-root #s3-calc-hv { font-size: 44px; font-weight: 500; letter-spacing: -0.01em; color: var(--mute); margin-left: 18px; }
+    #s3-calc-root #s3-calc-multrow { top: 1252px; height: 56px; gap: 0 16px; }
+    #s3-calc-root #s3-calc-multrow .m { font-size: 54px; font-weight: 600; letter-spacing: -0.02em; line-height: 1; color: var(--ink2); }
+    #s3-calc-root #s3-calc-mx { font-weight: 500; }
+    #s3-calc-root #s3-calc-mc { margin-left: -4px; }
+
+    /* beat 3 — lime result */
+    #s3-calc-root #s3-calc-glow { position: absolute; left: -10px; top: 1140px; width: 1100px; height: 640px; border-radius: 50%;
+      background: radial-gradient(closest-side, rgba(196, 246, 20, 0.62), rgba(212, 255, 58, 0.30) 46%, rgba(212, 255, 58, 0) 100%); }
+    #s3-calc-root #s3-calc-resrow { top: 1358px; height: 196px; align-items: center; }
+    #s3-calc-root #s3-calc-res { display: flex; align-items: center; justify-content: flex-start; height: 196px; padding: 0 46px;
+      background: var(--lime); border-radius: 28px; color: var(--limeInk);
+      box-shadow: 0 30px 70px rgba(110, 150, 0, 0.26), 0 6px 16px rgba(60, 80, 0, 0.14), inset 0 -4px 0 rgba(20, 26, 0, 0.06); }
+    #s3-calc-root #s3-calc-rv { font-size: 156px; font-weight: 800; letter-spacing: -0.05em; line-height: 1; transform: translateY(-2px);
+      font-variant-numeric: tabular-nums; white-space: nowrap; }
+    #s3-calc-root #s3-calc-discrow { top: 1584px; height: 50px; align-items: center; }
+    #s3-calc-root #s3-calc-disc { font-family: "Geist Mono", monospace; font-size: 25px; font-weight: 500; letter-spacing: 0.01em;
+      color: var(--ink2); padding: 10px 22px; border-radius: 999px; background: rgba(255, 255, 255, 0.72);
+      box-shadow: 0 0 0 1.5px var(--line); }
+  </style>
+  <div data-hf-id="hf-24w0" id="s3-calc-root" data-composition-id="s3-calc" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-k7bx" class="layer" id="s3-calc-drift">
+      <div data-hf-id="hf-pl1o" class="layer" id="s3-calc-glow-wrap"><div data-hf-id="hf-k12j" id="s3-calc-glow"></div></div>
+      <div data-hf-id="hf-r8ju" class="layer" id="s3-calc-eq">
+        <div data-hf-id="hf-19yn" class="row" id="s3-calc-a1row"><span data-hf-id="hf-ttv4" class="ib" id="s3-calc-a1">US$ 1</span></div>
+        <div data-hf-id="hf-gzoi" class="row" id="s3-calc-a2row"><span data-hf-id="hf-xwcn" class="ib t" id="s3-calc-ac"><span data-hf-id="hf-se7x" class="ib" id="s3-calc-w1">a cada</span><span data-hf-id="hf-om4d" class="ib" id="s3-calc-w2">1.000</span></span><span data-hf-id="hf-9s4c" class="ib t" id="s3-calc-vw">views</span></div>
+        <div data-hf-id="hf-e7b9" class="row" id="s3-calc-herorow"><span data-hf-id="hf-5lhz" class="ib" id="s3-calc-num">0</span><span data-hf-id="hf-45bd" class="ib" id="s3-calc-hv">views</span></div>
+        <div data-hf-id="hf-akqf" class="row" id="s3-calc-multrow"><span data-hf-id="hf-lkze" class="ib m" id="s3-calc-mx">×</span><span data-hf-id="hf-903r" class="ib m" id="s3-calc-mu">US$ 1</span><span data-hf-id="hf-wzw9" class="ib m" id="s3-calc-mc">a cada 1.000</span></div>
+      </div>
+      <div data-hf-id="hf-t5w5" class="row" id="s3-calc-resrow"><div data-hf-id="hf-yr4q" id="s3-calc-res"><span data-hf-id="hf-syi8" class="ib" id="s3-calc-rv">US$ 1.000</span></div></div>
+      <div data-hf-id="hf-ra5k" class="row" id="s3-calc-discrow"><span data-hf-id="hf-udnn" class="ib" id="s3-calc-disc">cálculo ilustrativo · só conta view elegível</span></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const R = document.getElementById("s3-calc-root");
+      const q = (s) => R.querySelector(s);
+      function fmt(n) {
+        const s = String(Math.round(n));
+        let out = "";
+        for (let i = 0; i < s.length; i++) { if (i > 0 && (s.length - i) % 3 === 0) out += "."; out += s[i]; }
+        return out;
+      }
+
+      // Width probe: the scene may be display:none while it builds (inactive clip), so
+      // measure text on a hidden probe appended to <body> — exact CSS layout widths
+      // (tabular-nums + letter-spacing included), independent of the scene's state.
+      function probeW(text, css) {
+        const sp = document.createElement("span");
+        sp.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;display:inline-block;white-space:nowrap;line-height:1;" + css;
+        sp.textContent = text;
+        document.body.appendChild(sp);
+        const w = sp.getBoundingClientRect().width;
+        sp.remove();
+        return w;
+      }
+      const G = (wt, px, ls) => `font-family:Geist,sans-serif;font-weight:${wt};font-size:${px}px;letter-spacing:${ls}px;`;
+
+      function build() {
+        const tl = gsap.timeline({ paused: true });
+        const IN = (el, t, o = {}) => tl.fromTo(el,
+          { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+          { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+        const OUT = (el, t, o = {}) => tl.to(el,
+          { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+
+        const a1 = q("#s3-calc-a1"), ac = q("#s3-calc-ac"), vw = q("#s3-calc-vw");
+        const num = q("#s3-calc-num"), hv = q("#s3-calc-hv");
+        const mx = q("#s3-calc-mx"), mu = q("#s3-calc-mu"), mc = q("#s3-calc-mc");
+        const res = q("#s3-calc-res"), rv = q("#s3-calc-rv");
+
+        // fixed-width counters (no layout shift while digits grow)
+        const TN = "font-variant-numeric:tabular-nums;";
+        const numW = probeW("1.000.000", G(800, 156, -7.02) + TN);
+        num.style.width = Math.ceil(numW + 4) + "px";
+        // lime block: fixed width, text LEFT-anchored (US$ never moves; digits grow to the right).
+        // border-box: 46px padding each side -> the final "US$ 1.000" sits exactly centered.
+        const rvW = probeW("US$ 1.000", G(800, 156, -7.8) + TN);
+        res.style.width = Math.ceil(rvW + 92) + "px";
+        rv.textContent = "US$ 0";
+
+        // ---------- geometry (fixed rows, centered on x=540, items share their row top) ----------
+        const wW1 = probeW("a cada", G(600, 56, -1.12)), wW2 = probeW("1.000", G(600, 56, -1.12));
+        const wAc = wW1 + 14 + wW2;
+        const wVw = probeW("views", G(600, 56, -1.12));
+        const wFull = wAc + 14.56 + wVw;
+        const wMx = probeW("×", G(500, 54, -1.08));
+        const wMu = probeW("US$ 1", G(600, 54, -1.08));
+        const wMc = probeW("a cada 1.000", G(600, 54, -1.08));
+        const a2L = 540 - wFull / 2;
+        const mL = 540 - (wMx + 16 + wMu + 12 + wMc) / 2;
+        const A1 = { x: 540, y: 1042 + 88 }, AC = { x: a2L + wAc / 2, y: 1244 + 28 };
+        const MU = { x: mL + wMx + 16 + wMu / 2, y: 1252 + 27 };
+        const MC = { x: mL + wMx + 16 + wMu + 12 + wMc / 2, y: 1252 + 27 };
+        const d1 = { x: MU.x - A1.x, y: MU.y - A1.y };
+        const d2 = { x: MC.x - AC.x, y: MC.y - AC.y };
+        const S1 = 54 / 176, S2 = 54 / 56;
+        // centered-build offsets: only the visible words are centered under "US$ 1"
+        const SH1 = wFull / 2 - wW1 / 2, SH2 = wFull / 2 - wAc / 2;
+
+        // ---------- ambient drift (alive while holding) ----------
+        tl.fromTo("#s3-calc-drift", { scale: 1 }, { scale: 1.025, duration: 4.6, ease: "none" }, 0.06);
+
+        // ---------- beat 1: "é um dólar a cada mil views" ----------
+        // sharp by local 0.28 ("dólar" @0.26)
+        IN(a1, 0.0, { y: 56, s: 0.9, b: 18, d: 0.4 });
+        IN("#s3-calc-w1", 0.5, { y: 30, s: 0.96, b: 10, d: 0.42 });
+        IN("#s3-calc-w2", 0.94, { y: 30, s: 0.96, b: 10, d: 0.42, e: "back.out(1.6)" });
+        IN(vw, 1.2, { y: 24, s: 0.96, b: 10, d: 0.4 });
+        // the visible group stays centered: the row re-centers as each word lands
+        tl.fromTo("#s3-calc-a2row", { x: SH1 }, { x: SH2, duration: 0.26, ease: "power3.out" }, 0.94);
+        tl.fromTo("#s3-calc-a2row", { x: SH2 }, { x: 0, duration: 0.38, ease: "power3.out", immediateRender: false }, 1.2);
+
+        // ---------- beat 2: the line reflows into "× US$ 1 a cada 1.000" + count to 1M ----------
+        // One start (2.10) for both groups, one ease family (power3.inOut / power2.inOut), landing together
+        // (2.38 / 2.52). "a cada 1.000" slides right to open the slot while "US$ 1" condenses and glides
+        // left; its descent trails by 0.10s so the baseline meets the line only once the slot is open
+        // (a straight single-curve path would cut through "a cada" — the slot sits under it).
+        const M0 = 2.1;
+        tl.to(vw, { opacity: 0, x: 40, filter: "blur(10px)", duration: 0.2, ease: "power1.in" }, M0);
+        tl.to(ac, { x: d2.x, y: d2.y, scale: S2, duration: 0.28, ease: "power3.inOut" }, M0);
+        tl.to(ac, { opacity: 0, duration: 0.1, ease: "none" }, M0 + 0.28);
+        tl.fromTo(mc, { opacity: 0 }, { opacity: 1, duration: 0.1, ease: "none", immediateRender: false }, M0 + 0.28);
+        tl.to(a1, { x: d1.x, duration: 0.32, ease: "power3.inOut" }, M0);
+        tl.to(a1, { scale: S1, color: "#3A3A40", duration: 0.36, ease: "power2.inOut" }, M0);
+        tl.to(a1, { y: d1.y, duration: 0.32, ease: "power3.inOut" }, M0 + 0.1);
+        // swap to the real line glyphs only once US$ 1 is fully seated (no ghosted double)
+        tl.to(a1, { opacity: 0, duration: 0.08, ease: "none" }, M0 + 0.41);
+        tl.fromTo(mu, { opacity: 0 }, { opacity: 1, duration: 0.08, ease: "none", immediateRender: false }, M0 + 0.41);
+        tl.fromTo(mx, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.36, ease: "back.out(2)", immediateRender: false }, M0 + 0.3);
+
+        tl.fromTo("#s3-calc-herorow", { opacity: 0, y: -30, filter: "blur(14px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out", immediateRender: false }, 2.48);
+        // counting-dynamic-scale: value + scale share one start, duration and ease
+        const cnt = { v: 0 };
+        tl.fromTo(cnt, { v: 0 }, { v: 1000000, duration: 0.93, ease: "power2.out", immediateRender: false,
+          onUpdate: () => { num.textContent = fmt(cnt.v); } }, 2.45);
+        tl.fromTo(num, { scale: 0.86 }, { scale: 1, duration: 0.93, ease: "power2.out" }, 2.45);
+        tl.fromTo(hv, { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.36, ease: "back.out(1.6)", immediateRender: false }, 3.24);
+
+        // ---------- beat 3: "mil dólares" slam (+ the honest disclaimer lands WITH it) ----------
+        const S3 = 4.1;
+        tl.fromTo("#s3-calc-glow", { opacity: 0, scale: 0.72 }, { opacity: 0.42, scale: 1, duration: 0.5, ease: "power2.out" }, S3 - 0.04);
+        tl.fromTo(res, { opacity: 0, scale: 1.35, filter: "blur(8px)" },
+          { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.32, ease: "expo.out" }, S3);
+        const rc = { v: 0 };
+        tl.fromTo(rc, { v: 0 }, { v: 1000, duration: 0.28, ease: "power2.out", immediateRender: false,
+          onUpdate: () => { rv.textContent = "US$ " + fmt(rc.v); } }, S3);
+        // impact reaction on the equation above (one percussive nudge)
+        tl.fromTo("#s3-calc-eq", { y: 0 }, { y: -10, duration: 0.09, ease: "power2.out", immediateRender: false }, S3 + 0.03);
+        tl.to("#s3-calc-eq", { y: 0, duration: 0.34, ease: "power2.out" }, S3 + 0.12);
+        IN("#s3-calc-disc", 4.16, { y: 12, s: 0.98, b: 6, d: 0.24 });
+
+        // ---------- exit (staggered; the result holds longest; ends 4.88 < 4.93 - 1 frame) ----------
+        OUT("#s3-calc-eq", 4.66, { d: 0.2 });
+        OUT("#s3-calc-discrow", 4.68, { d: 0.18, s: 1.02 });
+        OUT("#s3-calc-resrow", 4.7, { d: 0.18 });
+        tl.to("#s3-calc-glow-wrap", { opacity: 0, duration: 0.18, ease: "power2.in" }, 4.7);
+
+        window.__timelines["s3-calc"] = tl;
+      }
+
+      const fl = (document.fonts && document.fonts.load)
+        ? Promise.all([
+            document.fonts.load('800 176px "Geist"'),
+            document.fonts.load('600 54px "Geist"'),
+            document.fonts.load('500 25px "Geist Mono"'),
+          ])
+        : Promise.resolve();
+      fl.catch(() => {}).then(build);
+    })();
+  </script>
+</template>
+</body></html>

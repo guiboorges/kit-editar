@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"></head><body>
+<template>
+  <style>
+    @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-latin.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+    #s3-quem-paga-root { position: absolute; inset: 0; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink);
+      --paper:#F3F3F0; --ink:#111113; --ink2:#3A3A40; --mute:#7A7A82; --line:#E2E2DC; --card:#FFFFFF;
+      --ui:#141416; --ui2:#1E1E22; --lime:#D4FF3A; --limeInk:#141A00; --plum:#6B2A6B; --red:#FF4A3D; --blue:#3D4EF2; }
+    #s3-quem-paga-root .layer { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+    #s3-quem-paga-root #s3-quem-paga-drift { transform-origin: 540px 1300px; }
+    /* headline block: lines centred on x 540; the block glides left (x/scale) about its own centre (540,1222) */
+    #s3-quem-paga-root #s3-quem-paga-hl { transform-origin: 540px 1222px; will-change: transform, opacity, filter; }
+    #s3-quem-paga-root .row { position: absolute; left: 0; width: 1080px; display: flex; justify-content: center; align-items: baseline;
+      white-space: nowrap; }
+    #s3-quem-paga-root .ib { display: inline-block; position: relative; will-change: transform, opacity, filter; }
+    #s3-quem-paga-root .big { font-size: 110px; font-weight: 700; letter-spacing: -0.035em; line-height: 110px; color: var(--ink); }
+
+    /* line 1 "quem," (centre y≈1110) */
+    #s3-quem-paga-root #s3-quem-paga-r1 { top: 1055px; height: 110px; }
+    /* line 2 "em sã consciência" (centre y≈1215); x re-centres as the second word lands */
+    #s3-quem-paga-root #s3-quem-paga-r2 { top: 1189px; height: 52px; }
+    #s3-quem-paga-root .mid { font-size: 52px; font-weight: 600; letter-spacing: -0.02em; line-height: 52px; color: var(--ink2); }
+    #s3-quem-paga-root #s3-quem-paga-w2b { margin-left: 14px; }
+    /* line 3 "pagaria?" (centre y≈1335) with a lime block */
+    #s3-quem-paga-root #s3-quem-paga-r3 { top: 1280px; height: 110px; }
+    #s3-quem-paga-root #s3-quem-paga-l3p { display: inline-block; position: relative; transform-origin: 50% 60%; will-change: transform; }
+    #s3-quem-paga-root .w3 .t { position: relative; z-index: 1; color: var(--limeInk); }
+    #s3-quem-paga-root .w3 .bg { position: absolute; z-index: 0; left: -18px; right: -18px; top: 16px; bottom: -6px; border-radius: 14px;
+      background: var(--lime); transform-origin: 0 50%; transform: scaleX(0);
+      box-shadow: 0 18px 40px rgba(110,150,0,.22), 0 4px 10px rgba(60,80,0,.10); }
+
+    /* mini B-roll card: 250x444, centre (830,1290), tilted 5° — pos [enter/exit] > punch > tilt > face (overflow) + "?" disc */
+    #s3-quem-paga-root .cardx { position: absolute; left: 705px; top: 1068px; width: 250px; height: 444px; opacity: 0;
+      will-change: transform, opacity, filter; }
+    #s3-quem-paga-root .cpunch { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+    #s3-quem-paga-root .ctilt { position: absolute; inset: 0; transform: rotate(5deg); transform-origin: 50% 50%; }
+    #s3-quem-paga-root .face { position: absolute; inset: 0; border-radius: 28px; overflow: hidden; border: 6px solid #fff; background: #0c0c0e;
+      box-shadow: 0 34px 80px rgba(24,24,12,.20), 0 6px 18px rgba(24,24,12,.10); }
+    /* native 9:16 box (720x1280 → 250x444.4) centred under the 6px border; never animated */
+    #s3-quem-paga-root .face video { position: absolute; left: -6px; top: -6px; width: 250px; height: 444.4px; display: block; }
+    #s3-quem-paga-root .face .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,.28) 100%); }
+    #s3-quem-paga-root .qpos { position: absolute; left: -46px; top: -46px; width: 92px; height: 92px; }
+    #s3-quem-paga-root .qpop { position: absolute; inset: 0; transform-origin: 50% 50%; will-change: transform; }
+    #s3-quem-paga-root .qfade { position: absolute; inset: 0; border-radius: 50%; background: var(--lime); color: var(--limeInk);
+      display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 64px; line-height: 1; opacity: 0;
+      box-shadow: 0 14px 30px rgba(80,110,0,.32), 0 0 0 3px rgba(20,26,0,.92); will-change: opacity, filter; }
+    #s3-quem-paga-root .qfade span { display: block; transform: translateY(-2px) rotate(-5deg); }
+  </style>
+
+  <div data-hf-id="hf-ks12" id="s3-quem-paga-root" data-composition-id="s3-quem-paga" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-d2rm" class="layer" id="s3-quem-paga-drift">
+      <div data-hf-id="hf-uyal" class="layer" id="s3-quem-paga-hl">
+        <div data-hf-id="hf-f4zb" class="row" id="s3-quem-paga-r1"><span data-hf-id="hf-ia5a" class="ib big" id="s3-quem-paga-w1">quem,</span></div>
+        <div data-hf-id="hf-6h3g" class="row" id="s3-quem-paga-r2"><span data-hf-id="hf-vnhy" class="ib mid" id="s3-quem-paga-w2a">em sã</span><span data-hf-id="hf-vujr" class="ib mid" id="s3-quem-paga-w2b">consciência</span></div>
+        <div data-hf-id="hf-78r9" class="row" id="s3-quem-paga-r3"><span data-hf-id="hf-rcep" id="s3-quem-paga-l3p"><span data-hf-id="hf-afau" class="ib big w3" id="s3-quem-paga-w3"><span data-hf-id="hf-vbvt" class="bg" id="s3-quem-paga-blk"></span><span data-hf-id="hf-7665" class="t">pagaria?</span></span></span></div>
+      </div>
+
+      <div data-hf-id="hf-o33g" class="cardx" id="s3-quem-paga-card">
+        <div data-hf-id="hf-c13u" class="cpunch" id="s3-quem-paga-cpunch">
+          <div data-hf-id="hf-fdba" class="ctilt">
+            <div data-hf-id="hf-ce6r" class="face">
+              <video data-hf-id="hf-9q9u" id="s3-quem-paga-vid" src="assets/broll/criador1-rua.mp4" muted playsinline preload="auto" data-start="2.2" data-duration="0.96" data-media-start="12.0" data-hf-media-start-basis="local"></video>
+              <div data-hf-id="hf-q0n7" class="shade"></div>
+            </div>
+            <div data-hf-id="hf-2psx" class="qpos"><div data-hf-id="hf-3rkk" class="qpop" id="s3-quem-paga-qpop"><div data-hf-id="hf-m2t4" class="qfade" id="s3-quem-paga-qfade"><span data-hf-id="hf-d0e2">?</span></div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const R = document.getElementById("s3-quem-paga-root");
+      const q = (s) => R.querySelector(s);
+
+      // Width probe on <body> (the scene may be display:none while it builds) — exact CSS widths after fonts load.
+      function probeW(text, css) {
+        const sp = document.createElement("span");
+        sp.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden;display:inline-block;white-space:nowrap;line-height:1;" + css;
+        sp.textContent = text;
+        document.body.appendChild(sp);
+        const w = sp.getBoundingClientRect().width;
+        sp.remove();
+        return w;
+      }
+      const G = (wt, px, ls) => `font-family:Geist,sans-serif;font-weight:${wt};font-size:${px}px;letter-spacing:${ls}px;`;
+
+      function build() {
+        const tl = gsap.timeline({ paused: true });
+        const IN = (el, t, o = {}) => tl.fromTo(el,
+          { opacity: 0, y: o.y ?? 70, x: o.x ?? 0, scale: o.s ?? 0.94, filter: `blur(${o.b ?? 16}px)` },
+          { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.d ?? 0.5, ease: o.e ?? "power3.out" }, t);
+        const OUT = (el, t, o = {}) => tl.to(el,
+          { opacity: 0, scale: o.s ?? 1.04, y: o.y ?? 0, filter: `blur(${o.b ?? 14}px)`, duration: o.d ?? 0.26, ease: "power2.in" }, t);
+
+        // ── cue grid (scene-local word starts): quem 0.57 · em 0.75 · sã 0.83 · consciência 1.03 · pagaria 1.59 | por 2.39 · vídeo 2.93 ──
+        const QUEM = 0.47, EMSA = 0.70, CONS = 0.95, PAG = 1.49, BLK = 1.55;
+        const GLIDE = 2.24;   // "por esse tipo de vídeo" (por 2.39) → headline starts gliding left first…
+        const CARD = 2.30;    // …and the mini B-roll card enters right (never crosses the moving headline)
+        const QM = 2.79;      // "de vídeo" (2.83 / 2.93) → lime "?" disc on the card (full size by ~2.94)
+        const EXIT = 2.95;    // headline out 2.95–3.13, card + disc 2.98–3.13 (< 3.167 − 1 frame)
+
+        // ── measured geometry ──
+        const wA = probeW("em sã", G(600, 52, -1.04)), wB = probeW("consciência", G(600, 52, -1.04));
+        const wL2 = wA + 14 + wB;
+        const SH2 = (wL2 - wA) / 2;                        // "em sã" alone is centred, then the row settles to 0
+        const wL1 = probeW("quem,", G(700, 110, -3.85));
+        const wL3 = probeW("pagaria?", G(700, 110, -3.85)) + 36;   // incl. the lime block bleed
+        const wMax = Math.max(wL1, wL2, wL3);
+        // glide target: scale .86, centre moved left; keep the left edge ≥ 80 and clear of the tilted card (left ≈ 686)
+        const HS = 0.86;
+        let cx = 540 - 150;
+        cx = Math.max(cx, 80 + (wMax * HS) / 2);
+        cx = Math.min(cx, 656 - (wMax * HS) / 2);
+        const HX = cx - 540;
+
+        // ── ambient drift ──
+        tl.fromTo("#s3-quem-paga-drift", { scale: 1 }, { scale: 1.02, duration: 3.06, ease: "none" }, 0.06);
+
+        // ── line 1 "quem," ──
+        tl.fromTo("#s3-quem-paga-w1", { opacity: 0, y: 40, filter: "blur(14px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, QUEM);
+
+        // ── line 2 "em sã" → "consciência" (row re-centres as the second word lands) ──
+        gsap.set("#s3-quem-paga-r2", { x: SH2 });
+        tl.fromTo("#s3-quem-paga-w2a", { opacity: 0, y: 30, filter: "blur(12px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.3, ease: "power3.out" }, EMSA);
+        tl.fromTo("#s3-quem-paga-w2b", { opacity: 0, y: 30, filter: "blur(12px)" },
+          { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.32, ease: "power3.out" }, CONS);
+        tl.fromTo("#s3-quem-paga-r2", { x: SH2 }, { x: 0, duration: 0.32, ease: "power3.out" }, CONS);
+
+        // ── line 3 "pagaria?" lands bigger-to-normal, lime block wipes behind it + punch on the word ──
+        tl.fromTo("#s3-quem-paga-w3", { opacity: 0, y: 40, scale: 1.18, filter: "blur(14px)" },
+          { opacity: 1, y: 0, scale: 1, filter: "blur(0px)", duration: 0.3, ease: "expo.out" }, PAG);
+        tl.fromTo("#s3-quem-paga-blk", { scaleX: 0 }, { scaleX: 1, duration: 0.28, ease: "power3.out" }, BLK);
+        tl.fromTo("#s3-quem-paga-l3p", { scale: 1 }, { scale: 1.06, duration: 0.09, ease: "power2.out", immediateRender: false }, BLK + 0.03);
+        tl.to("#s3-quem-paga-l3p", { scale: 1, duration: 0.26, ease: "power2.inOut" }, BLK + 0.13);
+
+        // ── "por esse tipo de vídeo": headline glides left + shrinks; mini B-roll card enters from the right ──
+        tl.fromTo("#s3-quem-paga-hl", { x: 0, scale: 1 }, { x: HX, scale: HS, duration: 0.45, ease: "power2.inOut", immediateRender: false }, GLIDE);
+        IN("#s3-quem-paga-card", CARD, { x: 160, y: 30, s: 0.94, b: 16, d: 0.5 });
+
+        // ── "vídeo": lime "?" disc pops on the card's top-left corner (two channels) + card micro-punch ──
+        tl.fromTo("#s3-quem-paga-qfade", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.14, ease: "power2.out" }, QM);
+        tl.fromTo("#s3-quem-paga-qpop", { scale: 0.4, rotation: -20 }, { scale: 1, rotation: 0, duration: 0.36, ease: "back.out(2.4)" }, QM);
+        tl.fromTo("#s3-quem-paga-cpunch", { scale: 1 }, { scale: 1.05, duration: 0.08, ease: "power2.out", immediateRender: false }, QM + 0.02);
+        tl.to("#s3-quem-paga-cpunch", { scale: 1, duration: 0.2, ease: "power2.inOut" }, QM + 0.10);
+
+        // ── exit (headline keeps its glide scale/x while blurring out) ──
+        OUT("#s3-quem-paga-hl", EXIT, { s: HS * 1.04, d: 0.18 });
+        OUT("#s3-quem-paga-card", EXIT + 0.03, { d: 0.15 });
+
+        window.__timelines["s3-quem-paga"] = tl;
+      }
+
+      const fl = (document.fonts && document.fonts.load)
+        ? Promise.all([
+            document.fonts.load('700 110px "Geist"'),
+            document.fonts.load('600 52px "Geist"'),
+            document.fonts.load('800 64px "Geist"'),
+          ])
+        : Promise.resolve();
+      fl.catch(() => {}).then(build);
+    })();
+  </script>
+</template>
+</body></html>
