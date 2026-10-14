@@ -1,6 +1,6 @@
 # Kit EDITAR — motion reels edited by AI
 
-[![Release](https://img.shields.io/github/v/release/guiboorges/kit-editar)](https://github.com/guiboorges/kit-editar/releases/latest) [![License: MIT](https://img.shields.io/github/license/guiboorges/kit-editar)](LICENSE)
+[![Download kit](https://img.shields.io/github/v/release/guiboorges/kit-editar?label=Download%20kit&color=FF7722&logo=github&labelColor=2B1A12&logoColor=white)](https://github.com/guiboorges/kit-editar/releases/latest/download/kit-reel-ia.zip) [![Site](https://img.shields.io/badge/Site-kit--edit.vercel.app-FF7722?logo=vercel&labelColor=2B1A12&logoColor=white)](https://kit-edit.vercel.app) [![Built with](https://img.shields.io/badge/Built%20with-Claude-B7410E?logo=claude&labelColor=2B1A12&logoColor=white)](https://claude.com/claude-code) [![PRs](https://img.shields.io/badge/PRs-welcome-FF7722?logo=github&labelColor=2B1A12&logoColor=white)](https://github.com/guiboorges/kit-editar/pulls) [![License](https://img.shields.io/github/license/guiboorges/kit-editar?label=License&color=B7410E&logo=opensourceinitiative&labelColor=2B1A12&logoColor=white)](LICENSE)
 
 **The prompts, in order, to edit a talking-head reel with motion design, karaoke captions and sound effects, each one landing on the spoken word — using Claude Code and HyperFrames.**
 
