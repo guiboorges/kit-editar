@@ -1,5 +1,7 @@
 # Kit EDITAR — motion reels edited by AI
 
+[![Release](https://img.shields.io/github/v/release/guiboorges/kit-editar)](https://github.com/guiboorges/kit-editar/releases/latest) [![License: MIT](https://img.shields.io/github/license/guiboorges/kit-editar)](LICENSE)
+
 **The prompts, in order, to edit a talking-head reel with motion design, karaoke captions and sound effects, each one landing on the spoken word — using Claude Code and HyperFrames.**
 
 **[▶ Open the kit site](https://kit-edit.vercel.app)** · **[⬇ Download the kit (.zip, 375 KB)](https://kit-edit.vercel.app/kit-reel-ia.zip)**
