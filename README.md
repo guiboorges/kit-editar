@@ -73,3 +73,7 @@ With their original values, the kit's scripts reproduce the example reels' files
 - **Sound effects:** the Pixabay licence allows using them in videos but not redistributing the files. Installing HyperFrames gives you the same sounds.
 - **Videos, recordings and screenshots** from my reels.
 - **Real creator handles:** in the example scenes they were replaced with `@criador_1` and `@criador_2`.
+
+## License
+
+[MIT](LICENSE) © 2026 Guilherme Borges
