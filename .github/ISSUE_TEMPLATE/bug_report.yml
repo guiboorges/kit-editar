@@ -1,0 +1,39 @@
+name: Bug report
+description: A prompt, script or setup step doesn't work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! For questions, use [Discussions](https://github.com/guiboorges/kit-editar/discussions) instead.
+  - type: input
+    id: step
+    attributes:
+      label: Which step or prompt?
+      placeholder: e.g. Prompt 4 (karaoke captions) or the setup in LEIA-ME.md
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error messages or logs
+      description: Paste any output from Claude Code or the terminal.
+      render: shell
+  - type: input
+    id: mac
+    attributes:
+      label: Mac and macOS version
+      placeholder: e.g. MacBook Air M2, macOS 26.1
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Claude Code and HyperFrames versions
+      placeholder: "claude --version and npx hyperframes --version"

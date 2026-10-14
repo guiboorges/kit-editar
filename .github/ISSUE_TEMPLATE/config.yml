@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://github.com/guiboorges/kit-editar/discussions/categories/q-a
+    about: Ask how to set up or use the project
+  - name: Idea or suggestion
+    url: https://github.com/guiboorges/kit-editar/discussions/categories/ideas
+    about: Share an idea for a new feature or improvement
+  - name: Show what you made
+    url: https://github.com/guiboorges/kit-editar/discussions/categories/show-and-tell
+    about: Share something you built with it
